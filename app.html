@@ -1,350 +1,2277 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Narrative — Writing workspace</title>
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/app.css">
-</head>
-<body class="app-body">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Narrative</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ── DESIGN TOKENS ───────────────────────────────────────────── */
+:root {
+  --paper:       #f5f2ed;
+  --paper-2:     #ede9e2;
+  --paper-3:     #e4dfd6;
+  --ink:         #1c1917;
+  --ink-2:       #44403c;
+  --ink-3:       #78716c;
+  --ink-4:       #a8a29e;
+  --ink-5:       #d6d3d1;
+  --accent:      #c2622b;
+  --accent-pale: #f5e6dc;
+  --ai-tint:     rgba(194,98,43,0.06);
+  --planned:     #a8a29e;
+  --drafted:     #c2622b;
+  --accepted:    #2d6a4f;
+  --emerging:    #7c6fcd;
+  --border:      rgba(28,25,23,0.08);
+  --border-2:    rgba(28,25,23,0.14);
+  --shadow-sm:   0 1px 4px rgba(28,25,23,0.06);
+  --shadow-md:   0 4px 20px rgba(28,25,23,0.09);
+  --shadow-lg:   0 12px 48px rgba(28,25,23,0.13);
+  --serif:       'Lora', Georgia, serif;
+  --sans:        'Inter', system-ui, sans-serif;
+  --ease:        cubic-bezier(.4,0,.2,1);
+  --dur:         220ms;
+}
 
-  <!-- ── Topbar ── -->
-  <header class="topbar">
-    <a href="index.html" class="topbar-logo">narr<span>·</span>ative</a>
-    <div class="topbar-divider"></div>
-    <div class="topbar-project" id="topbar-project-name">New project</div>
-    <div class="topbar-breadcrumb" id="topbar-breadcrumb" style="display:none">
-      <span>›</span>
-      <span id="topbar-cluster">—</span>
-      <span>›</span>
-      <span id="topbar-scene">—</span>
+/* ── RESET ───────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input,textarea{font-family:inherit;outline:none}
+a{color:inherit;text-decoration:none}
+
+/* ── APP SHELL ───────────────────────────────────────────────── */
+#app {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  grid-template-rows: 38px 1fr;
+  grid-template-areas: "tb tb" "rail main";
+  height: 100vh;
+  transition: grid-template-columns var(--dur) var(--ease);
+}
+#app.sidebar-open {
+  grid-template-columns: 240px 1fr;
+}
+#app.intel-open {
+  /* intelligence panel handled inside main */
+}
+
+/* ── TOPBAR ──────────────────────────────────────────────────── */
+#topbar {
+  grid-area: tb;
+  display: flex; align-items: center;
+  padding: 0 16px 0 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--paper);
+  z-index: 100;
+  gap: 12px;
+}
+#tb-logo {
+  width: 48px; height: 38px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--serif); font-size: 1rem; font-weight: 500;
+  color: var(--ink); letter-spacing: -0.02em;
+  border-right: 1px solid var(--border);
+}
+#tb-title {
+  font-family: var(--serif); font-size: 0.9rem;
+  color: var(--ink); font-weight: 400;
+  cursor: text; padding: 2px 6px; border-radius: 4px;
+  transition: background var(--dur);
+  min-width: 120px;
+}
+#tb-title:hover { background: var(--paper-2); }
+#tb-title[contenteditable]:focus { background: var(--paper-2); outline: none; }
+#tb-crumb {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.75rem; color: var(--ink-4);
+}
+#tb-crumb .sep { color: var(--ink-5); }
+#tb-right {
+  margin-left: auto; display: flex; align-items: center; gap: 6px;
+}
+.tb-btn {
+  height: 26px; padding: 0 10px; border-radius: 4px;
+  font-size: 0.72rem; font-weight: 500; letter-spacing: 0.02em;
+  color: var(--ink-3); border: 1px solid var(--border-2);
+  background: transparent; transition: all var(--dur) var(--ease);
+  display: flex; align-items: center; gap: 5px;
+}
+.tb-btn:hover { background: var(--paper-2); color: var(--ink); }
+.tb-btn.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+#save-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--ink-5); transition: background 0.4s;
+  flex-shrink: 0;
+}
+#save-dot.saving { background: #f59e0b; }
+#save-dot.saved  { background: var(--accepted); }
+
+/* ── ICON RAIL ───────────────────────────────────────────────── */
+#rail {
+  grid-area: rail;
+  width: 48px; flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  align-items: center; padding: 10px 0; gap: 2px;
+  background: var(--paper);
+  z-index: 90;
+}
+.rail-btn {
+  width: 34px; height: 34px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-4); font-size: 0.85rem;
+  transition: all var(--dur) var(--ease);
+  position: relative;
+}
+.rail-btn:hover { background: var(--paper-2); color: var(--ink-2); }
+.rail-btn.active { background: var(--paper-3); color: var(--ink); }
+.rail-btn svg { width: 16px; height: 16px; stroke-width: 1.5; }
+.rail-sep { width: 20px; height: 1px; background: var(--border); margin: 4px 0; }
+.rail-bottom { margin-top: auto; }
+
+/* ── MAIN AREA ───────────────────────────────────────────────── */
+#main {
+  grid-area: main;
+  display: flex; overflow: hidden;
+  position: relative;
+}
+
+/* ── SIDEBAR (structure navigator) ──────────────────────────── */
+#sidebar {
+  width: 0; overflow: hidden;
+  border-right: 1px solid transparent;
+  background: var(--paper);
+  display: flex; flex-direction: column;
+  transition: width var(--dur) var(--ease), border-color var(--dur);
+  flex-shrink: 0;
+}
+#app.sidebar-open #sidebar {
+  width: 192px;
+  border-color: var(--border);
+}
+.sb-section { padding: 14px 12px 8px; }
+.sb-label {
+  font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink-4);
+  margin-bottom: 8px; display: block;
+}
+.cluster-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 8px; border-radius: 5px; cursor: pointer;
+  transition: background var(--dur); position: relative;
+}
+.cluster-row:hover { background: var(--paper-2); }
+.cluster-row.active {
+  background: var(--paper-2);
+}
+.cluster-row.active::before {
+  content: ''; position: absolute; left: 0; top: 3px; bottom: 3px;
+  width: 2px; border-radius: 1px; background: var(--accent);
+}
+.c-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  border: 1.5px solid var(--ink-5);
+  transition: all var(--dur);
+}
+.c-dot.planned  { border-color: var(--planned); background: transparent; }
+.c-dot.drafted  { border-color: var(--drafted); background: var(--drafted); }
+.c-dot.accepted { border-color: var(--accepted); background: var(--accepted); }
+.c-dot.active-w { border-color: var(--accent); background: var(--accent-pale); animation: dot-pulse 2s infinite; }
+@keyframes dot-pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+.c-label {
+  font-size: 0.78rem; color: var(--ink-2); flex: 1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cluster-row.active .c-label { color: var(--ink); font-weight: 500; }
+.c-count { font-size: 0.65rem; color: var(--ink-4); }
+.sb-footer {
+  margin-top: auto; padding: 12px;
+  border-top: 1px solid var(--border);
+}
+.sb-stat {
+  font-size: 0.7rem; color: var(--ink-4);
+  display: flex; justify-content: space-between; margin-bottom: 3px;
+}
+.sb-stat strong { color: var(--ink-3); font-weight: 500; }
+
+/* ── EDITOR COLUMN ───────────────────────────────────────────── */
+#editor-col {
+  flex: 1; display: flex; flex-direction: column;
+  overflow: hidden; position: relative;
+  min-width: 0;
+}
+
+/* Cluster context bar */
+#cluster-bar {
+  padding: 8px 48px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+  opacity: 1; transition: opacity var(--dur);
+}
+#cluster-bar.hidden { opacity: 0; pointer-events: none; }
+.cb-left { display: flex; align-items: center; gap: 12px; }
+.cb-name {
+  font-family: var(--serif); font-size: 0.9rem; font-weight: 500;
+  color: var(--ink);
+}
+.cb-fn { font-size: 0.72rem; color: var(--ink-4); }
+.state-pill {
+  font-size: 0.65rem; font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; padding: 2px 8px; border-radius: 20px;
+}
+.sp-planned  { background: rgba(168,162,158,0.15); color: var(--planned); }
+.sp-drafted  { background: var(--accent-pale); color: var(--accent); }
+.sp-accepted { background: rgba(45,106,79,0.1);  color: var(--accepted); }
+.sp-emerging { background: rgba(124,111,205,0.1); color: var(--emerging); }
+
+/* ── THE EDITOR SURFACE ─────────────────────────────────────── */
+#editor-scroll {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  padding: 0;
+  scroll-behavior: smooth;
+}
+#editor-scroll::-webkit-scrollbar { width: 4px; }
+#editor-scroll::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 2px; }
+
+/* Accepted scenes above active */
+.accepted-scene {
+  max-width: 640px; margin: 0 auto;
+  padding: 40px 0 32px;
+  border-bottom: 1px solid var(--border);
+  animation: scene-in 0.4s var(--ease) both;
+}
+@keyframes scene-in { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+.as-label {
+  font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink-5);
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.as-label::after { content:''; flex:1; height:1px; background:var(--border); }
+.as-prose {
+  font-family: var(--serif); font-size: 17px;
+  line-height: 1.92; color: var(--ink-2);
+}
+.as-prose p { margin-bottom: 1.1em; }
+
+/* Active editor zone */
+#active-zone {
+  max-width: 640px; margin: 0 auto;
+  padding: 48px 0 120px;
+  min-height: 60vh;
+  position: relative;
+}
+
+/* Empty state watermark */
+#empty-state {
+  position: absolute; inset: 48px 0 0;
+  pointer-events: none; user-select: none;
+  display: flex; flex-direction: column;
+  align-items: flex-start;
+  opacity: 1; transition: opacity 0.4s;
+}
+#empty-state.hidden { opacity: 0; }
+.es-watermark {
+  font-family: var(--serif); font-size: 3.5rem; font-weight: 500;
+  color: var(--ink); opacity: 0.04; line-height: 1.1;
+  margin-bottom: 2rem; pointer-events: none;
+}
+.es-instruction {
+  font-size: 0.82rem; color: var(--ink-4); font-style: italic;
+  margin-bottom: 20px; pointer-events: none;
+}
+.es-generate {
+  font-size: 0.8rem; color: var(--ink-4);
+  border-bottom: 1px dashed var(--ink-5);
+  cursor: pointer; pointer-events: all;
+  transition: color var(--dur), border-color var(--dur);
+  padding-bottom: 1px;
+}
+.es-generate:hover { color: var(--accent); border-color: var(--accent); }
+
+/* The actual editable manuscript surface */
+#manuscript {
+  font-family: var(--serif); font-size: 17.5px;
+  line-height: 1.92; color: var(--ink);
+  min-height: 200px; outline: none;
+  white-space: pre-wrap; word-break: break-word;
+  caret-color: var(--accent);
+  position: relative; z-index: 1;
+}
+#manuscript p { margin-bottom: 1.1em; }
+#manuscript:empty::before {
+  content: '';
+  display: block; height: 1px;
+}
+
+/* AI draft overlay */
+.ai-draft {
+  color: var(--ink-2); opacity: 0.62;
+  font-family: var(--serif);
+  transition: opacity 1.5s var(--ease);
+}
+.ai-draft.settling { opacity: 1; }
+
+/* Streaming cursor */
+.stream-cursor {
+  display: inline-block; width: 2px; height: 1.1em;
+  background: var(--accent); vertical-align: text-bottom;
+  border-radius: 1px;
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* Generating shimmer */
+#gen-shimmer {
+  display: none;
+  font-family: var(--serif); font-size: 17.5px;
+  line-height: 1.92; color: var(--ink-4);
+  font-style: italic;
+}
+#gen-shimmer.active { display: block; }
+.gen-line {
+  display: inline-block; height: 1em; border-radius: 3px;
+  background: linear-gradient(90deg, var(--paper-2) 25%, var(--paper-3) 50%, var(--paper-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  vertical-align: middle; margin-bottom: 0.4em;
+}
+@keyframes shimmer { 0%{background-position:200%} 100%{background-position:-200%} }
+
+/* ── FLOATING ACTION BAR ─────────────────────────────────────── */
+#action-bar {
+  position: absolute; bottom: 28px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 10px; border-radius: 10px;
+  background: var(--paper); border: 1px solid var(--border-2);
+  box-shadow: var(--shadow-md);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+  transform: translateX(-50%) translateY(8px);
+  z-index: 50; white-space: nowrap;
+}
+#action-bar.visible {
+  opacity: 1; pointer-events: all;
+  transform: translateX(-50%) translateY(0);
+}
+.ab-btn {
+  height: 30px; padding: 0 13px; border-radius: 6px;
+  font-size: 0.78rem; font-weight: 500;
+  display: flex; align-items: center; gap: 5px;
+  transition: all var(--dur) var(--ease);
+}
+.ab-btn:hover { background: var(--paper-2); }
+.ab-accept { background: var(--ink); color: var(--paper); }
+.ab-accept:hover { background: var(--ink-2); }
+.ab-sep { width: 1px; height: 18px; background: var(--border-2); flex-shrink:0; }
+.ab-steer { color: var(--ink-3); }
+.ab-steer:hover { color: var(--ink); }
+
+/* Steer input */
+#steer-input-row {
+  display: none; align-items: center; gap: 6px;
+}
+#steer-input-row.active { display: flex; }
+#steer-input {
+  height: 30px; border: none; background: transparent;
+  font-size: 0.8rem; color: var(--ink); width: 260px;
+  padding: 0 4px;
+}
+#steer-input::placeholder { color: var(--ink-5); }
+#steer-submit {
+  height: 26px; padding: 0 10px; border-radius: 5px;
+  font-size: 0.75rem; background: var(--accent); color: white;
+  font-weight: 500;
+}
+
+/* Focus mode */
+body.focus-mode #cluster-bar { opacity: 0; pointer-events: none; }
+body.focus-mode #rail { opacity: 0; pointer-events: none; }
+body.focus-mode #topbar { opacity: 0; pointer-events: none; }
+
+/* ── INTELLIGENCE PANEL ──────────────────────────────────────── */
+#intel-panel {
+  width: 0; overflow: hidden;
+  border-left: 1px solid transparent;
+  background: var(--paper);
+  flex-shrink: 0;
+  display: flex; flex-direction: column;
+  transition: width var(--dur) var(--ease), border-color var(--dur);
+}
+#intel-panel.open {
+  width: 320px;
+  border-color: var(--border);
+}
+#ip-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.ip-title {
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.ip-view-toggle {
+  display: flex; gap: 2px;
+  background: var(--paper-2); border-radius: 4px; padding: 2px;
+}
+.ip-vbtn {
+  height: 22px; padding: 0 8px; border-radius: 3px;
+  font-size: 0.68rem; font-weight: 500; color: var(--ink-4);
+  transition: all var(--dur);
+}
+.ip-vbtn.active { background: var(--paper); color: var(--ink); box-shadow: var(--shadow-sm); }
+
+/* Intelligence update indicator */
+#ip-updating {
+  display: none; align-items: center; gap: 6px;
+  padding: 6px 16px; background: rgba(194,98,43,0.05);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.72rem; color: var(--accent);
+}
+#ip-updating.active { display: flex; }
+.ip-update-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--accent); animation: dot-pulse 1s infinite;
+}
+
+/* Panel scroll */
+#ip-scroll {
+  flex: 1; overflow-y: auto; padding: 0;
+}
+#ip-scroll::-webkit-scrollbar { width: 3px; }
+#ip-scroll::-webkit-scrollbar-thumb { background: var(--border-2); }
+
+/* ── GRAPH VIEW ─────────────────────────────────────────────── */
+#graph-view { padding: 16px; }
+#story-graph {
+  width: 100%; height: 160px;
+  border-radius: 8px;
+  background: var(--paper-2);
+  margin-bottom: 12px;
+  overflow: hidden;
+  position: relative;
+}
+#story-graph canvas { display: block; }
+
+/* ── LIST VIEW ──────────────────────────────────────────────── */
+#list-view { display: none; }
+#list-view.active { display: block; }
+#graph-view.active { display: block; }
+#graph-view { display: none; }
+
+/* Intelligence sections */
+.ip-section { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.ip-section-title {
+  font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink-4);
+  margin-bottom: 10px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.ip-count {
+  font-weight: 400; color: var(--ink-5); font-size: 0.65rem;
+  letter-spacing: 0;
+}
+
+/* Story signal rows */
+.signal-row {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 5px 0; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background var(--dur);
+}
+.signal-row:last-child { border-bottom: none; }
+.signal-row:hover { background: var(--paper-2); margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
+.sig-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  flex-shrink: 0; margin-top: 5px;
+}
+.sig-dot.planned  { background: var(--planned); opacity: 0.5; }
+.sig-dot.drafted  { background: var(--drafted); }
+.sig-dot.accepted { background: var(--accepted); }
+.sig-dot.emerging { background: var(--emerging); }
+.sig-text { font-size: 0.78rem; color: var(--ink-2); line-height: 1.5; flex: 1; }
+.sig-label { font-size: 0.65rem; color: var(--ink-4); margin-top: 1px; }
+.sig-badge {
+  font-size: 0.6rem; font-weight: 600; letter-spacing: 0.05em;
+  text-transform: uppercase; padding: 1px 5px; border-radius: 3px;
+  flex-shrink: 0; margin-top: 3px;
+}
+.sb-planned  { background: rgba(168,162,158,0.15); color: var(--planned); }
+.sb-drafted  { background: var(--accent-pale); color: var(--accent); }
+.sb-accepted { background: rgba(45,106,79,0.1);  color: var(--accepted); }
+.sb-emerging { background: rgba(124,111,205,0.12); color: var(--emerging); }
+
+/* Cluster guidance card */
+.guidance-card {
+  background: var(--ai-tint);
+  border: 1px solid rgba(194,98,43,0.12);
+  border-radius: 8px; padding: 12px;
+  margin-bottom: 0;
+}
+.gc-title {
+  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--accent);
+  margin-bottom: 8px;
+}
+.gc-body {
+  font-size: 0.8rem; color: var(--ink-2); line-height: 1.6;
+  font-style: italic;
+}
+.gc-threads { margin-top: 8px; }
+.gc-thread {
+  font-size: 0.72rem; color: var(--ink-3);
+  display: flex; align-items: flex-start; gap: 5px;
+  margin-bottom: 3px;
+}
+.gc-thread::before { content:'↗'; color: var(--accent); flex-shrink:0; font-style:normal; }
+
+/* Character items */
+.char-item { padding: 8px 0; border-bottom: 1px solid var(--border); }
+.char-item:last-child { border-bottom: none; }
+.ci-name {
+  font-size: 0.82rem; font-weight: 500; color: var(--ink);
+  margin-bottom: 3px; font-family: var(--serif);
+}
+.ci-role { font-size: 0.68rem; color: var(--accent); margin-bottom: 5px; font-weight: 500; }
+.ci-row { display: flex; gap: 4px; margin-bottom: 2px; }
+.ci-key { font-size: 0.68rem; color: var(--ink-4); font-weight: 500; width: 36px; flex-shrink:0; }
+.ci-val { font-size: 0.72rem; color: var(--ink-3); line-height: 1.4; }
+.ci-arc {
+  margin-top: 5px; font-size: 0.68rem; color: var(--ink-3);
+  border-top: 1px solid var(--border); padding-top: 4px;
+  display: flex; align-items: center; gap: 4px;
+}
+.ci-arc::before { content:'↗'; color: var(--emerging); font-size:0.6rem; }
+
+/* Thread items */
+.thread-item {
+  padding: 6px 0; border-bottom: 1px solid var(--border);
+  display: flex; gap: 6px;
+}
+.thread-item:last-child { border-bottom: none; }
+.ti-icon { font-size: 0.65rem; color: var(--ink-5); flex-shrink:0; margin-top:3px; }
+.ti-text { font-size: 0.78rem; color: var(--ink-2); line-height: 1.5; }
+.ti-state { font-size: 0.65rem; color: var(--ink-4); margin-top:1px; }
+
+/* ── INTELLIGENCE MAP OVERLAY ────────────────────────────────── */
+#intel-map {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(28,25,23,0.5);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s var(--ease);
+}
+#intel-map.open { opacity: 1; pointer-events: all; }
+#map-modal {
+  background: var(--paper);
+  border-radius: 16px; box-shadow: var(--shadow-lg);
+  width: min(900px, 92vw); height: min(600px, 85vh);
+  display: flex; flex-direction: column; overflow: hidden;
+  transform: translateY(16px);
+  transition: transform 0.3s var(--ease);
+}
+#intel-map.open #map-modal { transform: none; }
+#mm-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.mm-title {
+  font-size: 0.82rem; font-weight: 500; color: var(--ink);
+  display: flex; align-items: center; gap: 8px;
+}
+.mm-legend { display: flex; gap: 14px; }
+.ml-item { display: flex; align-items: center; gap: 5px; font-size: 0.68rem; color: var(--ink-3); }
+.ml-dot { width: 7px; height: 7px; border-radius: 50%; }
+.ml-close {
+  width: 28px; height: 28px; border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-4); font-size: 1rem; cursor: pointer;
+  transition: background var(--dur);
+}
+.ml-close:hover { background: var(--paper-2); color: var(--ink); }
+#mm-graph {
+  flex: 1; overflow: hidden; position: relative;
+}
+#mm-canvas { display: block; width: 100%; height: 100%; }
+#mm-footer {
+  padding: 10px 20px; border-top: 1px solid var(--border);
+  font-size: 0.72rem; color: var(--ink-4);
+  display: flex; justify-content: space-between;
+}
+
+/* ── PARSE OVERLAY ───────────────────────────────────────────── */
+#parse-overlay {
+  position: fixed; inset: 0; z-index: 300;
+  background: var(--paper);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.4s;
+}
+#parse-overlay.active { opacity: 1; pointer-events: all; }
+#parse-inner {
+  max-width: 520px; width: 100%; padding: 0 24px;
+  transform: translateY(20px);
+  transition: transform 0.4s var(--ease);
+}
+#parse-overlay.active #parse-inner { transform: none; }
+.po-kicker {
+  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--accent);
+  margin-bottom: 12px;
+}
+.po-title {
+  font-family: var(--serif); font-size: 2rem; font-weight: 400;
+  color: var(--ink); margin-bottom: 24px; line-height: 1.2;
+}
+.parse-stream {
+  font-size: 0.85rem; color: var(--ink-3); line-height: 2;
+  min-height: 120px;
+}
+.ps-finding {
+  opacity: 0; transform: translateY(4px);
+  animation: ps-appear 0.3s var(--ease) forwards;
+  display: flex; gap: 8px; align-items: baseline;
+}
+@keyframes ps-appear { to { opacity:1; transform:none; } }
+.ps-label { color: var(--ink-4); }
+.ps-value { color: var(--ink); font-family: var(--serif); }
+.po-progress {
+  height: 2px; background: var(--paper-3); border-radius: 1px;
+  margin-top: 24px; overflow: hidden;
+}
+.po-bar {
+  height: 100%; background: var(--accent); border-radius: 1px;
+  width: 0; transition: width 0.4s var(--ease);
+}
+
+/* ── ONBOARDING / WELCOME ────────────────────────────────────── */
+#welcome {
+  position: fixed; inset: 0; z-index: 200;
+  background: var(--paper);
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.4s;
+}
+#welcome.hidden { opacity: 0; pointer-events: none; }
+#welcome-inner { max-width: 560px; width: 100%; padding: 0 24px; }
+.w-kicker {
+  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 14px;
+}
+.w-title {
+  font-family: var(--serif); font-size: 2.6rem; font-weight: 400;
+  color: var(--ink); line-height: 1.15; margin-bottom: 16px;
+}
+.w-sub {
+  font-size: 0.9rem; color: var(--ink-3); line-height: 1.75;
+  margin-bottom: 32px; max-width: 420px;
+}
+.w-import-area {
+  border: 1.5px dashed var(--border-2);
+  border-radius: 10px; padding: 24px;
+  background: var(--paper);
+  transition: border-color var(--dur), background var(--dur);
+  margin-bottom: 16px;
+}
+.w-import-area:focus-within {
+  border-color: var(--accent);
+  background: var(--accent-pale);
+}
+#outline-input {
+  width: 100%; border: none; background: transparent; resize: none;
+  font-family: var(--serif); font-size: 0.95rem; line-height: 1.75;
+  color: var(--ink); min-height: 120px;
+}
+#outline-input::placeholder { color: var(--ink-5); font-style: italic; }
+.w-actions { display: flex; gap: 8px; align-items: center; }
+.w-btn-primary {
+  height: 36px; padding: 0 20px; border-radius: 6px;
+  background: var(--ink); color: var(--paper);
+  font-size: 0.82rem; font-weight: 500;
+  transition: background var(--dur);
+}
+.w-btn-primary:hover { background: var(--ink-2); }
+.w-btn-ghost {
+  height: 36px; padding: 0 16px; border-radius: 6px;
+  font-size: 0.82rem; color: var(--ink-3);
+  border: 1px solid var(--border-2);
+  transition: all var(--dur);
+}
+.w-btn-ghost:hover { background: var(--paper-2); color: var(--ink); }
+.w-hint { font-size: 0.72rem; color: var(--ink-4); margin-left: auto; font-style: italic; }
+
+/* Confirmation screen after parse */
+#confirm-screen {
+  display: none; max-width: 560px; width: 100%; padding: 0 24px;
+}
+#confirm-screen.active { display: block; }
+#welcome-inner.hidden { display: none; }
+.cs-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.cs-field { display: flex; flex-direction: column; gap: 4px; }
+.cs-label { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-4); }
+.cs-input {
+  height: 32px; border: 1px solid var(--border-2); border-radius: 5px;
+  background: var(--paper); padding: 0 10px;
+  font-size: 0.82rem; color: var(--ink);
+  transition: border-color var(--dur);
+}
+.cs-input:focus { border-color: var(--accent); }
+.cs-full { grid-column: 1/-1; }
+.cs-textarea {
+  height: auto; min-height: 56px; padding: 8px 10px;
+  resize: none; line-height: 1.6;
+}
+.arc-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.arc-pill {
+  height: 28px; padding: 0 12px; border-radius: 20px;
+  font-size: 0.72rem; font-weight: 500;
+  border: 1.5px solid var(--border-2);
+  color: var(--ink-3); cursor: pointer;
+  transition: all var(--dur);
+}
+.arc-pill.selected {
+  border-color: var(--accent); color: var(--accent);
+  background: var(--accent-pale);
+}
+.cs-extracted { margin-bottom: 16px; }
+.ce-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
+.ce-key { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-4); min-width: 60px; }
+.ce-tag {
+  font-size: 0.72rem; padding: 2px 8px; border-radius: 3px;
+  background: var(--paper-2); color: var(--ink-2);
+  border: 1px solid var(--border); cursor: default;
+}
+.ce-conf-high { border-color: rgba(45,106,79,0.3); }
+.ce-conf-med  { border-color: rgba(194,98,43,0.2); }
+.ce-conf-low  { opacity: 0.6; }
+.cs-confirm { display: flex; gap: 8px; margin-top: 20px; }
+
+/* ── TOAST ───────────────────────────────────────────────────── */
+#toasts {
+  position: fixed; bottom: 20px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; gap: 6px;
+  z-index: 500; pointer-events: none; align-items: center;
+}
+.toast {
+  background: var(--ink); color: var(--paper);
+  padding: 8px 16px; border-radius: 6px;
+  font-size: 0.78rem; box-shadow: var(--shadow-md);
+  animation: toast-in 0.25s var(--ease);
+  white-space: nowrap;
+}
+@keyframes toast-in { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+
+/* ── KEY HINT ─────────────────────────────────────────────────── */
+#keyhint {
+  position: fixed; bottom: 10px; right: 12px;
+  font-size: 0.62rem; color: var(--ink-5);
+  display: flex; gap: 10px; z-index: 10;
+}
+.kh { display: flex; gap: 3px; align-items: center; }
+kbd {
+  font-family: var(--sans); font-size: 0.6rem;
+  background: var(--paper-2); border: 1px solid var(--border-2);
+  border-radius: 3px; padding: 1px 4px;
+  color: var(--ink-3);
+}
+</style>
+</head>
+<body>
+
+<!-- ── WELCOME / IMPORT SCREEN ─────────────────────────────── -->
+<div id="welcome">
+  <div id="welcome-inner">
+    <div class="w-kicker">Structured narrative execution</div>
+    <h1 class="w-title">Where is your<br>story right now?</h1>
+    <p class="w-sub">Paste an outline, synopsis, or story notes. The intelligence layer will find the structure — then help you write it, scene by scene, without losing the thread.</p>
+    <div class="w-import-area">
+      <textarea id="outline-input" rows="5" placeholder="Paste your story, outline, or synopsis…&#10;&#10;Even rough notes are enough to begin."></textarea>
     </div>
-    <div class="topbar-right">
-      <div class="topbar-mode">
-        <button class="mode-btn active" id="mode-execution">Execution</button>
-        <button class="mode-btn" id="mode-discovery" title="Coming soon" style="opacity:0.5;cursor:not-allowed">Discovery</button>
+    <div class="w-actions">
+      <button class="w-btn-primary" id="btn-analyse">Analyse story →</button>
+      <button class="w-btn-ghost" id="btn-demo">Load demo</button>
+      <span class="w-hint">or press ⌘↵</span>
+    </div>
+  </div>
+
+  <!-- Confirmation screen -->
+  <div id="confirm-screen">
+    <div class="po-kicker">Story model ready</div>
+    <div style="font-family:var(--serif);font-size:1.5rem;font-weight:400;margin-bottom:20px;color:var(--ink)" id="cs-story-title">—</div>
+
+    <div class="cs-fields">
+      <div class="cs-field">
+        <span class="cs-label">Genre</span>
+        <input class="cs-input" id="cs-genre" type="text" placeholder="e.g. Literary fiction">
       </div>
-      <button class="btn btn-ghost btn-sm" id="btn-export-menu" style="display:none">Export</button>
-      <button class="btn btn-ghost btn-sm" id="btn-settings">⚙ API key</button>
-      <button class="btn btn-ghost btn-sm" id="btn-new">New story</button>
+      <div class="cs-field">
+        <span class="cs-label">Tone</span>
+        <input class="cs-input" id="cs-tone" type="text" placeholder="e.g. Restrained, dark">
+      </div>
+      <div class="cs-field cs-full">
+        <span class="cs-label">Point of view</span>
+        <input class="cs-input" id="cs-pov" type="text" placeholder="e.g. Third person limited — Robert">
+      </div>
+      <div class="cs-field cs-full">
+        <span class="cs-label">Premise</span>
+        <textarea class="cs-input cs-textarea" id="cs-premise" rows="2" placeholder="The story in one sentence"></textarea>
+      </div>
+      <div class="cs-field cs-full">
+        <span class="cs-label">Arc structure</span>
+        <div class="arc-pills" id="arc-pills">
+          <button class="arc-pill selected" data-arc="3act">Three-act · 7 clusters</button>
+          <button class="arc-pill" data-arc="5part">Five-part arc · 5 clusters</button>
+          <button class="arc-pill" data-arc="custom">Custom · 3 clusters</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cs-extracted" id="cs-extracted"></div>
+
+    <div class="cs-confirm">
+      <button class="w-btn-primary" id="btn-begin">Begin writing →</button>
+      <button class="w-btn-ghost" id="btn-back">← Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── PARSE OVERLAY ───────────────────────────────────────── -->
+<div id="parse-overlay">
+  <div id="parse-inner">
+    <div class="po-kicker">Reading your story</div>
+    <div class="po-title">Finding what's already there.</div>
+    <div class="parse-stream" id="parse-stream"></div>
+    <div class="po-progress"><div class="po-bar" id="po-bar"></div></div>
+  </div>
+</div>
+
+<!-- ── MAIN APP ────────────────────────────────────────────── -->
+<div id="app">
+  <!-- Topbar -->
+  <header id="topbar">
+    <div id="tb-logo">n</div>
+    <div id="tb-title" contenteditable="true" spellcheck="false">Untitled</div>
+    <div id="tb-crumb">
+      <span class="sep">›</span>
+      <span id="tb-cluster">—</span>
+    </div>
+    <div id="tb-right">
+      <div id="save-dot" title="Saved"></div>
+      <button class="tb-btn" id="btn-map" title="Story intelligence map">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="6" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="12" cy="18" r="2"/><path d="M7 12h3M14 8l3 3M14 16l3-3M7 12h3"/></svg>
+        Map
+      </button>
+      <button class="tb-btn" id="btn-intel" title="Intelligence panel (⌘I)">
+        Intelligence
+      </button>
+      <button class="tb-btn" id="btn-focus" title="Focus mode (⌘⇧F)">Focus</button>
+      <button class="tb-btn" id="btn-export-tb">Export</button>
     </div>
   </header>
 
-  <!-- ── Sidebar ── -->
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-title">Arc structure</div>
-      <div class="arc-selector" id="arc-selector">
-        <button class="arc-btn active" data-arc="3act">3-act</button>
-        <button class="arc-btn" data-arc="5part">5-part</button>
-        <button class="arc-btn" data-arc="custom">Custom</button>
+  <!-- Icon rail -->
+  <nav id="rail">
+    <button class="rail-btn" id="rail-structure" title="Story structure (⌘\)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+    </button>
+    <div class="rail-sep"></div>
+    <button class="rail-btn" id="rail-intel-sm" title="Intelligence">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2a7 7 0 0 1 7 7c0 2.4-1.2 4.5-3 5.7V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.3A7 7 0 0 1 12 2z"/><path d="M10 21h4"/></svg>
+    </button>
+    <button class="rail-btn rail-bottom" id="rail-settings" title="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
+    </button>
+  </nav>
+
+  <!-- Main -->
+  <div id="main">
+    <!-- Sidebar -->
+    <aside id="sidebar">
+      <div class="sb-section">
+        <span class="sb-label">Arc</span>
+        <div id="cluster-list"></div>
       </div>
-    </div>
-    <div class="sidebar-scroll" id="cluster-list">
-      <div class="empty-state">Import your story to begin.</div>
-    </div>
-    <div class="sidebar-footer">
-      <div id="story-stats" style="font-size:0.75rem;color:var(--ink-ghost);display:flex;gap:12px;">
-        <span id="stat-words">0 words</span>
-        <span id="stat-scenes">0 scenes</span>
+      <div class="sb-footer">
+        <div class="sb-stat"><span>Words</span><strong id="sb-words">0</strong></div>
+        <div class="sb-stat"><span>Scenes accepted</span><strong id="sb-scenes">0</strong></div>
+        <div class="sb-stat"><span>Clusters done</span><strong id="sb-clusters">0 / 0</strong></div>
       </div>
-    </div>
-  </aside>
+    </aside>
 
-  <!-- ── Writing workspace ── -->
-  <main class="workspace">
-    <div class="workspace-scroll" id="workspace-scroll">
-
-      <!-- Import / Welcome view -->
-      <div class="import-view" id="import-view">
-        <div class="import-title">Begin with your story</div>
-        <p class="import-sub">Paste your outline, synopsis, or story notes. The platform will extract the structure, characters, and threads — then help you write it scene by scene.</p>
-
-        <div class="import-box">
-          <textarea id="outline-input" rows="8" placeholder="Paste your story, outline, or synopsis here…&#10;&#10;Or describe what you know so far: characters, premise, key events, themes.&#10;&#10;Even a rough paragraph is enough to begin."></textarea>
-          <div class="import-actions">
-            <button class="btn btn-primary" id="btn-parse">Analyse and structure →</button>
-            <button class="btn btn-ghost" id="btn-load-demo">Load demo story</button>
-          </div>
+    <!-- Editor column -->
+    <div id="editor-col">
+      <!-- Cluster context bar -->
+      <div id="cluster-bar" class="hidden">
+        <div class="cb-left">
+          <span class="cb-name" id="cb-name">—</span>
+          <span class="cb-fn" id="cb-fn">—</span>
         </div>
-
-        <div class="import-options">
-          <div class="import-option">
-            <span style="color:var(--teal)">✓</span>
-            Finds your characters
-          </div>
-          <div class="import-option">
-            <span style="color:var(--teal)">✓</span>
-            Maps turning points
-          </div>
-          <div class="import-option">
-            <span style="color:var(--teal)">✓</span>
-            Extracts open threads
-          </div>
-          <div class="import-option">
-            <span style="color:var(--teal)">✓</span>
-            Structures into clusters
-          </div>
-        </div>
+        <div id="cb-state-pill"></div>
       </div>
 
-      <!-- Writing view -->
-      <div class="writing-view" id="writing-view">
+      <!-- Editor scroll area -->
+      <div id="editor-scroll">
+        <!-- Accepted scenes list -->
+        <div id="accepted-scenes"></div>
 
-        <!-- Accepted scenes (history) -->
-        <div id="accepted-scenes-list"></div>
-
-        <!-- Active scene header -->
-        <div class="scene-header" id="scene-header" style="display:none">
-          <div class="scene-location" id="scene-location">Act 1 · Scene 1</div>
-          <div class="scene-title-row">
-            <div class="scene-title" id="scene-title">Untitled scene</div>
-            <div class="scene-fn-badge" id="scene-fn-badge"></div>
+        <!-- Active writing zone -->
+        <div id="active-zone">
+          <!-- Empty state -->
+          <div id="empty-state">
+            <div class="es-watermark" id="es-watermark">Setup</div>
+            <div class="es-instruction" id="es-instruction">Emotional register: establishment · Pacing: measured</div>
+            <div class="es-generate" id="es-generate">Generate a draft for this scene →</div>
           </div>
+
+          <!-- Generating shimmer -->
+          <div id="gen-shimmer">
+            <div class="gen-line" style="width:91%"></div>
+            <div class="gen-line" style="width:78%"></div>
+            <div class="gen-line" style="width:85%"></div>
+            <div class="gen-line" style="width:43%"></div>
+            <br>
+            <div class="gen-line" style="width:88%"></div>
+            <div class="gen-line" style="width:72%"></div>
+            <div class="gen-line" style="width:62%"></div>
+          </div>
+
+          <!-- Manuscript surface -->
+          <div id="manuscript" contenteditable="false" spellcheck="true"></div>
         </div>
+      </div>
 
-        <!-- Scene content -->
-        <div class="scene-content" id="scene-content">
-
-          <!-- Ready to generate state -->
-          <div id="generate-prompt" style="padding:40px 0; display:none">
-            <div style="margin-bottom:24px">
-              <div style="font-family:var(--font-display);font-size:1.4rem;color:var(--ink);margin-bottom:8px" id="gen-cluster-title">Ready to write</div>
-              <div style="font-size:0.85rem;color:var(--ink-mute);line-height:1.7;max-width:500px" id="gen-cluster-desc">—</div>
-            </div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
-              <button class="btn btn-primary" id="btn-generate">Generate scene →</button>
-              <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-                <span style="font-size:0.78rem;color:var(--ink-ghost)">Scene hint:</span>
-                <input type="text" id="scene-hint-input" placeholder="optional direction…" style="width:220px;padding:8px 12px;font-size:0.82rem">
-              </div>
-            </div>
-            <div id="gen-cluster-events" style="display:none">
-              <div style="font-size:0.75rem;color:var(--ink-ghost);font-weight:500;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px">Events in this cluster</div>
-              <div id="gen-events-list"></div>
-            </div>
-          </div>
-
-          <!-- Generating overlay -->
-          <div class="generating-overlay" id="generating-overlay">
-            <div class="spinner" style="width:28px;height:28px;border-width:2.5px"></div>
-            <div class="generating-text" id="generating-text">Writing the scene…</div>
-          </div>
-
-          <!-- Generated prose -->
-          <div class="prose-block" id="prose-block" style="display:none">
-            <div id="prose-content"></div>
-          </div>
-
+      <!-- Floating action bar -->
+      <div id="action-bar">
+        <div id="normal-actions">
+          <button class="ab-btn ab-accept" id="btn-accept">Accept ✓</button>
+          <div class="ab-sep"></div>
+          <button class="ab-btn ab-steer" id="btn-regen">Regenerate ↺</button>
+          <div class="ab-sep"></div>
+          <button class="ab-btn ab-steer" id="btn-steer">Steer →</button>
         </div>
-
+        <div id="steer-input-row">
+          <input type="text" id="steer-input" placeholder="Make this darker / more subtext / slow down…">
+          <button id="steer-submit">Apply</button>
+          <div class="ab-sep"></div>
+          <button class="ab-btn ab-steer" id="btn-steer-cancel">✕</button>
+        </div>
       </div>
     </div>
 
-    <!-- Action bar -->
-    <div class="action-bar" id="action-bar">
-      <!-- Recalibration row -->
-      <div class="action-bar-row">
-        <span class="action-bar-label">Steer:</span>
-        <button class="recal-btn" data-recal="darker">Darker tone</button>
-        <button class="recal-btn" data-recal="tension">More tension</button>
-        <button class="recal-btn" data-recal="subtext">Deeper subtext</button>
-        <button class="recal-btn" data-recal="slower">Slow down</button>
-        <button class="recal-btn" data-recal="cinematic">Cinematic</button>
-        <button class="recal-btn" data-recal="dialogue">More dialogue</button>
-        <button class="recal-btn" data-recal="lyrical">Lyrical prose</button>
-        <button class="recal-btn" data-recal="custom-dir">Custom →</button>
+    <!-- Intelligence panel -->
+    <aside id="intel-panel">
+      <div id="ip-header">
+        <span class="ip-title">Narrative intelligence</span>
+        <div class="ip-view-toggle">
+          <button class="ip-vbtn active" id="vbtn-list">List</button>
+          <button class="ip-vbtn" id="vbtn-graph">Graph</button>
+        </div>
       </div>
-      <!-- Custom direction input -->
-      <div class="custom-dir" id="custom-dir-row">
-        <input type="text" id="custom-dir-input" placeholder="Describe your direction: preserve the event but change the tone, make Robert more passive, push the subtext harder…">
-        <button class="btn btn-ghost btn-sm" id="btn-apply-custom">Apply</button>
-        <button class="btn btn-ghost btn-sm" id="btn-clear-custom">✕</button>
+      <div id="ip-updating">
+        <div class="ip-update-dot"></div>
+        Updating model…
       </div>
-      <!-- Action buttons row -->
-      <div class="action-btn-row">
-        <button class="btn btn-primary" id="btn-accept" style="display:none">Accept scene ✓</button>
-        <button class="btn btn-ghost" id="btn-regenerate" style="display:none">Regenerate ↺</button>
-        <button class="btn btn-ghost" id="btn-continue-gen" style="display:none">Continue generating →</button>
-        <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
-          <div class="next-scene-hint" id="next-scene-hint" style="display:none">
-            <span>Next:</span>
-            <strong id="next-cluster-label">—</strong>
-            <span class="next-arrow">→</span>
+      <div id="ip-scroll">
+        <div id="list-view" class="active"></div>
+        <div id="graph-view">
+          <div style="padding:12px">
+            <canvas id="story-graph-canvas" height="140"></canvas>
           </div>
         </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ── INTELLIGENCE MAP MODAL ──────────────────────────────── -->
+<div id="intel-map">
+  <div id="map-modal">
+    <div id="mm-header">
+      <div class="mm-title">
+        Story intelligence map
+      </div>
+      <div class="mm-legend">
+        <div class="ml-item"><div class="ml-dot" style="background:var(--planned);opacity:0.5"></div>Planned</div>
+        <div class="ml-item"><div class="ml-dot" style="background:var(--drafted)"></div>Drafted</div>
+        <div class="ml-item"><div class="ml-dot" style="background:var(--accepted)"></div>Accepted</div>
+        <div class="ml-item"><div class="ml-dot" style="background:var(--emerging)"></div>Emerging</div>
+        <div class="ml-close" id="btn-map-close">✕</div>
       </div>
     </div>
-  </main>
-
-  <!-- ── Right panel ── -->
-  <aside class="panel">
-    <div class="panel-tabs">
-      <button class="panel-tab active" data-tab="story">Story</button>
-      <button class="panel-tab" data-tab="characters">Characters</button>
-      <button class="panel-tab" data-tab="state">Live state</button>
+    <div id="mm-graph">
+      <canvas id="mm-canvas"></canvas>
     </div>
-    <div class="panel-scroll" id="panel-content">
-      <div class="empty-state">Import your story to see extracted elements.</div>
-    </div>
-  </aside>
-
-  <!-- ── Setup / Parse Modal ── -->
-  <div class="modal-overlay" id="modal-parse">
-    <div class="modal">
-      <h2 class="modal-title">Structure your story</h2>
-      <p class="modal-sub">Review what was extracted and confirm your arc structure before writing begins.</p>
-
-      <!-- Parse loading -->
-      <div id="parse-loading" class="parse-loading">
-        <div class="parse-loading-row" id="pl-reading">
-          <div class="spinner"></div>
-          Reading your story…
-        </div>
-        <div class="parse-loading-row" id="pl-chars">
-          <div class="spinner"></div>
-          Finding characters…
-        </div>
-        <div class="parse-loading-row" id="pl-events">
-          <div class="spinner"></div>
-          Identifying turning points…
-        </div>
-        <div class="parse-loading-row" id="pl-threads">
-          <div class="spinner"></div>
-          Mapping open threads…
-        </div>
-        <div class="parse-loading-row" id="pl-structure">
-          <div class="spinner"></div>
-          Building story structure…
-        </div>
-      </div>
-
-      <!-- Parse results -->
-      <div id="parse-results" style="display:none">
-
-        <!-- Project fields -->
-        <div class="form-group">
-          <label class="form-label">Story title</label>
-          <input type="text" id="field-title" placeholder="Untitled">
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div class="form-group">
-            <label class="form-label">Genre</label>
-            <input type="text" id="field-genre" placeholder="e.g. Literary fiction">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Tone</label>
-            <input type="text" id="field-tone" placeholder="e.g. Dark, restrained">
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Point of view</label>
-          <input type="text" id="field-pov" placeholder="e.g. Third person limited">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Premise (one sentence)</label>
-          <textarea id="field-premise" rows="2" placeholder="The core story in one sentence"></textarea>
-        </div>
-
-        <!-- Extracted elements preview -->
-        <div class="divider"></div>
-        <div id="parse-chars-section" class="parse-section">
-          <div class="parse-section-title">
-            Characters found
-            <span class="parse-section-count" id="parse-chars-count">0</span>
-          </div>
-          <div id="parse-chars-list"></div>
-        </div>
-        <div id="parse-themes-section" class="parse-section">
-          <div class="parse-section-title">
-            Themes and motifs
-            <span class="parse-section-count" id="parse-themes-count">0</span>
-          </div>
-          <div id="parse-themes-list"></div>
-        </div>
-        <div id="parse-threads-section" class="parse-section">
-          <div class="parse-section-title">
-            Open threads
-            <span class="parse-section-count" id="parse-threads-count">0</span>
-          </div>
-          <div id="parse-threads-list"></div>
-        </div>
-
-        <!-- Arc selection -->
-        <div class="divider"></div>
-        <div class="form-group">
-          <label class="form-label">Arc structure</label>
-          <div class="arc-choice">
-            <div class="arc-option selected" data-arc="3act">
-              <div class="arc-option-label">Three-act</div>
-              <div class="arc-option-desc">Setup · Conflict · Resolution. 7 clusters.</div>
-            </div>
-            <div class="arc-option" data-arc="5part">
-              <div class="arc-option-label">Five-part arc</div>
-              <div class="arc-option-desc">Dramatic arc. Rise, climax, fall. 5 clusters.</div>
-            </div>
-            <div class="arc-option" data-arc="custom">
-              <div class="arc-option-label">Custom</div>
-              <div class="arc-option-desc">Start simple. 3 clusters. Adjust as needed.</div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <div class="modal-actions" id="modal-parse-actions" style="display:none">
-        <button class="btn btn-ghost" id="btn-modal-cancel">Cancel</button>
-        <button class="btn btn-primary" id="btn-modal-confirm">Begin writing →</button>
-      </div>
+    <div id="mm-footer">
+      <span id="mm-summary">—</span>
+      <span>Click a cluster node to navigate</span>
     </div>
   </div>
+</div>
 
-  <!-- ── Settings Modal ── -->
-  <div class="modal-overlay" id="modal-settings">
-    <div class="modal" style="max-width:480px">
-      <h2 class="modal-title">API key</h2>
-      <p class="modal-sub">Add your Anthropic API key to enable AI-powered scene generation and outline parsing. Without it, the platform runs in demo mode.</p>
-      <div class="form-group">
-        <label class="form-label">Anthropic API key</label>
-        <input type="password" id="api-key-input" placeholder="sk-ant-…">
-        <div class="form-hint">Your key is stored only in your browser's local storage and never sent anywhere except directly to Anthropic's API.</div>
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" id="btn-settings-cancel">Cancel</button>
-        <button class="btn btn-primary" id="btn-settings-save">Save key</button>
-      </div>
+<!-- ── SETTINGS MODAL ─────────────────────────────────────── -->
+<div id="settings-modal" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(28,25,23,0.4);backdrop-filter:blur(4px);align-items:center;justify-content:center">
+  <div style="background:var(--paper);border-radius:12px;padding:28px;width:min(420px,90vw);box-shadow:var(--shadow-lg)">
+    <div style="font-family:var(--serif);font-size:1.3rem;margin-bottom:6px">API key</div>
+    <p style="font-size:0.82rem;color:var(--ink-3);margin-bottom:16px;line-height:1.6">Your Anthropic key enables live AI generation and live intelligence updates. Stored only in your browser.</p>
+    <input type="password" id="api-key-input" placeholder="sk-ant-…" style="width:100%;height:34px;border:1.5px solid var(--border-2);border-radius:6px;padding:0 12px;font-size:0.85rem;color:var(--ink);background:var(--paper);margin-bottom:14px">
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="w-btn-ghost" id="settings-cancel">Cancel</button>
+      <button class="w-btn-primary" id="settings-save">Save</button>
     </div>
   </div>
+</div>
 
-  <!-- ── Export Modal ── -->
-  <div class="modal-overlay" id="modal-export">
-    <div class="modal" style="max-width:480px">
-      <h2 class="modal-title">Export draft</h2>
-      <p class="modal-sub">Download your accepted scenes as a manuscript.</p>
-      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">
-        <div style="font-size:0.85rem;color:var(--ink-mute)">
-          <span id="export-word-count">—</span> words · <span id="export-scene-count">—</span> scenes accepted
+<div id="toasts"></div>
+
+<div id="keyhint">
+  <span class="kh"><kbd>⌘</kbd><kbd>\</kbd> structure</span>
+  <span class="kh"><kbd>⌘</kbd><kbd>I</kbd> intelligence</span>
+  <span class="kh"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>F</kbd> focus</span>
+  <span class="kh"><kbd>⌘</kbd><kbd>↵</kbd> generate</span>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+const S = {
+  project: null,
+  clusters: [],
+  characters: [],
+  themes: [],
+  threads: [],
+  activeIdx: 0,
+  rawOutline: '',
+  apiKey: null,
+  intelOpen: false,
+  sidebarOpen: false,
+  focusMode: false,
+  parsedData: null,
+  selectedArc: '3act',
+
+  // Live narrative model
+  model: {
+    signals: [],      // {type, text, clusterId, state: planned|drafted|accepted|emerging}
+    clusterGuidance: {}, // clusterId → {text, threads}
+    lastUpdated: null,
+  }
+};
+
+const ARC_TEMPLATES = {
+  '3act': [
+    {id:'act1',   label:'Act 1',        fn:'Setup',              emotional:'Establishment',  pacing:'measured'},
+    {id:'act2a',  label:'Act 2A',       fn:'Rising conflict',    emotional:'Escalation',     pacing:'building'},
+    {id:'mid',    label:'Midpoint',     fn:'Pivot',              emotional:'Reversal',        pacing:'sharp'},
+    {id:'act2b',  label:'Act 2B',       fn:'Complication',       emotional:'Crisis build',    pacing:'urgent'},
+    {id:'crisis', label:'Crisis',       fn:'Darkest moment',     emotional:'Collapse',        pacing:'compressed'},
+    {id:'climax', label:'Climax',       fn:'Confrontation',      emotional:'Peak',            pacing:'relentless'},
+    {id:'res',    label:'Resolution',   fn:'New equilibrium',    emotional:'Release',         pacing:'stilling'},
+  ],
+  '5part': [
+    {id:'exp',  label:'Exposition',    fn:'World and character', emotional:'Grounding',   pacing:'open'},
+    {id:'rise', label:'Rising action', fn:'Destabilisation',    emotional:'Unease',      pacing:'building'},
+    {id:'clx',  label:'Climax',        fn:'Peak conflict',       emotional:'Maximum',     pacing:'relentless'},
+    {id:'fall', label:'Falling action',fn:'Consequences',       emotional:'Exhaustion',  pacing:'easing'},
+    {id:'den',  label:'Denouement',    fn:'Resolution',          emotional:'Clarity',     pacing:'still'},
+  ],
+  'custom': [
+    {id:'c1', label:'Opening',  fn:'Establish', emotional:'Grounding',  pacing:'open'},
+    {id:'c2', label:'Middle',   fn:'Develop',   emotional:'Escalate',   pacing:'building'},
+    {id:'c3', label:'Closing',  fn:'Resolve',   emotional:'Release',    pacing:'still'},
+  ]
+};
+
+const DEMO = {
+  title: 'Ashes of Us',
+  genre: 'Literary fiction', tone: 'Restrained, melancholic',
+  pov: 'Third person limited — Robert',
+  premise: 'Three men whose friendship forms in early 2000s London and fractures over fifteen years of concealment.',
+  outline: `Ashes of Us
+
+Three men: Robert, Marcus, Daniel. They meet at university in 2001.
+
+Robert is a corporate lawyer whose controlled exterior conceals a betrayal he committed early in his career — a decision that advanced him and damaged Daniel. He has lived with this through what looks like compartmentalisation.
+
+Marcus contacts Robert after years of silence. They meet. The past keeps interrupting the present. Daniel is what Marcus wants to talk about. Something has happened to Daniel.
+
+The central event: Robert chose himself. He has spent fifteen years explaining to himself why this was not what it was.
+
+The crisis: Robert must decide whether to tell Marcus the truth. The truth would change how Marcus sees him. It might end what remains of the friendship.
+
+The ending is not redemption. It is quieter — a return to ground.
+
+Characters:
+Robert — protagonist, 42, lawyer. Wants: to be seen as good. Fears: being found out.
+Marcus — Robert's estranged friend. Wants: the truth. Fears: that he already knows it.
+Daniel — absent. The one most damaged by what Robert did.
+
+Themes: Male friendship, dissociation, the cost of self-construction, fire as motif.`,
+  characters: [
+    {name:'Robert',role:'Protagonist',want:'To be seen as good',fear:'Being found out',arc:'From erasure toward honesty',confidence:'high'},
+    {name:'Marcus',role:'Ally/Antagonist',want:'The truth',fear:'He already knows it',arc:'From patience to confrontation',confidence:'high'},
+    {name:'Daniel',role:'Absent presence',want:'Unknown',fear:'Unknown',arc:'Revealed through memory',confidence:'med'},
+  ],
+  themes: ['Male friendship','Dissociation','Self-construction','Betrayal','Fire motif'],
+  threads: [
+    'The nature of Robert\'s betrayal — not yet specified',
+    'What happened to Daniel',
+    'Whether Marcus already knows the truth',
+    'The Bethnal Green flat as memory site',
+  ]
+};
+
+// Demo prose per cluster
+const DEMO_PROSE = {
+  act1: `The flat was on the fourth floor of a building on Bethnal Green Road, above a fabric shop that smelled of dust and synthetic fibre even in winter. Robert had found it on a notice board. He remembered folding the paper into quarters and putting it in his jacket pocket with the seriousness of a man pocketing a contract.
+
+Marcus arrived with two bags and borrowed keys and the particular energy he always carried — not enthusiasm exactly, more a forward momentum he couldn't entirely control. He had brought a plant. Robert didn't ask where from.
+
+"It'll die," Robert said.
+
+"Everything does," Marcus said, and set it on the windowsill, where it proceeded, against all probability, to survive.
+
+Daniel came three days later. He said he'd been sorting something out. He didn't say what. Robert didn't ask. It was the first of many such arrangements between them — the space around Daniel's explanations always slightly larger than the explanation itself.`,
+
+  act2a: `The meeting had been Marcus's idea, which meant it had been carefully framed as spontaneous. Robert recognised this and came anyway, because the alternative was to acknowledge what the recognition meant.
+
+The bar was loud enough to require leaning in. Robert found this useful.
+
+"You look well," Marcus said.
+
+"I am well."
+
+"You've always been terrible at this."
+
+Robert turned his glass. Outside, the rain had started — that particular London rain that arrives without announcement and stays for days. "At what," he said, though he knew.
+
+"Being asked about yourself and answering."`,
+
+  mid: `He told himself afterwards that the decision had been made before he knew he was making it. That there was a logic to it that transcended the event. This was the first lie, and it was the one that made all the others necessary.
+
+The Whitmore file sat on his desk for eleven days before he acted on it. In those eleven days he understood, with a clarity he hadn't asked for, what he was capable of. Not in the abstract. In the specific, with names attached.
+
+He chose himself. He would spend fifteen years explaining to himself why this was not what it was.`,
+};
+
+// ═══════════════════════════════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════════════════════════════
+function save() {
+  try { localStorage.setItem('nv2_state', JSON.stringify(S)); } catch(e){}
+}
+function loadSaved() {
+  try {
+    const d = localStorage.getItem('nv2_state');
+    if (d) { Object.assign(S, JSON.parse(d)); return true; }
+  } catch(e){}
+  return false;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PARSE (heuristic — same logic as before, AI path via API)
+// ═══════════════════════════════════════════════════════════════
+async function parseOutline(text) {
+  if (S.apiKey) {
+    try { return await parseWithAI(text); } catch(e){ console.warn('AI parse failed',e); }
+  }
+  return parseHeuristic(text);
+}
+
+async function parseWithAI(text) {
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':S.apiKey,'anthropic-version':'2023-06-01'},
+    body: JSON.stringify({
+      model:'claude-sonnet-4-20250514', max_tokens:2000,
+      system:`Extract story elements. Return only valid JSON:
+{"title":string|null,"genre":string,"tone":string,"pov":string,"premise":string,
+"characters":[{"name":string,"role":string,"want":string,"fear":string,"arc":string,"confidence":"high"|"med"|"low"}],
+"themes":[string],"openThreads":[string],"plotEvents":[{"event":string,"weight":"pivotal"|"supporting"}]}`,
+      messages:[{role:'user',content:`Parse:\n\n${text}`}]
+    })
+  });
+  const d = await r.json();
+  if (d.error) throw new Error(d.error.message);
+  return JSON.parse(d.content[0].text.replace(/```json|```/g,'').trim());
+}
+
+function parseHeuristic(text) {
+  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
+  const title = lines[0]?.length < 60 ? lines[0].replace(/^#\s*/,'') : null;
+
+  // Characters
+  const chars = [];
+  const charSec = text.match(/[Cc]haracters?:([\s\S]*?)(?:\n\n|\n[A-Z]|$)/);
+  if (charSec) {
+    charSec[1].split('\n').filter(Boolean).forEach(l => {
+      const m = l.match(/^([A-Z][a-z]+)/);
+      if (!m) return;
+      const want = l.match(/[Ww]ants?:?\s*([^.]+)/)?.[1]?.trim() || 'Unknown';
+      const fear = l.match(/[Ff]ears?:?\s*([^.]+)/)?.[1]?.trim() || 'Unknown';
+      chars.push({name:m[1],role:'Character',want,fear,arc:'To be determined',confidence:'high'});
+    });
+  }
+  // Fallback name detection
+  if (!chars.length) {
+    const names = new Set();
+    (text.match(/\b([A-Z][a-z]{2,12})\b/g)||[]).forEach(n => {
+      if (!['The','His','Her','This','That','They','What','When','Where','Who','London','January'].includes(n)) names.add(n);
+    });
+    [...names].slice(0,4).forEach(n => chars.push({name:n,role:'Character',want:'Unknown',fear:'Unknown',arc:'To be determined',confidence:'low'}));
+  }
+
+  // Themes
+  const themeWords = ['friendship','love','power','betrayal','identity','memory','loss','redemption','truth','family','ambition','loyalty','grief','desire','mortality','dissociation','class','justice'];
+  const lower = text.toLowerCase();
+  const themes = themeWords.filter(t=>lower.includes(t)).map(t=>t[0].toUpperCase()+t.slice(1));
+  const themeSec = text.match(/[Tt]hemes?:([^\n]+)/)?.[1];
+  if (themeSec) themeSec.split(/[,;]/).map(s=>s.trim()).filter(Boolean).forEach(t=>{ if(!themes.includes(t)) themes.push(t); });
+
+  // Threads
+  const threads = (text.match(/[A-Z][^.!?]*\?/g)||[]).slice(0,3).map(s=>s.trim());
+  const whether = (text.match(/whether\s+[^.]+\./g)||[]).slice(0,2).map(s=>s[0].toUpperCase()+s.slice(1).trim());
+  threads.push(...whether);
+
+  const genreMap = {literary:'Literary fiction',thriller:'Thriller',romance:'Romance',fantasy:'Fantasy',horror:'Horror',mystery:'Mystery',screenplay:'Screenplay'};
+  let genre = 'Fiction';
+  for (const [k,v] of Object.entries(genreMap)) { if (lower.includes(k)){genre=v;break;} }
+
+  return {
+    title, genre,
+    tone: lower.includes('melanchol')||lower.includes('dark') ? 'Dark, melancholic' : 'Dramatic',
+    pov: lower.includes('first person') ? 'First person' : lower.includes('multiple') ? 'Multiple POV' : 'Third person limited',
+    premise: lines.find(l=>l.length>60)?.substring(0,200) || text.substring(0,200),
+    characters: chars.slice(0,6),
+    themes: themes.slice(0,8),
+    openThreads: threads.slice(0,5),
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ARC / CLUSTER SETUP
+// ═══════════════════════════════════════════════════════════════
+function initArc(arcType) {
+  S.selectedArc = arcType;
+  S.clusters = ARC_TEMPLATES[arcType].map((t,i) => ({
+    ...t, idx:i, status:'planned',
+    scenes:[], wordCount:0,
+    extractedEvents:[]
+  }));
+  S.activeIdx = 0;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SCENE GENERATION
+// ═══════════════════════════════════════════════════════════════
+async function generateScene(steerDirection='') {
+  const cluster = S.clusters[S.activeIdx];
+  if (!cluster) return;
+
+  cluster.status = 'drafting';
+  showGenerating(true);
+  hideEmptyState();
+
+  try {
+    let prose;
+    if (S.apiKey) {
+      prose = await generateWithAI(cluster, steerDirection);
+    } else {
+      await sleep(1400);
+      prose = DEMO_PROSE[cluster.id] || buildDemoProse(cluster);
+    }
+
+    showDraftProse(prose, cluster);
+    cluster.status = 'drafted';
+    updateSidebar();
+    updateClusterBar();
+    triggerIntelUpdate('scene generated');
+  } catch(e) {
+    showGenerating(false);
+    showEmptyState();
+    toast('Generation failed: ' + e.message);
+  }
+}
+
+async function generateWithAI(cluster, steerDir) {
+  const recent = S.clusters
+    .flatMap(c => c.scenes.filter(s=>s.status==='accepted'))
+    .slice(-2)
+    .map(s => s.prose.substring(0,400))
+    .join('\n\n---\n\n');
+
+  const chars = S.characters.map(c=>`${c.name} (${c.role}): wants ${c.want}, fears ${c.fear}`).join('\n');
+  const system = `You write literary fiction. Co-writing "${S.project?.title}".
+Genre: ${S.project?.genre}. Tone: ${S.project?.tone}. POV: ${S.project?.pov}.
+Characters:\n${chars}
+Themes: ${S.themes.join(', ')}
+Active threads: ${S.threads.slice(0,3).join('; ')}
+
+Write a single scene for: ${cluster.label} — ${cluster.fn}.
+Emotional register: ${cluster.emotional}. Pacing: ${cluster.pacing}.
+${recent ? `Recent context:\n${recent}` : 'This is the opening.'}
+
+Write prose only. 3-5 paragraphs. Literary quality. Show don't tell.${steerDir ? `\n\nDirection: ${steerDir}` : ''}`;
+
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':S.apiKey,'anthropic-version':'2023-06-01'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:900,system,messages:[{role:'user',content:`Write the scene for ${cluster.label}.`}]})
+  });
+  const d = await r.json();
+  if (d.error) throw new Error(d.error.message);
+  return d.content[0].text.trim();
+}
+
+function buildDemoProse(cluster) {
+  return `${cluster.label} opened in the way these things do — not with announcement, but with a quiet shift in the quality of the air.
+
+The character found themselves at a threshold they had been approaching for some time without naming it. What was required now was something different from what had been required before. The function of this moment was ${cluster.fn.toLowerCase()}, and the story knew it even if the character did not.
+
+The register was ${cluster.emotional.toLowerCase()}. The pacing drew inward. Nothing was resolved here — that would come later, or it would not come. For now, there was only this.`;
+}
+
+let streamInterval = null;
+function showDraftProse(prose, cluster) {
+  showGenerating(false);
+  const ms = document.getElementById('manuscript');
+  ms.contentEditable = 'false';
+  ms.innerHTML = '';
+
+  // Stream in word by word
+  const words = prose.split(' ');
+  let idx = 0;
+  const wrapper = document.createElement('div');
+  wrapper.className = 'ai-draft';
+
+  // Render paragraphs
+  const paras = prose.split('\n').filter(p=>p.trim());
+  paras.forEach((p,pi) => {
+    const el = document.createElement('p');
+    el.dataset.paraIdx = pi;
+    el.textContent = '';
+    wrapper.appendChild(el);
+  });
+  ms.appendChild(wrapper);
+
+  // Stream word by word
+  let paraIdx = 0; let charIdx = 0;
+  const allParaWords = paras.map(p => p.split(' '));
+  let wi = 0; let pi2 = 0;
+
+  if (streamInterval) clearInterval(streamInterval);
+  streamInterval = setInterval(() => {
+    if (pi2 >= allParaWords.length) {
+      clearInterval(streamInterval);
+      // Add cursor
+      const lastP = wrapper.querySelector(`p[data-para-idx="${paras.length-1}"]`);
+      if (lastP) {
+        const cur = document.createElement('span');
+        cur.className = 'stream-cursor'; lastP.appendChild(cur);
+      }
+      // Settle
+      setTimeout(() => { wrapper.classList.add('settling'); }, 1200);
+      showActionBar(true);
+      return;
+    }
+    const wordArr = allParaWords[pi2];
+    if (wi < wordArr.length) {
+      const el = wrapper.querySelector(`p[data-para-idx="${pi2}"]`);
+      if (el) el.textContent = wordArr.slice(0, wi+1).join(' ');
+      wi++;
+    } else {
+      pi2++; wi = 0;
+    }
+  }, 28);
+
+  // Store for accept
+  ms.dataset.pendingProse = prose;
+  ms.dataset.pendingCluster = cluster.id;
+}
+
+function acceptScene() {
+  const ms = document.getElementById('manuscript');
+  const prose = ms.dataset.pendingProse;
+  const clusterId = ms.dataset.pendingCluster;
+  if (!prose) return;
+
+  const cluster = S.clusters[S.activeIdx];
+  if (!cluster) return;
+
+  // Settle the draft text
+  const draft = ms.querySelector('.ai-draft');
+  if (draft) {
+    draft.classList.remove('ai-draft');
+    const cursor = draft.querySelector('.stream-cursor');
+    if (cursor) cursor.remove();
+  }
+
+  // Create scene record
+  const scene = {
+    id: 'scene_' + Date.now(),
+    clusterId, prose,
+    title: cluster.fn,
+    status: 'accepted',
+    timestamp: Date.now(),
+    words: prose.split(/\s+/).filter(Boolean).length
+  };
+  cluster.scenes.push(scene);
+  cluster.status = 'accepted';
+  cluster.wordCount = (cluster.wordCount||0) + scene.words;
+
+  // Move to accepted list
+  renderAcceptedScenes();
+  ms.innerHTML = '';
+  delete ms.dataset.pendingProse;
+
+  showActionBar(false);
+  updateSidebar();
+  updateStats();
+  triggerIntelUpdate('scene accepted');
+  saveDot('saved');
+  save();
+  toast('Scene accepted');
+
+  // Advance to next cluster if available
+  const nextIdx = S.activeIdx + 1;
+  if (nextIdx < S.clusters.length) {
+    setTimeout(() => {
+      S.activeIdx = nextIdx;
+      updateClusterBar();
+      updateSidebar();
+      showEmptyState();
+      renderIntelPanel();
+      updateTopbarCrumb();
+    }, 600);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LIVE NARRATIVE MODEL UPDATE
+// ═══════════════════════════════════════════════════════════════
+let intelTimeout = null;
+async function triggerIntelUpdate(reason) {
+  clearTimeout(intelTimeout);
+  saveDot('saving');
+
+  if (S.intelOpen) {
+    document.getElementById('ip-updating').classList.add('active');
+  }
+
+  intelTimeout = setTimeout(async () => {
+    await updateNarrativeModel();
+    document.getElementById('ip-updating').classList.remove('active');
+    saveDot('saved');
+    if (S.intelOpen) renderIntelPanel();
+  }, 800);
+}
+
+async function updateNarrativeModel() {
+  // Build signals from cluster state
+  const signals = [];
+  S.clusters.forEach(c => {
+    const state = c.status === 'accepted' ? 'accepted' :
+                  c.status === 'drafted' ? 'drafted' :
+                  c.status === 'drafting' ? 'drafted' : 'planned';
+    signals.push({
+      type: 'cluster',
+      text: `${c.label}: ${c.fn}`,
+      label: c.emotional,
+      clusterId: c.id,
+      state
+    });
+  });
+
+  // Character signals
+  S.characters.forEach(c => {
+    const appearsIn = S.clusters.filter(cl => cl.scenes.some(s => s.prose?.includes(c.name)));
+    const state = appearsIn.length > 0 ? 'drafted' : 'planned';
+    signals.push({ type:'character', text: c.name, label: c.want, clusterId: null, state });
+  });
+
+  // Thread signals
+  S.threads.forEach(t => {
+    signals.push({ type:'thread', text:t, label:'Open', clusterId:null, state:'planned' });
+  });
+
+  // Emerging signals — patterns found in accepted prose
+  const allProse = S.clusters.flatMap(c=>c.scenes.map(s=>s.prose)).join(' ').toLowerCase();
+  const emerging = [];
+  if (allProse.includes('fire') || allProse.includes('flame') || allProse.includes('smoke')) emerging.push('Fire motif — appearing in drafts');
+  if (allProse.includes('window') || allProse.includes('glass')) emerging.push('Glass / transparency imagery');
+  if (allProse.includes('silence') || allProse.includes('quiet')) emerging.push('Silence as structural device');
+  emerging.forEach(e => signals.push({ type:'emerging', text:e, label:'Emerging', clusterId:null, state:'emerging' }));
+
+  S.model.signals = signals;
+  S.model.lastUpdated = Date.now();
+
+  // Cluster guidance
+  const activeCluster = S.clusters[S.activeIdx];
+  if (activeCluster) {
+    const acceptedBefore = S.clusters.slice(0, S.activeIdx).flatMap(c=>c.scenes.filter(s=>s.status==='accepted'));
+    const guidance = buildGuidance(activeCluster, acceptedBefore);
+    S.model.clusterGuidance[activeCluster.id] = guidance;
+  }
+
+  save();
+}
+
+function buildGuidance(cluster, priorScenes) {
+  const writtenCount = priorScenes.length;
+  const threads = S.threads.slice(0, 3);
+
+  let text = `You are entering ${cluster.label}: ${cluster.fn}. `;
+  if (writtenCount === 0) {
+    text += `This is the opening. Establish ${S.characters[0]?.name || 'your protagonist'} in their world before anything moves.`;
+  } else {
+    text += `${writtenCount} scene${writtenCount>1?'s':''} accepted so far. The emotional register here is ${cluster.emotional} — don't resolve what should not be resolved.`;
+  }
+
+  const openThreads = threads.filter(t => !priorScenes.some(s => s.prose?.toLowerCase().includes(t.toLowerCase().split(' ')[0])));
+
+  return { text, threads: openThreads.slice(0,3) };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INTELLIGENCE PANEL RENDER
+// ═══════════════════════════════════════════════════════════════
+function renderIntelPanel() {
+  renderListView();
+  if (document.getElementById('vbtn-graph').classList.contains('active')) {
+    renderMiniGraph();
+  }
+}
+
+function renderListView() {
+  const lv = document.getElementById('list-view');
+  const cluster = S.clusters[S.activeIdx];
+  const guidance = cluster ? S.model.clusterGuidance[cluster.id] : null;
+
+  // Cluster guidance card
+  let html = '';
+  if (guidance) {
+    const threads = guidance.threads.map(t => `<div class="gc-thread">${t}</div>`).join('');
+    html += `<div class="ip-section">
+      <div class="guidance-card">
+        <div class="gc-title">Guidance for ${cluster?.label}</div>
+        <div class="gc-body">${guidance.text}</div>
+        ${threads ? `<div class="gc-threads">${threads}</div>` : ''}
+      </div>
+    </div>`;
+  }
+
+  // Signals grouped
+  const planned = S.model.signals.filter(s=>s.state==='planned'&&s.type==='cluster');
+  const drafted = S.model.signals.filter(s=>s.state==='drafted'&&s.type==='cluster');
+  const accepted = S.model.signals.filter(s=>s.state==='accepted'&&s.type==='cluster');
+  const emerging = S.model.signals.filter(s=>s.state==='emerging');
+
+  if (accepted.length || drafted.length || planned.length) {
+    html += `<div class="ip-section">
+      <div class="ip-section-title">Story arc <span class="ip-count">${S.clusters.length} clusters</span></div>
+      ${[...accepted, ...drafted, ...planned].map(sig => `
+        <div class="signal-row" data-cluster="${sig.clusterId}">
+          <div class="sig-dot ${sig.state}"></div>
+          <div style="flex:1">
+            <div class="sig-text">${sig.text}</div>
+            <div class="sig-label">${sig.label}</div>
+          </div>
+          <div class="sig-badge sb-${sig.state}">${sig.state}</div>
         </div>
-        <button class="btn btn-ghost" id="btn-export-txt" style="justify-content:flex-start">
-          📄 &nbsp;Plain text (.txt)
-        </button>
-        <button class="btn btn-ghost" id="btn-export-html" style="justify-content:flex-start">
-          🖥 &nbsp;Readable HTML (print-ready)
-        </button>
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" id="btn-export-cancel">Close</button>
-      </div>
-    </div>
-  </div>
+      `).join('')}
+    </div>`;
+  }
 
-  <div id="toast-container"></div>
+  // Characters
+  if (S.characters.length) {
+    html += `<div class="ip-section">
+      <div class="ip-section-title">Characters <span class="ip-count">${S.characters.length}</span></div>
+      ${S.characters.map(c => `
+        <div class="char-item">
+          <div class="ci-name">${c.name}</div>
+          <div class="ci-role">${c.role}</div>
+          <div class="ci-row"><span class="ci-key">Want</span><span class="ci-val">${c.want||'—'}</span></div>
+          <div class="ci-row"><span class="ci-key">Fear</span><span class="ci-val">${c.fear||'—'}</span></div>
+          ${c.arc ? `<div class="ci-arc">${c.arc}</div>` : ''}
+        </div>
+      `).join('')}
+    </div>`;
+  }
 
-  <script src="js/app.js"></script>
-  <script src="js/parser.js"></script>
-  <script src="js/writer.js"></script>
-  <script src="js/export.js"></script>
-  <script src="js/ui.js"></script>
+  // Threads
+  if (S.threads.length) {
+    html += `<div class="ip-section">
+      <div class="ip-section-title">Open threads <span class="ip-count">${S.threads.length}</span></div>
+      ${S.threads.map(t => `
+        <div class="thread-item">
+          <div class="ti-icon">○</div>
+          <div>
+            <div class="ti-text">${t}</div>
+            <div class="ti-state">Unresolved</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>`;
+  }
+
+  // Emerging patterns
+  if (emerging.length) {
+    html += `<div class="ip-section">
+      <div class="ip-section-title">Emerging patterns</div>
+      ${emerging.map(s => `
+        <div class="signal-row">
+          <div class="sig-dot emerging"></div>
+          <div style="flex:1">
+            <div class="sig-text">${s.text}</div>
+            <div class="sig-label">Detected in drafts</div>
+          </div>
+          <div class="sig-badge sb-emerging">emerging</div>
+        </div>
+      `).join('')}
+    </div>`;
+  }
+
+  // Themes
+  if (S.themes.length) {
+    html += `<div class="ip-section">
+      <div class="ip-section-title">Themes</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;padding-top:2px">
+        ${S.themes.map(t=>`<span style="font-size:0.72rem;padding:2px 8px;border-radius:3px;background:var(--paper-2);color:var(--ink-2);border:1px solid var(--border)">${t}</span>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  lv.innerHTML = html || '<div style="padding:16px;font-size:0.8rem;color:var(--ink-4);font-style:italic">Import a story to begin the intelligence layer.</div>';
+
+  // Click signals to navigate
+  lv.querySelectorAll('.signal-row[data-cluster]').forEach(row => {
+    row.addEventListener('click', () => {
+      const cid = row.dataset.cluster;
+      const idx = S.clusters.findIndex(c=>c.id===cid);
+      if (idx >= 0) { S.activeIdx = idx; updateClusterBar(); updateSidebar(); showEmptyState(); }
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MINI GRAPH (intelligence panel)
+// ═══════════════════════════════════════════════════════════════
+function renderMiniGraph() {
+  const canvas = document.getElementById('story-graph-canvas');
+  if (!canvas || !S.clusters.length) return;
+  const gv = document.getElementById('graph-view');
+  const W = gv.offsetWidth - 24; const H = 140;
+  canvas.width = W * devicePixelRatio; canvas.height = H * devicePixelRatio;
+  canvas.style.width = W+'px'; canvas.style.height = H+'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  drawGraph(ctx, W, H, S.clusters, false);
+}
+
+function renderMapModal() {
+  const canvas = document.getElementById('mm-canvas');
+  if (!canvas) return;
+  const W = canvas.parentElement.offsetWidth;
+  const H = canvas.parentElement.offsetHeight;
+  canvas.width = W * devicePixelRatio; canvas.height = H * devicePixelRatio;
+  canvas.style.width = W+'px'; canvas.style.height = H+'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  drawGraph(ctx, W, H, S.clusters, true);
+
+  const accepted = S.clusters.filter(c=>c.status==='accepted').length;
+  const words = S.clusters.reduce((s,c)=>s+(c.wordCount||0),0);
+  document.getElementById('mm-summary').textContent =
+    `${accepted} of ${S.clusters.length} clusters accepted · ${words.toLocaleString()} words`;
+}
+
+const COLORS = { planned:'#a8a29e', drafted:'#c2622b', accepted:'#2d6a4f', drafting:'#c2622b', emerging:'#7c6fcd' };
+
+function drawGraph(ctx, W, H, clusters, large) {
+  const n = clusters.length;
+  const pad = large ? 48 : 24;
+  const nodeR = large ? 12 : 7;
+  const step = (W - pad*2) / Math.max(n-1, 1);
+
+  // Clear
+  ctx.clearRect(0,0,W,H);
+
+  // Character arc lines (horizontal bands)
+  const charColors = ['#c2622b','#2d6a4f','#7c6fcd'];
+  if (large) {
+    S.characters.slice(0,3).forEach((c,ci) => {
+      const y = H - 28 - ci*16;
+      ctx.strokeStyle = charColors[ci]; ctx.globalAlpha = 0.25; ctx.lineWidth = 2;
+      ctx.setLineDash([]);
+      ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W-pad, y); ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.font = `10px var(--sans)`; ctx.fillStyle = charColors[ci]; ctx.globalAlpha = 0.6;
+      ctx.fillText(c.name, pad, y-4);
+      ctx.globalAlpha = 1;
+    });
+  }
+
+  // Arc tension curve
+  const midY = H/2;
+  ctx.beginPath(); ctx.setLineDash([3,4]);
+  ctx.strokeStyle = '#d6d3d1'; ctx.lineWidth = 1; ctx.globalAlpha = 0.6;
+  clusters.forEach((c,i) => {
+    const x = pad + i*step;
+    // Tension profile
+    const tension = i < n*0.15 ? 0.2 :
+                    i < n*0.5  ? 0.2 + (i/(n*0.5))*0.6 :
+                    i < n*0.7  ? 0.8 + Math.sin((i-n*0.5)*3)*0.1 :
+                    i < n*0.85 ? 1.0 :
+                    1.0 - ((i-n*0.85)/(n*0.15))*0.7;
+    const y = H/2 - tension*(H*0.35) + (large?8:4);
+    if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+  // Thread lines (open threads as dashed arcs between clusters)
+  if (large && S.threads.length > 0) {
+    ctx.strokeStyle = '#7c6fcd'; ctx.globalAlpha = 0.2; ctx.lineWidth = 1;
+    ctx.setLineDash([4,6]);
+    S.threads.slice(0,2).forEach((t,ti) => {
+      const from = ti; const to = Math.min(from+3, n-1);
+      const x1 = pad+from*step; const x2 = pad+to*step; const y = midY;
+      ctx.beginPath();
+      ctx.moveTo(x1, y+nodeR);
+      ctx.bezierCurveTo(x1, y+40+ti*10, x2, y+40+ti*10, x2, y+nodeR);
+      ctx.stroke();
+    });
+    ctx.setLineDash([]); ctx.globalAlpha = 1;
+  }
+
+  // Connector line
+  ctx.strokeStyle = '#d6d3d1'; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  clusters.forEach((c,i) => {
+    const x = pad + i*step; const y = midY;
+    if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  // Nodes
+  clusters.forEach((c,i) => {
+    const x = pad + i*step; const y = midY;
+    const col = COLORS[c.status] || COLORS.planned;
+    const isActive = i === S.activeIdx;
+
+    // Active ring
+    if (isActive) {
+      ctx.beginPath(); ctx.arc(x,y,nodeR+4,0,Math.PI*2);
+      ctx.strokeStyle = col; ctx.globalAlpha = 0.2; ctx.lineWidth = 2;
+      ctx.stroke(); ctx.globalAlpha = 1;
+    }
+
+    // Node fill
+    ctx.beginPath(); ctx.arc(x,y,nodeR,0,Math.PI*2);
+    if (c.status === 'planned') {
+      ctx.fillStyle = 'var(--paper)' || '#f5f2ed';
+      ctx.fill();
+      ctx.strokeStyle = '#d6d3d1'; ctx.lineWidth = 1.5; ctx.stroke();
+    } else {
+      ctx.fillStyle = col; ctx.fill();
+    }
+
+    // Word count bubble (large mode)
+    if (large && c.wordCount > 0) {
+      const r = nodeR + Math.min(c.wordCount/80, 12);
+      ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+      ctx.fillStyle = col; ctx.globalAlpha = 0.15; ctx.fill(); ctx.globalAlpha = 1;
+    }
+
+    // Label
+    if (large) {
+      ctx.font = `500 10px var(--sans)`;
+      ctx.textAlign = 'center'; ctx.fillStyle = i===S.activeIdx ? col : '#78716c';
+      ctx.fillText(c.label, x, y + nodeR + 14);
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════════════════════════
+function showGenerating(on) {
+  document.getElementById('gen-shimmer').classList.toggle('active', on);
+  if (on) hideEmptyState();
+}
+
+function hideEmptyState() {
+  document.getElementById('empty-state').classList.add('hidden');
+}
+
+function showEmptyState() {
+  const c = S.clusters[S.activeIdx];
+  if (!c) return;
+  document.getElementById('empty-state').classList.remove('hidden');
+  document.getElementById('es-watermark').textContent = c.fn;
+  document.getElementById('es-instruction').textContent = `Emotional register: ${c.emotional} · Pacing: ${c.pacing}`;
+  document.getElementById('manuscript').innerHTML = '';
+  document.getElementById('manuscript').contentEditable = 'false';
+  showGenerating(false);
+  showActionBar(false);
+}
+
+function showActionBar(on) {
+  document.getElementById('action-bar').classList.toggle('visible', on);
+}
+
+function updateClusterBar() {
+  const c = S.clusters[S.activeIdx];
+  if (!c) return;
+  const bar = document.getElementById('cluster-bar');
+  bar.classList.remove('hidden');
+  document.getElementById('cb-name').textContent = c.label;
+  document.getElementById('cb-fn').textContent = c.fn;
+  const stateMap = {planned:'sp-planned',drafted:'sp-drafted',accepted:'sp-accepted',drafting:'sp-drafted'};
+  document.getElementById('cb-state-pill').innerHTML =
+    `<span class="state-pill ${stateMap[c.status]||'sp-planned'}">${c.status}</span>`;
+}
+
+function updateTopbarCrumb() {
+  const c = S.clusters[S.activeIdx];
+  document.getElementById('tb-cluster').textContent = c?.label || '—';
+}
+
+function updateSidebar() {
+  const list = document.getElementById('cluster-list');
+  if (!S.clusters.length) { list.innerHTML=''; return; }
+
+  list.innerHTML = S.clusters.map((c,i) => {
+    const dot = c.status==='accepted'?'accepted':c.status==='drafted'||c.status==='drafting'?'drafted':i===S.activeIdx?'active-w':'planned';
+    const accepted = c.scenes.filter(s=>s.status==='accepted').length;
+    return `<div class="cluster-row ${i===S.activeIdx?'active':''}" data-idx="${i}">
+      <div class="c-dot ${dot}"></div>
+      <span class="c-label">${c.label}</span>
+      ${accepted ? `<span class="c-count">${accepted}</span>` : ''}
+    </div>`;
+  }).join('');
+
+  list.querySelectorAll('.cluster-row').forEach(r => {
+    r.addEventListener('click', () => {
+      S.activeIdx = parseInt(r.dataset.idx);
+      updateSidebar(); updateClusterBar(); showEmptyState(); updateTopbarCrumb();
+      if (S.intelOpen) renderIntelPanel();
+    });
+  });
+}
+
+function updateStats() {
+  const words = S.clusters.reduce((s,c)=>s+(c.wordCount||0),0);
+  const scenes = S.clusters.flatMap(c=>c.scenes.filter(s=>s.status==='accepted')).length;
+  const done = S.clusters.filter(c=>c.status==='accepted').length;
+  document.getElementById('sb-words').textContent = words.toLocaleString();
+  document.getElementById('sb-scenes').textContent = scenes;
+  document.getElementById('sb-clusters').textContent = `${done} / ${S.clusters.length}`;
+}
+
+function renderAcceptedScenes() {
+  const container = document.getElementById('accepted-scenes');
+  const all = S.clusters.flatMap(c => c.scenes.filter(s=>s.status==='accepted').map(s=>({...s,clusterLabel:c.label})));
+  container.innerHTML = all.map(s => {
+    const paras = s.prose.split('\n').filter(p=>p.trim()).map(p=>`<p>${p}</p>`).join('');
+    return `<div class="accepted-scene">
+      <div class="as-label">${s.clusterLabel}</div>
+      <div class="as-prose">${paras}</div>
+    </div>`;
+  }).join('');
+}
+
+function saveDot(state) {
+  const dot = document.getElementById('save-dot');
+  dot.className = 'saving saved'.includes(state) ? state : '';
+  if (state==='saved') setTimeout(()=>{ dot.className=''; }, 2000);
+}
+
+function toast(msg, dur=2800) {
+  const t = document.getElementById('toasts');
+  const el = document.createElement('div');
+  el.className = 'toast'; el.textContent = msg;
+  t.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity 0.3s'; setTimeout(()=>el.remove(),300); }, dur);
+}
+
+function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
+
+// ═══════════════════════════════════════════════════════════════
+// PARSE FLOW UI
+// ═══════════════════════════════════════════════════════════════
+const PARSE_MESSAGES = [
+  ['Reading outline…', null],
+  ['Characters', null],
+  ['Themes', null],
+  ['Turning points', null],
+  ['Open threads', null],
+  ['Building story model', null],
+];
+
+async function startParseFlow(text) {
+  // Show parse overlay
+  const overlay = document.getElementById('parse-overlay');
+  const stream = document.getElementById('parse-stream');
+  const bar = document.getElementById('po-bar');
+  overlay.classList.add('active');
+  stream.innerHTML = '';
+
+  // Parse in background
+  const parsePromise = parseOutline(text);
+
+  // Animated stream
+  const steps = [
+    ['Reading your story', null],
+    ['Finding characters', null],
+    ['Identifying themes', null],
+    ['Mapping turning points', null],
+    ['Extracting open threads', null],
+    ['Constructing story model', null],
+  ];
+
+  for (let i=0; i<steps.length; i++) {
+    bar.style.width = Math.round((i/steps.length)*100)+'%';
+    const row = document.createElement('div');
+    row.className = 'ps-finding';
+    row.style.animationDelay = '0s';
+    row.innerHTML = `<span class="ps-label">${steps[i][0]}</span>`;
+    stream.appendChild(row);
+    await sleep(360);
+  }
+
+  const parsed = await parsePromise;
+  bar.style.width = '100%';
+
+  // Augment with demo data if title matches
+  if (parsed.title?.toLowerCase().includes('ashes') || text.includes('Ashes of Us')) {
+    parsed.characters = DEMO.characters;
+    parsed.themes = DEMO.themes;
+    parsed.openThreads = DEMO.threads;
+  }
+
+  await sleep(400);
+
+  // Stream finding results
+  if (parsed.characters?.length) {
+    const row = document.createElement('div');
+    row.className = 'ps-finding'; row.style.animationDelay = '0s';
+    row.innerHTML = `<span class="ps-label">Characters</span> <span class="ps-value">${parsed.characters.slice(0,3).map(c=>c.name).join(', ')}</span>`;
+    stream.appendChild(row);
+    await sleep(200);
+  }
+  if (parsed.themes?.length) {
+    const row = document.createElement('div');
+    row.className = 'ps-finding'; row.style.animationDelay = '0s';
+    row.innerHTML = `<span class="ps-label">Themes</span> <span class="ps-value">${parsed.themes.slice(0,4).join(', ')}</span>`;
+    stream.appendChild(row);
+    await sleep(200);
+  }
+  if (parsed.openThreads?.length) {
+    const row = document.createElement('div');
+    row.className = 'ps-finding'; row.style.animationDelay = '0s';
+    row.innerHTML = `<span class="ps-label">Threads</span> <span class="ps-value">${parsed.openThreads.length} identified</span>`;
+    stream.appendChild(row);
+    await sleep(200);
+  }
+
+  await sleep(500);
+  overlay.classList.remove('active');
+
+  // Store and show confirm
+  S.parsedData = parsed;
+  showConfirmScreen(parsed);
+}
+
+function showConfirmScreen(parsed) {
+  document.getElementById('welcome-inner').classList.add('hidden');
+  const cs = document.getElementById('confirm-screen');
+  cs.classList.add('active');
+
+  document.getElementById('cs-story-title').textContent = parsed.title || 'Your story';
+  document.getElementById('cs-genre').value = parsed.genre || '';
+  document.getElementById('cs-tone').value = parsed.tone || '';
+  document.getElementById('cs-pov').value = parsed.pov || '';
+  document.getElementById('cs-premise').value = parsed.premise || '';
+
+  // Show extracted tags
+  const ext = document.getElementById('cs-extracted');
+  let html = '';
+  if (parsed.characters?.length) {
+    html += `<div class="ce-row"><span class="ce-key">People</span>${parsed.characters.slice(0,4).map(c=>`<span class="ce-tag ce-conf-${c.confidence||'high'}">${c.name}</span>`).join('')}</div>`;
+  }
+  if (parsed.themes?.length) {
+    html += `<div class="ce-row"><span class="ce-key">Themes</span>${parsed.themes.slice(0,5).map(t=>`<span class="ce-tag">${t}</span>`).join('')}</div>`;
+  }
+  if (parsed.openThreads?.length) {
+    html += `<div class="ce-row"><span class="ce-key">Threads</span><span class="ce-tag">${parsed.openThreads.length} found</span></div>`;
+  }
+  ext.innerHTML = html;
+}
+
+function beginWriting() {
+  const parsed = S.parsedData;
+  S.project = {
+    title: document.getElementById('cs-story-title').textContent || parsed?.title || 'Untitled',
+    genre: document.getElementById('cs-genre').value,
+    tone: document.getElementById('cs-tone').value,
+    pov: document.getElementById('cs-pov').value,
+    premise: document.getElementById('cs-premise').value,
+  };
+  S.characters = parsed?.characters || [];
+  S.themes = parsed?.themes || [];
+  S.threads = parsed?.openThreads || [];
+  S.rawOutline = document.getElementById('outline-input').value;
+
+  const arcSel = document.querySelector('.arc-pill.selected')?.dataset.arc || '3act';
+  initArc(arcSel);
+
+  // Hide welcome
+  document.getElementById('welcome').classList.add('hidden');
+
+  // Update topbar
+  document.getElementById('tb-title').textContent = S.project.title;
+
+  // Init UI
+  updateSidebar();
+  updateClusterBar();
+  showEmptyState();
+  updateTopbarCrumb();
+
+  // Build initial narrative model
+  updateNarrativeModel().then(() => {
+    if (S.intelOpen) renderIntelPanel();
+  });
+
+  save();
+  toast('Story model ready. Begin writing.');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════════════════════════════
+function exportStory(format) {
+  const all = S.clusters.flatMap(c => c.scenes.filter(s=>s.status==='accepted').map(s=>({...s,cl:c.label})));
+  if (!all.length) { toast('No accepted scenes to export yet.'); return; }
+
+  if (format === 'txt') {
+    let out = `${S.project?.title || 'Narrative'}\n${'—'.repeat(40)}\n\n`;
+    let lastCl = null;
+    all.forEach(s => {
+      if (s.cl !== lastCl) { out += `\n\n${s.cl.toUpperCase()}\n\n`; lastCl=s.cl; }
+      out += s.prose + '\n\n';
+    });
+    download(out, 'text/plain', (S.project?.title||'narrative').toLowerCase().replace(/\s+/g,'-')+'-draft.txt');
+  } else {
+    const paras = all.map(s => {
+      const pp = s.prose.split('\n').filter(p=>p.trim()).map(p=>`<p>${p}</p>`).join('');
+      return `<section><h2>${s.cl}</h2>${pp}</section>`;
+    }).join('');
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${S.project?.title||'Draft'}</title><style>body{font-family:'Georgia',serif;font-size:13pt;line-height:2;max-width:640px;margin:80px auto;color:#1c1917}h2{font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;color:#a8a29e;margin:60px 0 24px}p{margin-bottom:1.2em}</style></head><body>${paras}</body></html>`;
+    download(html, 'text/html', (S.project?.title||'narrative').toLowerCase().replace(/\s+/g,'-')+'-draft.html');
+  }
+  toast('Exported.');
+}
+
+function download(content, type, filename) {
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([content],{type})),
+    download: filename
+  });
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EVENT BINDINGS
+// ═══════════════════════════════════════════════════════════════
+function bind() {
+  // Welcome
+  document.getElementById('btn-analyse').addEventListener('click', () => {
+    const t = document.getElementById('outline-input').value.trim();
+    if (!t) { toast('Paste your story or outline first.'); return; }
+    startParseFlow(t);
+  });
+  document.getElementById('btn-demo').addEventListener('click', () => {
+    document.getElementById('outline-input').value = DEMO.outline;
+    S.parsedData = { title:DEMO.title, genre:DEMO.genre, tone:DEMO.tone, pov:DEMO.pov, premise:DEMO.premise, characters:DEMO.characters, themes:DEMO.themes, openThreads:DEMO.threads };
+    startParseFlow(DEMO.outline);
+  });
+  document.getElementById('btn-begin').addEventListener('click', beginWriting);
+  document.getElementById('btn-back').addEventListener('click', () => {
+    document.getElementById('confirm-screen').classList.remove('active');
+    document.getElementById('welcome-inner').classList.remove('hidden');
+  });
+
+  // Arc pills
+  document.querySelectorAll('.arc-pill').forEach(p => {
+    p.addEventListener('click', () => {
+      document.querySelectorAll('.arc-pill').forEach(x=>x.classList.remove('selected'));
+      p.classList.add('selected');
+    });
+  });
+
+  // Rail
+  document.getElementById('rail-structure').addEventListener('click', () => {
+    const open = document.getElementById('app').classList.toggle('sidebar-open');
+    document.getElementById('rail-structure').classList.toggle('active', open);
+    S.sidebarOpen = open;
+  });
+  document.getElementById('rail-intel-sm').addEventListener('click', () => toggleIntel());
+  document.getElementById('rail-settings').addEventListener('click', () => {
+    const m = document.getElementById('settings-modal');
+    m.style.display = 'flex';
+  });
+
+  // Topbar
+  document.getElementById('btn-intel').addEventListener('click', () => toggleIntel());
+  document.getElementById('btn-focus').addEventListener('click', () => toggleFocus());
+  document.getElementById('btn-map').addEventListener('click', () => {
+    document.getElementById('intel-map').classList.add('open');
+    setTimeout(renderMapModal, 50);
+  });
+  document.getElementById('btn-export-tb').addEventListener('click', () => exportStory('txt'));
+
+  // Intelligence panel view toggle
+  document.getElementById('vbtn-list').addEventListener('click', () => {
+    document.getElementById('vbtn-list').classList.add('active');
+    document.getElementById('vbtn-graph').classList.remove('active');
+    document.getElementById('list-view').classList.add('active');
+    document.getElementById('graph-view').classList.remove('active');
+  });
+  document.getElementById('vbtn-graph').addEventListener('click', () => {
+    document.getElementById('vbtn-graph').classList.add('active');
+    document.getElementById('vbtn-list').classList.remove('active');
+    document.getElementById('graph-view').classList.add('active');
+    document.getElementById('list-view').classList.remove('active');
+    renderMiniGraph();
+  });
+
+  // Map close
+  document.getElementById('btn-map-close').addEventListener('click', () => {
+    document.getElementById('intel-map').classList.remove('open');
+  });
+  document.getElementById('intel-map').addEventListener('click', e => {
+    if (e.target === document.getElementById('intel-map')) document.getElementById('intel-map').classList.remove('open');
+  });
+
+  // Action bar
+  document.getElementById('btn-accept').addEventListener('click', acceptScene);
+  document.getElementById('btn-regen').addEventListener('click', () => {
+    document.getElementById('manuscript').innerHTML = '';
+    showActionBar(false);
+    showGenerating(false);
+    hideEmptyState();
+    generateScene();
+  });
+  document.getElementById('btn-steer').addEventListener('click', () => {
+    document.getElementById('normal-actions').style.display = 'none';
+    document.getElementById('steer-input-row').classList.add('active');
+    document.getElementById('steer-input').focus();
+  });
+  document.getElementById('btn-steer-cancel').addEventListener('click', () => {
+    document.getElementById('steer-input-row').classList.remove('active');
+    document.getElementById('normal-actions').style.display = '';
+  });
+  document.getElementById('steer-submit').addEventListener('click', () => {
+    const dir = document.getElementById('steer-input').value.trim();
+    document.getElementById('steer-input-row').classList.remove('active');
+    document.getElementById('normal-actions').style.display = '';
+    document.getElementById('steer-input').value = '';
+    document.getElementById('manuscript').innerHTML = '';
+    showActionBar(false);
+    generateScene(dir);
+  });
+  document.getElementById('steer-input').addEventListener('keydown', e => {
+    if (e.key==='Enter') document.getElementById('steer-submit').click();
+    if (e.key==='Escape') document.getElementById('btn-steer-cancel').click();
+  });
+
+  // Empty state generate link
+  document.getElementById('es-generate').addEventListener('click', () => generateScene());
+
+  // Settings
+  document.getElementById('settings-cancel').addEventListener('click', () => {
+    document.getElementById('settings-modal').style.display = 'none';
+  });
+  document.getElementById('settings-save').addEventListener('click', () => {
+    const key = document.getElementById('api-key-input').value.trim();
+    S.apiKey = key || null;
+    if (key) localStorage.setItem('nv2_api_key','enc:'+btoa(key));
+    else localStorage.removeItem('nv2_api_key');
+    document.getElementById('settings-modal').style.display = 'none';
+    toast(key ? 'API key saved — AI generation enabled.' : 'Running in demo mode.');
+  });
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', e => {
+    const mod = e.metaKey || e.ctrlKey;
+    if (mod && e.key==='\\') { e.preventDefault(); document.getElementById('rail-structure').click(); }
+    if (mod && e.key==='i')  { e.preventDefault(); toggleIntel(); }
+    if (mod && e.shiftKey && e.key==='F') { e.preventDefault(); toggleFocus(); }
+    if (mod && e.key==='Enter') { e.preventDefault(); generateScene(); }
+    if (e.key==='Escape') {
+      document.getElementById('intel-map').classList.remove('open');
+      if (S.focusMode) toggleFocus();
+    }
+  });
+
+  // Title edit
+  const title = document.getElementById('tb-title');
+  title.addEventListener('blur', () => {
+    if (S.project) { S.project.title = title.textContent.trim(); save(); }
+  });
+  title.addEventListener('keydown', e => { if (e.key==='Enter') { e.preventDefault(); title.blur(); }});
+}
+
+function toggleIntel() {
+  S.intelOpen = !S.intelOpen;
+  document.getElementById('intel-panel').classList.toggle('open', S.intelOpen);
+  document.getElementById('btn-intel').classList.toggle('active', S.intelOpen);
+  document.getElementById('rail-intel-sm').classList.toggle('active', S.intelOpen);
+  if (S.intelOpen) { updateNarrativeModel().then(renderIntelPanel); }
+}
+
+function toggleFocus() {
+  S.focusMode = !S.focusMode;
+  document.body.classList.toggle('focus-mode', S.focusMode);
+  document.getElementById('btn-focus').classList.toggle('active', S.focusMode);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+function init() {
+  bind();
+
+  // Restore API key
+  const stored = localStorage.getItem('nv2_api_key');
+  if (stored?.startsWith('enc:')) {
+    try { S.apiKey = atob(stored.slice(4)); document.getElementById('api-key-input').value = S.apiKey; } catch(e){}
+  }
+
+  // Restore session
+  if (loadSaved() && S.project) {
+    document.getElementById('welcome').classList.add('hidden');
+    document.getElementById('tb-title').textContent = S.project.title || 'Untitled';
+    updateSidebar();
+    updateClusterBar();
+    renderAcceptedScenes();
+    showEmptyState();
+    updateStats();
+    updateTopbarCrumb();
+    updateNarrativeModel().then(() => { if (S.intelOpen) renderIntelPanel(); });
+    toast('Session restored.');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
 </body>
 </html>
