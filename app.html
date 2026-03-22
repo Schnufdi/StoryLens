@@ -1120,97 +1120,6 @@ body.screenplay .ctx-fn-pill { background: var(--screenplay-2); color: var(--scr
 .settings-actions { display: flex; gap: 8px; justify-content: flex-end; }
 
 /* ═══════════════════════════════════════════════════════════════
-   PARSE OVERLAY — Chunk 2
-═══════════════════════════════════════════════════════════════ */
-#parse-overlay {
-  position: fixed; inset: 0; z-index: 400;
-  background: var(--paper);
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0; pointer-events: none;
-  transition: opacity .35s;
-}
-#parse-overlay.active { opacity: 1; pointer-events: all; }
-.po-inner {
-  max-width: 500px; width: 100%; padding: 0 28px;
-  transform: translateY(16px);
-  transition: transform .35s var(--ease);
-}
-#parse-overlay.active .po-inner { transform: none; }
-.po-kicker {
-  font-size: .62rem; font-weight: 700; letter-spacing: .12em;
-  text-transform: uppercase; color: var(--accent); margin-bottom: 10px;
-}
-.po-title {
-  font-family: var(--serif); font-size: 1.85rem; font-weight: 400;
-  color: var(--ink); margin-bottom: 22px; line-height: 1.18;
-}
-.po-stream {
-  font-size: .84rem; color: var(--ink-3); line-height: 2.1; min-height: 110px;
-}
-.po-finding {
-  opacity: 0; transform: translateY(4px);
-  animation: pf-in .3s var(--ease) forwards;
-  display: flex; gap: 9px; align-items: baseline;
-}
-@keyframes pf-in { to { opacity:1; transform:none; } }
-.po-key { color: var(--ink-4); }
-.po-val { color: var(--ink); font-family: var(--serif); }
-.po-bar-wrap {
-  height: 2px; background: var(--paper-3); border-radius: 1px;
-  margin-top: 22px; overflow: hidden;
-}
-.po-bar { height: 100%; background: var(--accent); border-radius: 1px; width: 0; transition: width .4s var(--ease); }
-
-/* Confirm screen */
-#confirm-screen {
-  position: fixed; inset: 0; z-index: 350;
-  background: var(--paper); overflow-y: auto;
-  display: flex; align-items: flex-start; justify-content: center;
-  padding: 40px 24px;
-  opacity: 0; pointer-events: none; transition: opacity .3s;
-}
-#confirm-screen.active { opacity: 1; pointer-events: all; }
-.cs-inner { max-width: 580px; width: 100%; }
-.cs-title {
-  font-family: var(--serif); font-size: 1.6rem; font-weight: 400;
-  color: var(--ink); margin-bottom: 4px;
-}
-.cs-sub { font-size: .82rem; color: var(--ink-3); margin-bottom: 22px; line-height: 1.6; }
-.cs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-.cs-field { display: flex; flex-direction: column; gap: 3px; }
-.cs-field.full { grid-column: 1/-1; }
-.cs-label { font-size: .62rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--ink-4); }
-.cs-inp {
-  height: 32px; border: 1px solid var(--border-2); border-radius: 5px;
-  background: var(--paper-card); padding: 0 9px; font-size: .82rem;
-  color: var(--ink); transition: border-color 180ms; font-family: var(--sans);
-}
-.cs-inp:focus { border-color: var(--accent); outline: none; }
-.cs-ta { height: auto; min-height: 52px; padding: 7px 9px; resize: none; line-height: 1.55; font-family: var(--serif); font-size: .88rem; }
-.cs-divider { height: 1px; background: var(--border); margin: 16px 0; }
-.cs-extracted-title {
-  font-size: .62rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
-  color: var(--ink-4); margin-bottom: 10px;
-}
-.cs-tag-row { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; align-items: center; }
-.cs-tag-key { font-size: .65rem; color: var(--ink-4); width: 62px; flex-shrink: 0; }
-.cs-tag {
-  font-size: .7rem; padding: 2px 8px; border-radius: 3px;
-  background: var(--paper-2); border: 1px solid var(--border);
-  color: var(--ink-2); cursor: default;
-}
-.cs-tag.hi { border-color: rgba(45,106,79,.3); }
-.cs-arc-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
-.cs-arc-pill {
-  height: 28px; padding: 0 12px; border-radius: 20px;
-  font-size: .72rem; font-weight: 500;
-  border: 1.5px solid var(--border-2); color: var(--ink-3);
-  cursor: pointer; transition: all 180ms;
-}
-.cs-arc-pill.on { border-color: var(--accent); color: var(--accent); background: var(--accent-3); }
-.cs-actions { display: flex; gap: 8px; margin-top: 20px; }
-
-/* ═══════════════════════════════════════════════════════════════
    TOASTS
 ═══════════════════════════════════════════════════════════════ */
 #toasts {
@@ -1240,6 +1149,62 @@ body.screenplay .ctx-fn-pill { background: var(--screenplay-2); color: var(--scr
 @keyframes toast-in { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:none} }
 
 /* ═══════════════════════════════════════════════════════════════
+   CHUNK 3 — BEAT ENGINE CSS
+═══════════════════════════════════════════════════════════════ */
+
+.beat-generating { display:flex; flex-direction:column; gap:8px; padding:8px 0; }
+.beat-gen-shimmer { height:72px; border-radius:7px; background:linear-gradient(90deg,var(--paper-2) 25%,var(--paper-3) 50%,var(--paper-2) 75%); background-size:200% 100%; animation:beat-shim 1.4s infinite; border:1px solid var(--border); }
+@keyframes beat-shim { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.beat-gen-label { font-size:.72rem; color:var(--ink-4); font-style:italic; text-align:center; padding:6px 0; display:flex; align-items:center; justify-content:center; gap:8px; }
+.beat-gen-spinner { width:14px; height:14px; border:2px solid var(--border-2); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; flex-shrink:0; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.beat-card { animation:beat-appear .3s var(--ease) both; position:relative; }
+@keyframes beat-appear { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+.beat-card.drag-over { border-color:var(--accent); background:var(--accent-3); }
+.bc-intention { transition:background 150ms; border-radius:3px; padding:2px 4px; margin:-2px -4px; }
+.bc-intention:hover { background:var(--paper-2); cursor:text; }
+.bc-intention:focus { background:var(--paper-2); outline:none; }
+.bc-stakes { font-size:.72rem; color:var(--ink-4); line-height:1.45; margin-top:4px; padding:4px 7px; background:var(--paper-2); border-radius:4px; border-left:2px solid var(--border-2); transition:border-color 150ms; }
+.bc-stakes.warning { border-left-color:#f59e0b; color:#92400e; }
+.bc-stakes.empty { color:var(--ink-5); font-style:italic; }
+.bc-stakes:focus { outline:none; border-left-color:var(--accent); }
+.bc-char-tag { font-size:.6rem; padding:1px 6px; border-radius:3px; background:#dceee6; color:#2d6a4f; font-weight:500; }
+.bc-char-passive { background:#fef3c7; color:#92400e; }
+.needs-box { background:var(--accent-3); border:1px solid var(--accent-2); border-radius:8px; padding:14px; margin-bottom:18px; animation:beat-appear .3s var(--ease); }
+.needs-box-title { font-size:.6rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); margin-bottom:7px; display:flex; align-items:center; justify-content:space-between; }
+.needs-box-text { font-size:.8rem; color:var(--ink-2); line-height:1.6; }
+.needs-box-close { font-size:.75rem; color:var(--ink-4); cursor:pointer; }
+.needs-box-close:hover { color:var(--ink); }
+.inspiration-panel { background:var(--paper-card); border:1px solid var(--border); border-radius:8px; padding:14px; margin-bottom:18px; animation:beat-appear .3s var(--ease); }
+.ip-header { font-size:.6rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--col-beat); margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; }
+.ip-close { font-size:.75rem; color:var(--ink-4); cursor:pointer; }
+.ip-close:hover { color:var(--ink); }
+.ip-provocation { border-left:2px solid var(--border-2); padding:6px 10px; margin-bottom:6px; transition:border-color 150ms,background 150ms; border-radius:0 4px 4px 0; }
+.ip-provocation:hover { border-left-color:var(--col-beat); background:var(--paper-2); }
+.ip-prov-type { font-size:.58rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--col-beat); margin-bottom:2px; }
+.ip-prov-text { font-size:.78rem; color:var(--ink-2); line-height:1.5; font-style:italic; }
+.beat-actions-bar { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; align-items:center; }
+.bab-btn { height:28px; padding:0 12px; border-radius:5px; font-size:.72rem; font-weight:500; border:1px solid var(--border-2); color:var(--ink-3); transition:all 150ms; display:flex; align-items:center; gap:5px; }
+.bab-btn:hover { background:var(--paper-2); color:var(--ink); }
+.bab-btn.primary { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+.bab-btn.primary:hover { background:var(--ink-2); }
+.bab-beat-count { font-size:.68rem; color:var(--ink-4); margin-left:auto; }
+.bc-fn-select { font-size:.58rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; padding:1px 6px; border-radius:3px; background:var(--paper-3); color:var(--ink-3); border:1px solid var(--border); cursor:pointer; appearance:none; -webkit-appearance:none; }
+.bc-fn-select:focus { outline:none; border-color:var(--accent); }
+.bc-delete-btn { font-size:.65rem; color:var(--ink-5); width:20px; height:20px; display:flex; align-items:center; justify-content:center; border-radius:3px; transition:all 150ms; flex-shrink:0; }
+.bc-delete-btn:hover { background:#fee2e2; color:#dc2626; }
+.bv-two-col { display:grid; grid-template-columns:1fr 240px; gap:24px; align-items:flex-start; }
+.bv-context-panel { position:sticky; top:20px; }
+.bcp-section { background:var(--paper-card); border:1px solid var(--border); border-radius:8px; padding:14px; margin-bottom:10px; }
+.bcp-title { font-size:.6rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-4); margin-bottom:8px; }
+.bcp-text { font-size:.76rem; color:var(--ink-2); line-height:1.55; }
+.bcp-signal { display:flex; gap:6px; margin-bottom:5px; font-size:.73rem; color:var(--ink-2); line-height:1.4; }
+.bcp-sig-dot { width:5px; height:5px; border-radius:50%; background:var(--accent); flex-shrink:0; margin-top:5px; }
+.bcp-warning { background:#fef3c7; border-color:#fde68a; }
+.bcp-warning .bcp-title { color:#92400e; }
+.bcp-warning .bcp-text { color:#78350f; }
+
+/* ═══════════════════════════════════════════════════════════════
    KEYBOARD HINT
 ═══════════════════════════════════════════════════════════════ */
 #kb-hint {
@@ -1266,48 +1231,6 @@ kbd {
 </style>
 </head>
 <body>
-
-<!-- PARSE OVERLAY — Chunk 2 -->
-<div id="parse-overlay">
-  <div class="po-inner">
-    <div class="po-kicker">Reading your story</div>
-    <div class="po-title">Finding what's already there.</div>
-    <div class="po-stream" id="po-stream"></div>
-    <div class="po-bar-wrap"><div class="po-bar" id="po-bar"></div></div>
-  </div>
-</div>
-
-<!-- CONFIRM SCREEN — Chunk 2 -->
-<div id="confirm-screen">
-  <div class="cs-inner">
-    <div class="cs-title" id="cs-title">Your story</div>
-    <p class="cs-sub">Review what was extracted. Adjust anything before writing begins.</p>
-    <div class="cs-grid">
-      <div class="cs-field"><span class="cs-label">Genre</span><input class="cs-inp" id="cs-genre" placeholder="e.g. Literary fiction"></div>
-      <div class="cs-field"><span class="cs-label">Tone</span><input class="cs-inp" id="cs-tone" placeholder="e.g. Restrained, dark"></div>
-      <div class="cs-field"><span class="cs-label">Point of view</span><input class="cs-inp" id="cs-pov" placeholder="e.g. Third person limited"></div>
-      <div class="cs-field"><span class="cs-label">Premise</span><input class="cs-inp" id="cs-premise" placeholder="One sentence"></div>
-      <div class="cs-field full">
-        <span class="cs-label">The ending (fixed anchor — all generation points toward this)</span>
-        <textarea class="cs-inp cs-ta" id="cs-ending" rows="2" placeholder="How does the story end? This becomes the locked destination."></textarea>
-      </div>
-    </div>
-    <div class="cs-divider"></div>
-    <div class="cs-extracted-title">Extracted from your story</div>
-    <div id="cs-extracted"></div>
-    <div class="cs-divider"></div>
-    <div class="cs-extracted-title">Arc structure</div>
-    <div class="cs-arc-pills" id="cs-arc-pills">
-      <button class="cs-arc-pill on" data-arc="3act">Three-act · 7 movements</button>
-      <button class="cs-arc-pill" data-arc="5part">Five-part · 5 movements</button>
-      <button class="cs-arc-pill" data-arc="custom">Custom · 3 movements</button>
-    </div>
-    <div class="cs-actions">
-      <button class="ws-btn-p" id="cs-begin">Begin writing →</button>
-      <button class="ws-btn-s" id="cs-back">← Back</button>
-    </div>
-  </div>
-</div>
 
 <!-- ═══════════════════════════════════════════════════════════════
      SETTINGS MODAL
@@ -1493,33 +1416,76 @@ kbd {
       </div>
 
       <!-- Beat view -->
-      <div id="beat-view">
-        <div class="bv-header">
+      <!-- BEAT VIEW — full scene beat engine -->
+      <div id="beat-view" style="padding:32px 40px 100px; max-width:960px;">
+
+        <!-- Header -->
+        <div class="bv-header" style="margin-bottom:18px;">
           <div class="bv-back" id="bv-back">
             <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
             Back to movement
           </div>
           <div class="bv-title" id="bv-title">—</div>
-          <div class="bv-intention" id="bv-intention-display">—</div>
+          <div class="bv-intention" id="bv-intention-display" style="font-size:.82rem;color:var(--ink-3);font-style:italic;line-height:1.55;margin-top:4px;max-width:560px;">—</div>
         </div>
+
+        <!-- Needs / Inspiration boxes (shown on demand) -->
+        <div id="needs-box-container"></div>
+        <div id="inspiration-container"></div>
 
         <!-- Intention input -->
         <textarea class="bv-intention-input" id="bv-intention-input"
-          placeholder="Describe what you think happens in this scene… (e.g. 'Robert and Marcus meet for the first time since the estrangement. Marcus has an agenda he's hiding. It ends in controlled sadness.')"></textarea>
-        <button class="bv-gen-beats-btn" id="bv-gen-beats">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-          Generate beat outline
-        </button>
+          placeholder="Describe what you think happens in this scene…&#10;&#10;e.g. 'Robert and Marcus meet for the first time since the estrangement. Marcus has an agenda he's hiding. It ends in controlled sadness without explosion.'"></textarea>
 
-        <!-- Beat list -->
-        <div class="beat-list" id="beat-list">
-          <!-- populated by JS -->
+        <!-- Gen controls row -->
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:22px;flex-wrap:wrap;">
+          <button class="bv-gen-beats-btn" id="bv-gen-beats" style="margin-bottom:0;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            Generate beat outline
+          </button>
+          <div style="width:1px;height:20px;background:var(--border-2);"></div>
+          <select id="beat-mood-select" style="height:32px;padding:0 10px;border-radius:5px;border:1px solid var(--border-2);font-size:.75rem;background:var(--paper-card);color:var(--ink-3);cursor:pointer;">
+            <option value="as-written">As described</option>
+            <option value="deepen">Deepen interiority</option>
+            <option value="escalate">Escalate tension</option>
+            <option value="turn">Turn something</option>
+            <option value="surprise">Surprise me</option>
+          </select>
+          <div style="width:1px;height:20px;background:var(--border-2);"></div>
+          <label style="font-size:.7rem;color:var(--ink-4);">Beats:</label>
+          <input type="range" id="beat-count-slider" min="3" max="9" value="5"
+            style="width:80px;accent-color:var(--accent);">
+          <span id="beat-count-val" style="font-size:.72rem;color:var(--ink-2);min-width:16px;">5</span>
         </div>
 
-        <!-- Add beat -->
-        <div class="beat-add-row" id="beat-add-row">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Add a beat
+        <!-- Two-column layout: beat list + context panel -->
+        <div class="bv-two-col">
+
+          <!-- Beat list column -->
+          <div>
+            <!-- Beat action bar (shows when beats exist) -->
+            <div class="beat-actions-bar" id="beat-actions-bar" style="display:none;">
+              <button class="bab-btn primary" id="bab-approve-all">Approve all beats</button>
+              <button class="bab-btn" id="bab-regenerate">Regenerate</button>
+              <button class="bab-btn" id="bab-clear">Clear</button>
+              <span class="bab-beat-count" id="bab-count"></span>
+            </div>
+
+            <!-- Beat cards -->
+            <div class="beat-list" id="beat-list"></div>
+
+            <!-- Add beat -->
+            <div class="beat-add-row" id="beat-add-row" style="margin-top:8px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add a beat manually
+            </div>
+          </div>
+
+          <!-- Context panel column -->
+          <div class="bv-context-panel" id="bv-context-panel">
+            <!-- populated by renderContextPanel() -->
+          </div>
+
         </div>
       </div>
 
@@ -1544,10 +1510,10 @@ kbd {
 // STATE
 // ─────────────────────────────────────────────
 const S = {
-  mode: 'novel',        // 'novel' | 'screenplay'
+  mode: 'novel',
   apiKey: null,
-  project: null,        // { title, genre, tone, pov, premise, ending }
-  acts: [],             // [ { id, label, movements: [] } ]
+  project: null,
+  acts: [],
   activeActId: null,
   activeMovId: null,
   activeSceneId: null,
@@ -1555,219 +1521,769 @@ const S = {
 
 // Arc templates
 const ARC_3ACT = [
-  { label: 'Act I', movements: [
-    { id:'m1', name:'Opening movement',    fn:'Setup & establishment',     emotional:'Grounding',    pacing:'measured',   tension:.2, status:'open', summary:'', scenes:[] },
-    { id:'m2', name:'Inciting movement',   fn:'Disruption of equilibrium', emotional:'Unease',      pacing:'building',   tension:.4, status:'open', summary:'', scenes:[] },
+  { label:'Act I', movements:[
+    {id:'m1',name:'Opening movement',   fn:'Setup & establishment',     emotional:'Grounding',   pacing:'measured',   tension:.2,status:'open',summary:'',scenes:[]},
+    {id:'m2',name:'Inciting movement',  fn:'Disruption of equilibrium', emotional:'Unease',      pacing:'building',   tension:.4,status:'open',summary:'',scenes:[]},
   ]},
-  { label: 'Act II', movements: [
-    { id:'m3', name:'Rising movement',     fn:'Escalation & complication', emotional:'Escalation',  pacing:'urgent',     tension:.6, status:'open', summary:'', scenes:[] },
-    { id:'m4', name:'Midpoint movement',   fn:'Pivot & reversal',          emotional:'Reversal',    pacing:'sharp',      tension:.7, status:'open', summary:'', scenes:[] },
-    { id:'m5', name:'Crisis movement',     fn:'Darkest moment',            emotional:'Collapse',    pacing:'compressed', tension:.9, status:'open', summary:'', scenes:[] },
+  { label:'Act II', movements:[
+    {id:'m3',name:'Rising movement',    fn:'Escalation & complication', emotional:'Escalation',  pacing:'urgent',     tension:.6,status:'open',summary:'',scenes:[]},
+    {id:'m4',name:'Midpoint movement',  fn:'Pivot & reversal',          emotional:'Reversal',    pacing:'sharp',      tension:.7,status:'open',summary:'',scenes:[]},
+    {id:'m5',name:'Crisis movement',    fn:'Darkest moment',            emotional:'Collapse',    pacing:'compressed', tension:.9,status:'open',summary:'',scenes:[]},
   ]},
-  { label: 'Act III', movements: [
-    { id:'m6', name:'Climax movement',     fn:'Confrontation & peak',      emotional:'Peak',        pacing:'relentless', tension:1.0,status:'open', summary:'', scenes:[] },
-    { id:'m7', name:'Resolution movement', fn:'New equilibrium',           emotional:'Release',     pacing:'stilling',   tension:.3, status:'open', summary:'', scenes:[] },
+  { label:'Act III', movements:[
+    {id:'m6',name:'Climax movement',    fn:'Confrontation & peak',      emotional:'Peak',        pacing:'relentless', tension:1.0,status:'open',summary:'',scenes:[]},
+    {id:'m7',name:'Resolution movement',fn:'New equilibrium',           emotional:'Release',     pacing:'stilling',   tension:.3,status:'open',summary:'',scenes:[]},
   ]},
 ];
 
 const ARC_SCREENPLAY = [
-  { label: 'Act I', movements: [
-    { id:'s1', name:'Ordinary world',      fn:'Establish world & protagonist', emotional:'Grounding', pacing:'deliberate', tension:.2, status:'open', summary:'', scenes:[] },
-    { id:'s2', name:'Inciting incident',   fn:'The call to action',            emotional:'Disruption',pacing:'sharp',      tension:.45,status:'open', summary:'', scenes:[] },
+  { label:'Act I', movements:[
+    {id:'s1',name:'Ordinary world',     fn:'Establish world & protagonist',emotional:'Grounding', pacing:'deliberate',tension:.2,status:'open',summary:'',scenes:[]},
+    {id:'s2',name:'Inciting incident',  fn:'The call to action',           emotional:'Disruption',pacing:'sharp',     tension:.45,status:'open',summary:'',scenes:[]},
   ]},
-  { label: 'Act IIA', movements: [
-    { id:'s3', name:'New world',           fn:'Protagonist adapts',            emotional:'Exploration',pacing:'building',  tension:.55,status:'open', summary:'', scenes:[] },
-    { id:'s4', name:'Midpoint',            fn:'False victory or defeat',       emotional:'Reversal',  pacing:'sharp',      tension:.7, status:'open', summary:'', scenes:[] },
+  { label:'Act IIA', movements:[
+    {id:'s3',name:'New world',          fn:'Protagonist adapts',            emotional:'Exploration',pacing:'building',tension:.55,status:'open',summary:'',scenes:[]},
+    {id:'s4',name:'Midpoint',           fn:'False victory or defeat',       emotional:'Reversal',  pacing:'sharp',   tension:.7,status:'open',summary:'',scenes:[]},
   ]},
-  { label: 'Act IIB', movements: [
-    { id:'s5', name:'Bad guys close in',   fn:'Pressure mounts',               emotional:'Collapse',  pacing:'relentless', tension:.85,status:'open', summary:'', scenes:[] },
-    { id:'s6', name:'All is lost',         fn:'Darkest moment',                emotional:'Despair',   pacing:'compressed', tension:.95,status:'open', summary:'', scenes:[] },
+  { label:'Act IIB', movements:[
+    {id:'s5',name:'Bad guys close in',  fn:'Pressure mounts',               emotional:'Collapse',  pacing:'relentless',tension:.85,status:'open',summary:'',scenes:[]},
+    {id:'s6',name:'All is lost',        fn:'Darkest moment',                emotional:'Despair',   pacing:'compressed',tension:.95,status:'open',summary:'',scenes:[]},
   ]},
-  { label: 'Act III', movements: [
-    { id:'s7', name:'Finale',              fn:'Confrontation & resolution',     emotional:'Peak',      pacing:'urgent',     tension:1.0,status:'open', summary:'', scenes:[] },
+  { label:'Act III', movements:[
+    {id:'s7',name:'Finale',             fn:'Confrontation & resolution',     emotional:'Peak',     pacing:'urgent',  tension:1.0,status:'open',summary:'',scenes:[]},
   ]},
 ];
 
-// Demo data
+// ─────────────────────────────────────────────
+// DEMO DATA
+// ─────────────────────────────────────────────
 const DEMO = {
-  project: { title:'Ashes of Us', genre:'Literary fiction', tone:'Restrained, melancholic', pov:'Third person limited — Robert', premise:'Three men whose friendship forms in early 2000s London fractures over fifteen years, anchored by a betrayal Robert has spent his adult life explaining away.', ending:'Robert tells Marcus the truth. The aftermath is not redemption — it is something quieter. A return to ground.' },
-  summaries: {
-    m1: 'London, 2001. Robert, Marcus, and Daniel share a flat on Bethnal Green Road. The friendship forms with the ease and intensity of early adulthood — shared space, late nights, the particular closeness of three people who have not yet made their permanent choices.',
-    m2: 'The equilibrium cracks. Robert receives an unexpected message from Marcus — their first contact in years. The present-day world is introduced: Robert is a senior lawyer, controlled, successful, living a life that looks exactly as intended.',
-    m3: 'Robert and Marcus meet. The conversation circles what it cannot yet say. Daniel\'s name surfaces. Something has happened. The past begins interrupting the present — the Bethnal Green years returning in fragments.',
-    m4: 'The betrayal is revealed: the Whitmore decision. Robert, given access to information that could have protected Daniel, chose instead to protect himself. He chose himself. He has spent fifteen years explaining why this was not what it was.',
-    m5: 'Robert understands that Marcus already knows — has known longer than Robert admitted. The question is no longer whether the truth will emerge but whether Robert will choose it or have it taken from him.',
-    m6: 'Robert tells Marcus. Not in a court — in a bar, late, raining. The telling is neither confession nor absolution. It is simply the first honest thing Robert has done in fifteen years.',
-    m7: 'The aftermath. The friendship may not survive it. Robert finds he can live with that. For the first time, he is not constructing a version of himself. Something simpler and harder has replaced it.',
+  project:{title:'Ashes of Us',genre:'Literary fiction',tone:'Restrained, melancholic',pov:'Third person limited — Robert',premise:'Three men whose friendship forms in early 2000s London fractures over fifteen years, anchored by a betrayal Robert has spent his adult life explaining away.',ending:'Robert tells Marcus the truth. The aftermath is not redemption — it is something quieter. A return to ground.'},
+  summaries:{
+    m1:'London, 2001. Robert, Marcus, and Daniel share a flat on Bethnal Green Road. The friendship forms with the ease and intensity of early adulthood — shared space, late nights, the particular closeness of three people who have not yet made their permanent choices.',
+    m2:'The equilibrium cracks. Robert receives an unexpected message from Marcus — their first contact in years. The present-day world is introduced: Robert is a senior lawyer, controlled, successful, living a life that looks exactly as intended.',
+    m3:'Robert and Marcus meet. The conversation circles what it cannot yet say. Daniel\'s name surfaces. Something has happened. The past begins interrupting the present — the Bethnal Green years returning in fragments.',
+    m4:'The betrayal is revealed: the Whitmore decision. Robert, 27, the file on his desk for eleven days. What he knew, what he chose, what it cost Daniel. The scene that explains everything that follows.',
+    m5:'Robert understands that Marcus already knows — has known longer than Robert thought. The question is no longer whether the truth will emerge but whether Robert will choose it or have it taken from him.',
+    m6:'Robert tells Marcus. The telling is quiet. Neither man raises his voice. What happens in the silence after.',
+    m7:'The aftermath. The friendship may not survive it. Robert finds he can live with that. Something solid has replaced the construction.',
   },
-  scenes: {
-    m1: [
-      { id:'sc1', name:'Bethnal Green, 2001', intention:'The three men arrive at the flat. The friendship is established through small gestures — who brings a plant, who unpacks carefully, who arrives three days late without explanation.', fn:'Establishment', beats:[], status:'open' },
-      { id:'sc2', name:'The first winter', intention:'Time moves forward in the flat. The rhythm of the three of them together. What each one wants from this friendship and what they do not say.', fn:'Deepening', beats:[], status:'open' },
+  scenes:{
+    m1:[
+      {id:'sc1',name:'Bethnal Green, 2001',intention:'The three men arrive at the flat. The friendship is established through small gestures — who brings a plant, who unpacks carefully, who arrives three days late without explanation.',fn:'Establishment',beats:[],status:'open'},
+      {id:'sc2',name:'The first winter',intention:'Time moves forward in the flat. The rhythm of the three of them together. What each one wants from this friendship and what they do not say.',fn:'Deepening',beats:[],status:'open'},
     ],
-    m2: [
-      { id:'sc3', name:'The message', intention:'Present day. Robert receives Marcus\'s message. He reads it twice. He puts his phone face-down. The weight of what it costs him to respond.', fn:'Inciting incident', beats:[], status:'open' },
-      { id:'sc4', name:'Robert\'s office', intention:'Robert at work. The gap between his public self and private knowledge. A glimpse of the Whitmore files — not yet explained.', fn:'Characterisation', beats:[], status:'open' },
+    m2:[
+      {id:'sc3',name:'The message',intention:'Present day. Robert receives Marcus\'s message. He reads it twice. He puts his phone face-down. The weight of what it costs him to respond.',fn:'Inciting incident',beats:[],status:'open'},
+      {id:'sc4',name:'Robert\'s office',intention:'Robert at work. The gap between his public self and private knowledge. A glimpse of the Whitmore files — not yet explained.',fn:'Characterisation',beats:[],status:'open'},
     ],
-    m3: [
-      { id:'sc5', name:'The bar at Bermondsey', intention:'Robert and Marcus meet. The conversation is careful. Marcus mentions Daniel obliquely. Robert deflects. The old warmth of the friendship is present and painful.', fn:'Confrontation', beats:[], status:'open' },
-    ],
-    m4: [
-      { id:'sc6', name:'The Whitmore decision', intention:'The betrayal is shown in full. Robert, 27, the file on his desk for eleven days. What he knew, what he chose, what it cost Daniel. The scene that explains everything that follows.', fn:'Revelation', beats:[], status:'open' },
-    ],
-    m5: [
-      { id:'sc7', name:'Marcus knows', intention:'Robert realises during their second meeting that Marcus has known for longer than Robert thought. The conversation shifts. The deflection is no longer possible.', fn:'Crisis', beats:[], status:'open' },
-    ],
-    m6: [
-      { id:'sc8', name:'The bar, late', intention:'Robert tells Marcus. The telling is quiet. Neither man raises his voice. What happens in the silence after.', fn:'Climax', beats:[], status:'open' },
-    ],
-    m7: [
-      { id:'sc9', name:'After', intention:'Robert alone. What he has now that he did not have before. Not redemption — ground zero. Something solid.', fn:'Resolution', beats:[], status:'open' },
-    ],
+    m3:[{id:'sc5',name:'The bar at Bermondsey',intention:'Robert and Marcus meet. The conversation is careful. Marcus mentions Daniel obliquely. Robert deflects. The old warmth of the friendship is present and painful.',fn:'Confrontation',beats:[],status:'open'}],
+    m4:[{id:'sc6',name:'The Whitmore decision',intention:'The betrayal is shown in full. Robert, 27, the file on his desk for eleven days. What he knew, what he chose, what it cost Daniel.',fn:'Revelation',beats:[],status:'open'}],
+    m5:[{id:'sc7',name:'Marcus knows',intention:'Robert realises Marcus has known longer than Robert thought. The deflection is no longer possible.',fn:'Crisis',beats:[],status:'open'}],
+    m6:[{id:'sc8',name:'The bar, late',intention:'Robert tells Marcus. The telling is quiet. Neither man raises his voice. What happens in the silence after.',fn:'Climax',beats:[],status:'open'}],
+    m7:[{id:'sc9',name:'After',intention:'Robert alone. What he has now that he did not have before. Not redemption — ground zero.',fn:'Resolution',beats:[],status:'open'}],
   }
 };
 
-// Demo beats for first scene
-const DEMO_BEATS = [
-  { id:'b1', fn:'Establishment', intention:'Robert arrives at the Bethnal Green flat twenty minutes before Marcus. He folds the letting paper into his jacket pocket with the seriousness of a man signing a contract.', locked:false, status:'open' },
-  { id:'b2', fn:'Introduction', intention:'Marcus arrives with forward momentum, two bags, and a plant he cannot explain. Robert says it will die. Marcus says everything does.', locked:false, status:'open' },
-  { id:'b3', fn:'Deepening', intention:'The first days together. The quality of the silence between them — comfortable, undemanding. The particular trust of people who do not yet know what they are trusting.', locked:false, status:'open' },
-  { id:'b4', fn:'Establishment', intention:'Daniel arrives three days late. He was sorting something out. He does not say what. Robert does not ask. This is already the arrangement between them.', locked:false, status:'open' },
-  { id:'b5', fn:'Closure', intention:'The flat at night. All three of them. What each one wants from this friendship, unspoken. The reader understands what they cannot yet say to each other.', locked:false, status:'open' },
+// ─────────────────────────────────────────────
+// BEAT FUNCTION DEFINITIONS
+// ─────────────────────────────────────────────
+const BEAT_FNS = [
+  'Establishment','Introduction','Deepening','Probe','Pressure',
+  'Revelation','Escalation','Reversal','Complication','Confrontation',
+  'Moment of choice','False resolution','Crisis','Climax','Closure','Transition'
 ];
+
+const BEAT_FN_COLORS = {
+  'Establishment':'establishment','Introduction':'establishment',
+  'Deepening':'probe','Probe':'probe','Pressure':'escalation',
+  'Revelation':'revelation','Escalation':'escalation',
+  'Reversal':'reversal','Complication':'escalation',
+  'Confrontation':'escalation','Moment of choice':'reversal',
+  'False resolution':'closure','Crisis':'reversal',
+  'Climax':'reversal','Closure':'closure','Transition':'establishment'
+};
 
 // ─────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 const make = tag => document.createElement(tag);
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
 
 function toast(msg, type='') {
-  const el = make('div');
-  el.className = 'toast' + (type ? ' '+type : '');
-  el.textContent = msg;
+  const el=make('div'); el.className='toast'+(type?' '+type:''); el.textContent=msg;
   $('toasts').appendChild(el);
-  setTimeout(() => { el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(),300); }, 2800);
+  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300);},2800);
 }
 
 function saveDot(state) {
-  const d = $('save-dot');
-  d.className = state;
-  if (state === 'saved') setTimeout(()=>d.className='', 2200);
+  const d=$('save-dot'); d.className=state;
+  if(state==='saved') setTimeout(()=>d.className='',2200);
 }
 
 function persist() {
   saveDot('saving');
-  try { localStorage.setItem('nv4_state', JSON.stringify({ mode:S.mode, project:S.project, acts:S.acts, apiKey:S.apiKey })); } catch(e){}
-  setTimeout(()=>saveDot('saved'), 600);
+  try { localStorage.setItem('nv4_state',JSON.stringify({mode:S.mode,project:S.project,acts:S.acts,apiKey:S.apiKey})); } catch(e){}
+  setTimeout(()=>saveDot('saved'),600);
 }
 
 function getMovement(id) {
-  for (const act of S.acts) {
-    const m = act.movements.find(m=>m.id===id);
-    if (m) return { act, movement:m };
-  }
+  for(const act of S.acts){const m=act.movements.find(m=>m.id===id);if(m)return{act,movement:m};}
   return null;
 }
 
 function getScene(sceneId) {
-  for (const act of S.acts) {
-    for (const mov of act.movements) {
-      const sc = mov.scenes.find(s=>s.id===sceneId);
-      if (sc) return { act, movement:mov, scene:sc };
-    }
-  }
+  for(const act of S.acts){for(const mov of act.movements){const sc=mov.scenes.find(s=>s.id===sceneId);if(sc)return{act,movement:mov,scene:sc};}}
   return null;
 }
+
+function uid() { return 'id'+Date.now()+Math.random().toString(36).slice(2,6); }
+
+// ─────────────────────────────────────────────
+// API CALL
+// ─────────────────────────────────────────────
+async function callClaude(system, user, maxTokens=1200) {
+  if(!S.apiKey) throw new Error('no-key');
+  const isLocal = location.hostname==='localhost'||location.hostname==='127.0.0.1';
+  const url = isLocal ? '/api/claude' : 'https://api.anthropic.com/v1/messages';
+  const headers = {'Content-Type':'application/json','x-api-key':S.apiKey};
+  if(!isLocal) headers['anthropic-version']='2023-06-01';
+  const r = await fetch(url,{method:'POST',headers,
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:maxTokens,system,messages:[{role:'user',content:user}]})});
+  const d = await r.json();
+  if(d.error) throw new Error(d.error.message);
+  return d.content[0].text.trim();
+}
+
+// ─────────────────────────────────────────────
+// BEAT GENERATION — CORE ENGINE
+// ─────────────────────────────────────────────
+async function generateBeats(scene, movContext, mood, targetCount) {
+  const proj = S.project || {};
+  const mov = movContext.movement;
+  const act = movContext.act;
+
+  // Gather story context
+  const priorScenes = S.acts
+    .flatMap(a=>a.movements.flatMap(m=>m.scenes))
+    .filter(s=>s.status==='draft'||s.status==='approved')
+    .slice(-3)
+    .map(s=>`"${s.name}": ${s.intention}`)
+    .join('\n');
+
+  const chars = (proj.characters||[]).map(c=>`${c.name}: ${c.role}`).join(', ') ||
+    'Robert (protagonist, lawyer), Marcus (estranged friend), Daniel (absent presence)';
+
+  const threads = S.activeThreads || [];
+
+  const moodInstr = {
+    'as-written':'Execute the scene intention faithfully as described.',
+    'deepen':'Prioritise interiority and subtext. What characters think but cannot say should drive the beats.',
+    'escalate':'Each beat should raise tension. No beat should leave the pressure unchanged.',
+    'turn':'Find the reversal. Something the reader (and perhaps the character) does not expect but recognises as true.',
+    'surprise':'Propose the most dramatically powerful version of this scene — unexpected but structurally justified.'
+  }[mood] || 'Execute the scene intention faithfully.';
+
+  const isScreenplay = S.mode === 'screenplay';
+
+  const system = `You are a narrative structure expert helping a writer break a scene into beats.
+
+Story: "${proj.title||'Untitled'}" — ${proj.genre||'fiction'}
+Tone: ${proj.tone||'literary'}
+POV: ${proj.pov||'third person'}
+Ending (fixed anchor, do not contradict): ${proj.ending||'not yet set'}
+
+Characters: ${chars}
+
+Current structural position: ${act.label} → ${mov.name}
+Movement function: ${mov.fn}
+Emotional register: ${mov.emotional}
+Pacing: ${mov.pacing}
+
+Prior accepted scenes for context:
+${priorScenes||'None yet — this is early in the story.'}
+
+${S.mode==='screenplay'?'SCREENPLAY MODE: Beats must be externally visible actions or dialogue exchanges. No interiority beats. Each beat should be stageable.':'NOVEL MODE: Beats may include interiority, sensory detail, subtext. Show the inner life.'}
+
+Your task: Break the scene intention into exactly ${targetCount} beats.
+
+Each beat must have:
+- fn: one of [${BEAT_FNS.join(', ')}]
+- intention: one precise sentence — what happens, active voice
+- stakes: what is at risk or what changes in this beat (one sentence)
+- character: which character has agency in this beat
+
+${moodInstr}
+
+Rules:
+- Never propose a beat that contradicts the fixed ending
+- At least one beat should have a character make a choice that costs them something
+- The final beat should leave something unresolved or changed
+- Each beat must be meaningfully different from the previous one
+- Flag if any character is passive in every beat (that is a structural problem)
+
+Return ONLY valid JSON array:
+[{"fn":"string","intention":"string","stakes":"string","character":"string"}]`;
+
+  const raw = await callClaude(system,
+    `Scene: "${scene.name}"\nIntention: ${scene.intention}\n\nGenerate ${targetCount} beats now.`,
+    800);
+
+  const cleaned = raw.replace(/```json|```/g,'').trim();
+  const parsed = JSON.parse(cleaned);
+
+  return parsed.map((b,i) => ({
+    id: uid(),
+    fn: b.fn || 'Beat',
+    intention: b.intention || '',
+    stakes: b.stakes || '',
+    character: b.character || '',
+    locked: false,
+    status: 'open',
+  }));
+}
+
+// Demo beats (no API key)
+function getDemoBeats(scene) {
+  const demos = {
+    sc1:[
+      {id:uid(),fn:'Establishment',intention:'Robert arrives at the Bethnal Green flat twenty minutes before Marcus. He folds the letting paper into his jacket pocket with the seriousness of a man signing a contract.',stakes:'Robert establishes control before the others arrive — a habit that will define him.',character:'Robert',locked:false,status:'open'},
+      {id:uid(),fn:'Introduction',intention:'Marcus arrives with forward momentum, two bags, and a plant he cannot explain. Robert says it will die. Marcus says everything does.',stakes:'The friendship\'s dynamic is set in two lines: Robert\'s scepticism, Marcus\'s warmth.',character:'Marcus',locked:false,status:'open'},
+      {id:uid(),fn:'Deepening',intention:'The first days together. The quality of the silence between them — comfortable, undemanding. The particular trust of people who do not yet know what they are trusting.',stakes:'The reader understands what will be lost before knowing it can be lost.',character:'Both',locked:false,status:'open'},
+      {id:uid(),fn:'Establishment',intention:'Daniel arrives three days late. He was sorting something out. He does not say what. Robert does not ask.',stakes:'The space around Daniel\'s explanations is already larger than the explanations themselves.',character:'Daniel',locked:false,status:'open'},
+      {id:uid(),fn:'Closure',intention:'The flat at night. All three of them. What each one wants from this friendship, unspoken. The reader sees the shape of what they cannot say to each other.',stakes:'The friendship is established in its fullness and its silence simultaneously.',character:'All three',locked:false,status:'open'},
+    ]
+  };
+  return demos[scene.id] || [
+    {id:uid(),fn:'Establishment',intention:`${scene.name} opens. The space and its register are established.`,stakes:'The scene announces its emotional territory.',character:'Protagonist',locked:false,status:'open'},
+    {id:uid(),fn:'Probe',intention:'A question is raised, obliquely. No one answers it directly.',stakes:'The core tension of the scene is named without being confronted.',character:'Supporting character',locked:false,status:'open'},
+    {id:uid(),fn:'Escalation',intention:'The pressure increases. Something that was background becomes foreground.',stakes:'A choice is now required that was not required before.',character:'Protagonist',locked:false,status:'open'},
+    {id:uid(),fn:'Moment of choice',intention:'The protagonist makes a decision — or conspicuously does not.',stakes:'Whatever they choose here will have consequences they cannot yet see.',character:'Protagonist',locked:false,status:'open'},
+    {id:uid(),fn:'Closure',intention:'The scene ends without resolution. Something has shifted. The reader knows more than the characters.',stakes:'The thread remains open. The pressure remains.',character:'Both',locked:false,status:'open'},
+  ];
+}
+
+// ─────────────────────────────────────────────
+// WHAT THIS SCENE NEEDS
+// ─────────────────────────────────────────────
+async function getWhatNeeds(scene, movContext) {
+  const mov = movContext.movement;
+  const act = movContext.act;
+  const proj = S.project || {};
+
+  if(!S.apiKey) {
+    return `This is <strong>${mov.name}</strong> — ${mov.fn}. The emotional register is <em>${mov.emotional}</em> with ${mov.pacing} pacing.<br><br>At this structural position (${act.label}), the scene needs to: establish the stakes for the next movement, ensure ${(proj.pov||'the protagonist').split('—').pop().trim()} has at least one moment of agency, and leave at least one thread open rather than resolved.<br><br>The scene should <em>not</em> resolve what the movement is designed to hold in tension.`;
+  }
+
+  const priorAccepted = S.acts.flatMap(a=>a.movements.flatMap(m=>m.scenes))
+    .filter(s=>s.status==='draft').map(s=>s.name).join(', ') || 'none yet';
+
+  const system = `You are a story editor advising a writer on what a specific scene needs to accomplish.
+Be precise and specific — not generic advice. Reference the story's own logic and structural position.
+Answer in 3–4 sentences maximum. Use the story's actual characters and details.`;
+
+  return await callClaude(system,
+    `Story: "${proj.title}" at ${act.label} → ${mov.name} (${mov.fn}, ${mov.emotional} register, ${mov.pacing} pacing)
+Scene: "${scene.name}" — ${scene.intention}
+Accepted scenes so far: ${priorAccepted}
+Ending: ${proj.ending||'not set'}
+
+What does this specific scene need to accomplish?`, 400);
+}
+
+// ─────────────────────────────────────────────
+// INSPIRATION PROVOCATIONS
+// ─────────────────────────────────────────────
+async function getInspirations(scene, movContext) {
+  const mov = movContext.movement;
+  const proj = S.project || {};
+
+  if(!S.apiKey) {
+    return [
+      {type:'Reversal', text:`What if ${scene.name.toLowerCase()} ends the opposite of how it begins emotionally — and that reversal is more true than the expected arc?`},
+      {type:'Symbolic echo', text:`There is an image already established in the story that could resonate here. Find it and let this scene answer it.`},
+      {type:'More dangerous choice', text:`The character makes the choice that costs them more than they planned to pay — and doesn't notice the cost until it's already made.`},
+      {type:'Quieter alternative', text:`The scene you're planning may be too loud. The same dramatic function could be achieved with something smaller, more precise, harder to escape.`},
+      {type:'Thematic deepening', text:`What question does the story most need to ask here — not answer, ask — that would make everything that follows more complex?`},
+    ];
+  }
+
+  const system = `You are a master story editor generating creative provocations — not suggestions, but specific possibilities that might make this scene more powerful.
+
+Each provocation is one sentence. Active voice. Present tense. No hedging. Stated as a possibility that might be more true than what the writer currently plans.
+
+Reference the story's own characters, themes, and established logic. Never be generic.
+
+Return ONLY valid JSON array of exactly 5 objects:
+[{"type":"Reversal|Symbolic echo|More dangerous choice|Quieter alternative|Thematic deepening","text":"provocation sentence"}]`;
+
+  const raw = await callClaude(system,
+    `Story: "${proj.title}" — ${proj.tone}
+Scene: "${scene.name}" at ${mov.name} (${mov.fn})
+Intention: ${scene.intention}
+Characters: Robert (protagonist), Marcus, Daniel
+Themes: male friendship, dissociation, self-construction, betrayal
+Generate 5 provocations specific to this scene.`, 500);
+
+  const cleaned = raw.replace(/```json|```/g,'').trim();
+  return JSON.parse(cleaned);
+}
+
+// ─────────────────────────────────────────────
+// RENDER BEATS
+// ─────────────────────────────────────────────
+function renderBeats(sc) {
+  const list = $('beat-list');
+  list.innerHTML = '';
+  const beats = sc.beats || [];
+
+  // Show/hide action bar
+  const bar = $('beat-actions-bar');
+  if(beats.length > 0) {
+    bar.style.display = 'flex';
+    $('bab-count').textContent = `${beats.length} beat${beats.length!==1?'s':''}`;
+  } else {
+    bar.style.display = 'none';
+  }
+
+  beats.forEach((beat, i) => {
+    const fnColor = BEAT_FN_COLORS[beat.fn] || 'establishment';
+    const card = make('div');
+    card.className = `beat-card${beat.locked?' locked':beat.status==='draft'?' drafted':beat.status==='approved'?' approved':''}`;
+    card.dataset.beatId = beat.id;
+    card.draggable = true;
+
+    // Build fn select options
+    const fnOptions = BEAT_FNS.map(f=>
+      `<option value="${f}"${f===beat.fn?' selected':''}>${f}</option>`
+    ).join('');
+
+    const stakesClass = beat.stakes ? 'bc-stakes' : 'bc-stakes empty';
+    const stakesText = beat.stakes || 'What is at risk in this beat?';
+
+    card.innerHTML = `
+      <div class="bc-drag" title="Drag to reorder">⠿</div>
+      <div class="bc-num">${String(i+1).padStart(2,'0')}</div>
+      <div class="bc-body">
+        <div class="bc-fn-row">
+          <select class="bc-fn-select" data-beat="${beat.id}">${fnOptions}</select>
+          ${beat.character ? `<span class="bc-char-tag">${beat.character}</span>` : ''}
+          <button class="bc-lock-btn${beat.locked?' locked':''}" data-beat="${beat.id}">
+            ${beat.locked ? '🔒' : 'Lock'}
+          </button>
+          <button class="bc-delete-btn" data-beat="${beat.id}" title="Delete beat">✕</button>
+        </div>
+        <div class="bc-intention" contenteditable="true" data-beat="${beat.id}">${beat.intention}</div>
+        <div class="${stakesClass}" contenteditable="true" data-beat="${beat.id}" data-field="stakes">${stakesText}</div>
+      </div>
+      <div class="bc-actions">
+        <button class="bc-action-btn expand-btn" data-beat="${beat.id}">Expand →</button>
+        <button class="bc-action-btn" data-beat="${beat.id}" data-action="provoke">Provoke ✦</button>
+      </div>
+    `;
+
+    // Animate staggered
+    card.style.animationDelay = `${i * 60}ms`;
+
+    // Function select
+    card.querySelector('.bc-fn-select').addEventListener('change', e => {
+      beat.fn = e.target.value;
+      card.querySelector('.bc-fn-select').className = 'bc-fn-select';
+      persist();
+    });
+
+    // Lock toggle
+    card.querySelector('.bc-lock-btn').addEventListener('click', e => {
+      beat.locked = !beat.locked;
+      e.target.textContent = beat.locked ? '🔒' : 'Lock';
+      e.target.classList.toggle('locked', beat.locked);
+      card.classList.toggle('locked', beat.locked);
+      persist();
+    });
+
+    // Delete
+    card.querySelector('.bc-delete-btn').addEventListener('click', () => {
+      if(!confirm('Remove this beat?')) return;
+      sc.beats = sc.beats.filter(b=>b.id!==beat.id);
+      renderBeats(sc); renderTree(); persist();
+    });
+
+    // Inline edit intention
+    const intentionEl = card.querySelector('.bc-intention');
+    intentionEl.addEventListener('blur', () => {
+      beat.intention = intentionEl.textContent.trim();
+      persist();
+    });
+    intentionEl.addEventListener('keydown', e => {
+      if(e.key==='Enter') { e.preventDefault(); intentionEl.blur(); }
+    });
+
+    // Stakes edit
+    const stakesEl = card.querySelector('.bc-stakes');
+    stakesEl.addEventListener('focus', () => {
+      if(stakesEl.classList.contains('empty')) {
+        stakesEl.textContent = '';
+        stakesEl.classList.remove('empty');
+      }
+    });
+    stakesEl.addEventListener('blur', () => {
+      const t = stakesEl.textContent.trim();
+      if(!t) { stakesEl.textContent='What is at risk in this beat?'; stakesEl.classList.add('empty'); }
+      else { beat.stakes=t; persist(); }
+    });
+
+    // Expand → (Chunk 4 will wire this properly)
+    card.querySelector('.expand-btn').addEventListener('click', () => {
+      toast(`Expanding beat to prose — coming in Chunk 4`, 'info');
+    });
+
+    // Provoke
+    card.querySelector('[data-action="provoke"]').addEventListener('click', async () => {
+      const btn = card.querySelector('[data-action="provoke"]');
+      btn.textContent = '…';
+      btn.disabled = true;
+      try {
+        const scResult = getScene(S.activeSceneId);
+        if(!scResult) return;
+        const movResult = getMovement(S.activeMovId);
+        const provocations = await getInspirations(scResult.scene, movResult);
+        renderInspirations(provocations);
+      } catch(e) {
+        toast('Provocation: '+e.message);
+      } finally { btn.textContent='Provoke ✦'; btn.disabled=false; }
+    });
+
+    // Drag and drop
+    card.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('beatId', beat.id);
+      card.classList.add('dragging');
+    });
+    card.addEventListener('dragend', () => card.classList.remove('dragging'));
+    card.addEventListener('dragover', e => { e.preventDefault(); card.classList.add('drag-over'); });
+    card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+    card.addEventListener('drop', e => {
+      e.preventDefault();
+      card.classList.remove('drag-over');
+      const dragId = e.dataTransfer.getData('beatId');
+      if(dragId === beat.id) return;
+      const beats = sc.beats;
+      const fromIdx = beats.findIndex(b=>b.id===dragId);
+      const toIdx = beats.findIndex(b=>b.id===beat.id);
+      if(fromIdx===-1||toIdx===-1) return;
+      const [moved] = beats.splice(fromIdx,1);
+      beats.splice(toIdx,0,moved);
+      renderBeats(sc); persist();
+    });
+
+    list.appendChild(card);
+  });
+
+  renderContextPanel();
+}
+
+// ─────────────────────────────────────────────
+// CONTEXT PANEL
+// ─────────────────────────────────────────────
+function renderContextPanel() {
+  const panel = $('bv-context-panel');
+  if(!panel) return;
+  const scResult = getScene(S.activeSceneId);
+  if(!scResult) { panel.innerHTML=''; return; }
+  const { act, movement:mov, scene:sc } = scResult;
+  const beats = sc.beats || [];
+
+  // Check for passive character warning
+  const agencyMap = {};
+  beats.forEach(b => { if(b.character) agencyMap[b.character] = (agencyMap[b.character]||0)+1; });
+  const passive = beats.length > 3 && Object.keys(agencyMap).length > 0 &&
+    Object.entries(agencyMap).find(([c,n])=>n===beats.length&&beats.length>2);
+
+  // Open threads (from project)
+  const threads = S.activeThreads || ['The Whitmore decision','What happened to Daniel','Whether Marcus already knows'];
+
+  let html = '';
+
+  // Structural position card
+  html += `<div class="bcp-section">
+    <div class="bcp-title">Structural position</div>
+    <div class="bcp-text"><strong>${act.label}</strong> → ${mov.name}</div>
+    <div class="bcp-text" style="margin-top:4px;color:var(--ink-3)">${mov.fn}<br>${mov.emotional} register · ${mov.pacing} pacing</div>
+  </div>`;
+
+  // What must happen
+  html += `<div class="bcp-section">
+    <div class="bcp-title">This scene must</div>
+    <div class="bcp-signal"><div class="bcp-sig-dot"></div><div>${mov.fn.toLowerCase()} — serve its movement function</div></div>
+    <div class="bcp-signal"><div class="bcp-sig-dot" style="background:var(--col-draft)"></div><div>Leave at least one thread open</div></div>
+    <div class="bcp-signal"><div class="bcp-sig-dot" style="background:var(--col-beat)"></div><div>Give the protagonist a moment of agency</div></div>
+  </div>`;
+
+  // Warning if passive character
+  if(passive) {
+    html += `<div class="bcp-section bcp-warning">
+      <div class="bcp-title">⚠ Structural note</div>
+      <div class="bcp-text">${passive[0]} has agency in every beat. The scene may feel one-sided — consider redistributing who drives each beat.</div>
+    </div>`;
+  }
+
+  // No stakes warning
+  const noStakesCount = beats.filter(b=>!b.stakes||b.stakes==='What is at risk in this beat?').length;
+  if(noStakesCount > 0 && beats.length > 0) {
+    html += `<div class="bcp-section bcp-warning">
+      <div class="bcp-title">⚠ Missing stakes</div>
+      <div class="bcp-text">${noStakesCount} beat${noStakesCount!==1?'s are':' is'} missing a stakes statement. A beat without stakes is usually a dead beat.</div>
+    </div>`;
+  }
+
+  // Open threads
+  html += `<div class="bcp-section">
+    <div class="bcp-title">Open threads</div>
+    ${threads.slice(0,3).map(t=>`<div class="bcp-signal"><div class="bcp-sig-dot" style="background:var(--ink-5)"></div><div>${t}</div></div>`).join('')}
+  </div>`;
+
+  panel.innerHTML = html;
+}
+
+// ─────────────────────────────────────────────
+// NEEDS BOX
+// ─────────────────────────────────────────────
+function renderNeedsBox(html) {
+  const container = $('needs-box-container');
+  container.innerHTML = `<div class="needs-box">
+    <div class="needs-box-title">
+      What this scene needs
+      <span class="needs-box-close" id="needs-close">✕</span>
+    </div>
+    <div class="needs-box-text">${html}</div>
+  </div>`;
+  $('needs-close').onclick = () => container.innerHTML='';
+}
+
+// ─────────────────────────────────────────────
+// INSPIRATION PANEL
+// ─────────────────────────────────────────────
+function renderInspirations(provocations) {
+  const container = $('inspiration-container');
+  const items = provocations.map(p=>`
+    <div class="ip-provocation">
+      <div class="ip-prov-type">${p.type}</div>
+      <div class="ip-prov-text">${p.text}</div>
+    </div>`).join('');
+  container.innerHTML = `<div class="inspiration-panel">
+    <div class="ip-header">
+      Inspiration — five provocations
+      <span class="ip-close" id="inspo-close">✕</span>
+    </div>
+    ${items}
+  </div>`;
+  $('inspo-close').onclick = () => container.innerHTML='';
+}
+
+// ─────────────────────────────────────────────
+// BEAT GENERATION FLOW
+// ─────────────────────────────────────────────
+$('bv-gen-beats').addEventListener('click', async () => {
+  const scResult = getScene(S.activeSceneId);
+  if(!scResult) { toast('Select a scene first.'); return; }
+  const { scene:sc } = scResult;
+  const movResult = getMovement(S.activeMovId);
+  if(!movResult) return;
+
+  // Save intention from textarea
+  const intentionText = $('bv-intention-input').value.trim();
+  if(!intentionText) { toast('Describe what happens in this scene first.'); $('bv-intention-input').focus(); return; }
+  sc.intention = intentionText;
+  $('bv-intention-display').textContent = intentionText;
+
+  const mood = $('beat-mood-select').value;
+  const count = parseInt($('beat-count-slider').value);
+
+  // Show loading shimmer
+  const list = $('beat-list');
+  $('beat-actions-bar').style.display = 'none';
+  list.innerHTML = `
+    <div class="beat-generating">
+      <div class="beat-gen-label"><div class="beat-gen-spinner"></div>Generating ${count} beats for "${sc.name}"…</div>
+      ${Array(count).fill('<div class="beat-gen-shimmer"></div>').join('')}
+    </div>`;
+
+  const btn = $('bv-gen-beats');
+  btn.disabled = true;
+  btn.textContent = 'Generating…';
+
+  try {
+    let beats;
+    if(S.apiKey) {
+      beats = await generateBeats(sc, movResult, mood, count);
+    } else {
+      await sleep(1400);
+      beats = getDemoBeats(sc).slice(0,count);
+    }
+
+    sc.beats = beats;
+    sc.status = 'approved';
+    renderBeats(sc);
+    renderTree();
+    persist();
+
+    if(!S.apiKey) toast('Demo beats — add API key in settings for AI generation', 'info');
+    else toast(`${beats.length} beats generated`, 'success');
+
+  } catch(e) {
+    list.innerHTML = '';
+    toast('Beat generation failed: '+e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Generate beat outline';
+  }
+});
+
+// Beat count slider
+$('beat-count-slider').addEventListener('input', e => {
+  $('beat-count-val').textContent = e.target.value;
+});
+
+// Beat action bar
+$('bab-approve-all').addEventListener('click', () => {
+  const scResult = getScene(S.activeSceneId);
+  if(!scResult) return;
+  scResult.scene.beats.forEach(b=>{ if(!b.locked) b.status='approved'; });
+  renderBeats(scResult.scene); persist();
+  toast('All beats approved', 'success');
+});
+
+$('bab-regenerate').addEventListener('click', async () => {
+  const scResult = getScene(S.activeSceneId);
+  if(!scResult) return;
+  // Keep locked beats, regenerate the rest
+  const lockedBeats = scResult.scene.beats.filter(b=>b.locked);
+  if(lockedBeats.length > 0) toast(`Keeping ${lockedBeats.length} locked beat${lockedBeats.length!==1?'s':''}`);
+  scResult.scene.beats = lockedBeats;
+  renderBeats(scResult.scene);
+  await sleep(100);
+  $('bv-gen-beats').click();
+});
+
+$('bab-clear').addEventListener('click', () => {
+  if(!confirm('Clear all beats for this scene?')) return;
+  const scResult = getScene(S.activeSceneId);
+  if(!scResult) return;
+  scResult.scene.beats = [];
+  scResult.scene.status = 'open';
+  renderBeats(scResult.scene); renderTree(); persist();
+  toast('Beats cleared');
+});
+
+// Add beat manually
+$('beat-add-row').addEventListener('click', () => {
+  const scResult = getScene(S.activeSceneId);
+  if(!scResult) return;
+  const sc = scResult.scene;
+  sc.beats = sc.beats || [];
+  sc.beats.push({ id:uid(), fn:'Beat', intention:'', stakes:'', character:'', locked:false, status:'open' });
+  renderBeats(sc); persist();
+  // Focus last beat's intention
+  setTimeout(() => {
+    const cards = $('beat-list').querySelectorAll('.bc-intention');
+    if(cards.length) cards[cards.length-1].focus();
+  }, 100);
+});
+
+// ─────────────────────────────────────────────
+// CONTEXT BAR BUTTONS
+// ─────────────────────────────────────────────
+$('ctx-what-needs').addEventListener('click', async () => {
+  const scResult = getScene(S.activeSceneId);
+  const movResult = getMovement(S.activeMovId);
+  if(!scResult||!movResult) { toast('Select a scene first.'); return; }
+  const btn = $('ctx-what-needs');
+  btn.textContent = 'Thinking…';
+  btn.disabled = true;
+  try {
+    const answer = await getWhatNeeds(scResult.scene, movResult);
+    renderNeedsBox(answer);
+  } catch(e) { toast('Error: '+e.message); }
+  finally { btn.textContent='What does this need? →'; btn.disabled=false; }
+});
+
+$('ctx-inspire').addEventListener('click', async () => {
+  const scResult = getScene(S.activeSceneId);
+  const movResult = getMovement(S.activeMovId);
+  if(!scResult||!movResult) { toast('Select a scene first.'); return; }
+  const btn = $('ctx-inspire');
+  btn.textContent='…'; btn.disabled=true;
+  try {
+    const provocations = await getInspirations(scResult.scene, movResult);
+    renderInspirations(provocations);
+  } catch(e) { toast('Error: '+e.message); }
+  finally { btn.textContent='Inspiration ✦'; btn.disabled=false; }
+});
+
+$('ctx-diagnose').addEventListener('click', () => toast('Scene diagnosis — coming in Chunk 5', 'info'));
 
 // ─────────────────────────────────────────────
 // MODE TOGGLE
 // ─────────────────────────────────────────────
 function setMode(mode) {
   S.mode = mode;
-  document.body.classList.toggle('screenplay', mode === 'screenplay');
-  $('mode-novel').classList.toggle('active', mode === 'novel');
-  $('mode-screenplay').classList.toggle('active', mode === 'screenplay');
-  $('mode-badge').textContent = mode === 'novel' ? 'Novel' : 'Screenplay';
-  $('sb-mode-pill').textContent = mode === 'novel' ? 'Novel' : 'Screenplay';
-  const arcLabel = mode === 'novel' ? '3-act arc' : '4-act screenplay arc';
-  $('sb-arc-label').textContent = arcLabel;
-  toast(mode === 'novel' ? 'Novel mode — prose, chapters, interiority' : 'Screenplay mode — visual action, sequences, dialogue', 'info');
+  document.body.classList.toggle('screenplay', mode==='screenplay');
+  $('mode-novel').classList.toggle('active', mode==='novel');
+  $('mode-screenplay').classList.toggle('active', mode==='screenplay');
+  $('mode-badge').textContent = mode==='novel'?'Novel':'Screenplay';
+  $('sb-mode-pill').textContent = mode==='novel'?'Novel':'Screenplay';
+  $('sb-arc-label').textContent = mode==='novel'?'3-act arc':'4-act screenplay arc';
+  toast(mode==='novel'?'Novel mode — prose, chapters, interiority':'Screenplay mode — visual action, sequences, dialogue','info');
   persist();
 }
 
+$('mode-novel').addEventListener('click',()=>setMode('novel'));
+$('mode-screenplay').addEventListener('click',()=>setMode('screenplay'));
+
 // ─────────────────────────────────────────────
-// SIDEBAR TREE RENDERING
+// SIDEBAR TREE
 // ─────────────────────────────────────────────
 function renderTree() {
   const tree = $('sb-tree');
   tree.innerHTML = '';
-
-  if (!S.acts.length) {
-    tree.innerHTML = '<div style="padding:14px 14px;font-size:.75rem;color:var(--ink-4);font-style:italic">Import a story to see the structure.</div>';
+  if(!S.acts.length) {
+    tree.innerHTML='<div style="padding:14px;font-size:.75rem;color:var(--ink-4);font-style:italic">Import a story to see the structure.</div>';
     return;
   }
-
   S.acts.forEach(act => {
-    // Act label
-    const actRow = make('div');
-    actRow.className = 'act-row';
-    actRow.innerHTML = `<div class="act-label">${act.label}</div>`;
+    const actRow=make('div'); actRow.className='act-row';
+    actRow.innerHTML=`<div class="act-label">${act.label}</div>`;
     tree.appendChild(actRow);
-
     act.movements.forEach(mov => {
-      const isActive = mov.id === S.activeMovId;
-      const isExpanded = mov.id === S.activeMovId;
-
-      // Movement row
-      const movRow = make('div');
-      movRow.className = 'mov-row' + (isActive ? ' active' : '') + (isExpanded ? ' expanded' : '');
-      movRow.dataset.movId = mov.id;
-
-      const statusCls = `st-${mov.status}`;
-      const sceneCount = mov.scenes.length;
-      const draftedCount = mov.scenes.filter(s => s.status === 'draft').length;
-
-      movRow.innerHTML = `
-        <div class="mov-status ${statusCls}"></div>
+      const isActive=mov.id===S.activeMovId;
+      const movRow=make('div');
+      movRow.className='mov-row'+(isActive?' active expanded':'');
+      movRow.dataset.movId=mov.id;
+      const draftedCount=mov.scenes.filter(s=>s.status==='draft').length;
+      movRow.innerHTML=`
+        <div class="mov-status st-${mov.status}"></div>
         <div class="mov-body">
           <div class="mov-name">${mov.name}</div>
           <div class="mov-fn">${mov.fn}</div>
-          ${mov.summary ? `<div class="mov-summary">${mov.summary}</div>` : ''}
+          ${mov.summary?`<div class="mov-summary">${mov.summary}</div>`:''}
         </div>
-        <div class="mov-scenes-count">${draftedCount}/${sceneCount}</div>
-      `;
-
-      movRow.addEventListener('click', () => selectMovement(mov.id));
+        <div class="mov-scenes-count">${draftedCount}/${mov.scenes.length}</div>`;
+      movRow.addEventListener('click',()=>selectMovement(mov.id));
       tree.appendChild(movRow);
-
-      // Scene rows (shown when movement expanded)
-      if (isExpanded && sceneCount > 0) {
-        const sceneContainer = make('div');
-        sceneContainer.className = 'scene-rows';
-        // Show inline after movement row
-        sceneContainer.style.display = 'block';
-
-        mov.scenes.forEach(sc => {
-          const isScActive = sc.id === S.activeSceneId;
-          const scRow = make('div');
-          scRow.className = 'scene-row' + (isScActive ? ' active' : '');
-          scRow.dataset.sceneId = sc.id;
-          const beatCount = (sc.beats||[]).length;
-          scRow.innerHTML = `
-            <div class="scene-status ${`st-${sc.status}`}"></div>
-            <div class="scene-name">${sc.name}</div>
-            <div class="scene-beats-count">${beatCount > 0 ? beatCount + 'b' : ''}</div>
-          `;
-          scRow.addEventListener('click', (e) => { e.stopPropagation(); selectScene(sc.id); });
-          sceneContainer.appendChild(scRow);
+      if(isActive&&mov.scenes.length>0){
+        const sc_container=make('div'); sc_container.className='scene-rows'; sc_container.style.display='block';
+        mov.scenes.forEach(sc=>{
+          const isScActive=sc.id===S.activeSceneId;
+          const scRow=make('div'); scRow.className='scene-row'+(isScActive?' active':''); scRow.dataset.sceneId=sc.id;
+          const beatCount=(sc.beats||[]).length;
+          scRow.innerHTML=`<div class="scene-status st-${sc.status}"></div><div class="scene-name">${sc.name}</div><div class="scene-beats-count">${beatCount>0?beatCount+'b':''}</div>`;
+          scRow.addEventListener('click',e=>{e.stopPropagation();selectScene(sc.id);});
+          sc_container.appendChild(scRow);
         });
-
-        tree.appendChild(sceneContainer);
+        tree.appendChild(sc_container);
       }
     });
   });
-
   updateStats();
 }
 
@@ -1775,707 +2291,150 @@ function renderTree() {
 // NAVIGATION
 // ─────────────────────────────────────────────
 function showView(which) {
-  $('welcome-state').style.display   = which === 'welcome'  ? '' : 'none';
-  $('movement-view').classList.toggle('visible', which === 'movement');
-  $('beat-view').classList.toggle('visible', which === 'beat');
+  $('welcome-state').style.display   = which==='welcome' ? '' : 'none';
+  $('movement-view').classList.toggle('visible', which==='movement');
+  $('beat-view').classList.toggle('visible', which==='beat');
 }
 
 function selectMovement(movId) {
-  const result = getMovement(movId);
-  if (!result) return;
-  const { act, movement: mov } = result;
-
-  S.activeMovId = movId;
-  S.activeSceneId = null;
-
-  // Update context bar
-  $('ctx-level-label').textContent = 'Movement';
-  $('ctx-name').textContent = mov.name;
-  $('ctx-fn').textContent = mov.fn;
-  $('crumb-act').textContent = act.label;
-  $('crumb-mov').textContent = mov.name;
-  $('crumb-scene').textContent = '—';
-
-  // Show what-needs button
-  $('ctx-what-needs').style.display = '';
-  $('ctx-diagnose').style.display = 'none';
-  $('ctx-inspire').style.display = '';
-
-  // Populate movement view
-  $('mv-act-label').textContent = act.label;
-  $('mv-title').textContent = mov.name;
-  $('mv-fn').textContent = `${mov.fn} · ${mov.emotional} register · ${mov.pacing} pacing`;
-  $('mv-summary-text').textContent = mov.summary || 'No summary yet — import a story or add one manually.';
-  $('mv-scenes-label').textContent = `${S.mode === 'screenplay' ? 'Scenes' : 'Scenes'} in this movement`;
-
-  // Render scene cards
-  renderSceneCards(mov);
-
-  showView('movement');
-  renderTree();
+  const result=getMovement(movId); if(!result) return;
+  const {act,movement:mov}=result;
+  S.activeMovId=movId; S.activeSceneId=null;
+  $('ctx-level-label').textContent='Movement';
+  $('ctx-name').textContent=mov.name; $('ctx-fn').textContent=mov.fn;
+  $('crumb-act').textContent=act.label; $('crumb-mov').textContent=mov.name; $('crumb-scene').textContent='—';
+  $('ctx-what-needs').style.display=''; $('ctx-diagnose').style.display='none'; $('ctx-inspire').style.display='';
+  $('mv-act-label').textContent=act.label; $('mv-title').textContent=mov.name;
+  $('mv-fn').textContent=`${mov.fn} · ${mov.emotional} register · ${mov.pacing} pacing`;
+  $('mv-summary-text').textContent=mov.summary||'No summary yet — import a story or describe this movement.';
+  $('mv-scenes-label').textContent=`Scenes in this movement`;
+  renderSceneCards(mov); showView('movement'); renderTree();
 }
 
 function renderSceneCards(mov) {
-  const list = $('scene-cards-list');
-  list.innerHTML = '';
-
-  mov.scenes.forEach((sc, i) => {
-    const card = make('div');
-    card.className = 'scene-card' + (sc.id === S.activeSceneId ? ' active' : '');
-    card.dataset.sceneId = sc.id;
-
-    const beatCount = (sc.beats||[]).length;
-    const statusLabel = sc.status === 'draft' ? `<span class="sc-tag sc-tag-done">Drafted</span>` :
-                        sc.status === 'approved' ? `<span class="sc-tag sc-tag-open">Approved</span>` :
-                        `<span class="sc-tag sc-tag-open">Open</span>`;
-
-    card.innerHTML = `
+  const list=$('scene-cards-list'); list.innerHTML='';
+  mov.scenes.forEach((sc,i)=>{
+    const card=make('div'); card.className='scene-card'+(sc.id===S.activeSceneId?' active':''); card.dataset.sceneId=sc.id;
+    const beatCount=(sc.beats||[]).length;
+    card.innerHTML=`
       <div class="sc-status-dot st-${sc.status}"></div>
       <div class="sc-num">${String(i+1).padStart(2,'0')}</div>
       <div class="sc-body">
         <div class="sc-name">${sc.name}</div>
-        <div class="sc-intention">${sc.intention || 'No intention set yet.'}</div>
+        <div class="sc-intention">${sc.intention||'No intention set yet.'}</div>
         <div class="sc-meta">
           <span class="sc-tag sc-tag-fn">${sc.fn}</span>
-          ${beatCount > 0 ? `<span class="sc-tag sc-tag-beats">${beatCount} beats</span>` : ''}
-          ${statusLabel}
+          ${beatCount>0?`<span class="sc-tag sc-tag-beats">${beatCount} beats</span>`:''}
+          <span class="sc-tag ${sc.status==='draft'?'sc-tag-done':'sc-tag-open'}">${sc.status==='draft'?'Drafted':sc.status==='approved'?'Approved':'Open'}</span>
         </div>
-      </div>
-    `;
-    card.addEventListener('click', () => selectScene(sc.id));
+      </div>`;
+    card.addEventListener('click',()=>selectScene(sc.id));
     list.appendChild(card);
   });
-
-  // Add scene card
-  const addCard = make('div');
-  addCard.className = 'scene-card scene-card-add';
-  addCard.innerHTML = `
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    Add a scene to this movement
-  `;
-  addCard.addEventListener('click', () => addScene(mov.id));
+  const addCard=make('div'); addCard.className='scene-card scene-card-add';
+  addCard.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add a scene`;
+  addCard.addEventListener('click',()=>addScene(mov.id));
   list.appendChild(addCard);
 }
 
 function selectScene(sceneId) {
-  const result = getScene(sceneId);
-  if (!result) return;
-  const { act, movement: mov, scene: sc } = result;
-
-  S.activeMovId = mov.id;
-  S.activeSceneId = sceneId;
-
-  // Context bar
-  $('ctx-level-label').textContent = 'Scene';
-  $('ctx-name').textContent = sc.name;
-  $('ctx-fn').textContent = sc.fn;
-  $('crumb-act').textContent = act.label;
-  $('crumb-mov').textContent = mov.name;
-  $('crumb-scene').textContent = sc.name;
-
-  $('ctx-what-needs').style.display = '';
-  $('ctx-diagnose').style.display = '';
-  $('ctx-inspire').style.display = '';
-
-  // Populate beat view
-  $('bv-title').textContent = sc.name;
-  $('bv-intention-display').textContent = sc.intention || 'No intention set.';
-  $('bv-intention-input').value = sc.intention || '';
-
-  renderBeats(sc);
-  showView('beat');
-  renderTree();
+  const result=getScene(sceneId); if(!result) return;
+  const {act,movement:mov,scene:sc}=result;
+  S.activeMovId=mov.id; S.activeSceneId=sceneId;
+  $('ctx-level-label').textContent='Scene'; $('ctx-name').textContent=sc.name; $('ctx-fn').textContent=sc.fn;
+  $('crumb-act').textContent=act.label; $('crumb-mov').textContent=mov.name; $('crumb-scene').textContent=sc.name;
+  $('ctx-what-needs').style.display=''; $('ctx-diagnose').style.display=''; $('ctx-inspire').style.display='';
+  $('bv-title').textContent=sc.name;
+  $('bv-intention-display').textContent=sc.intention||'No intention set.';
+  $('bv-intention-input').value=sc.intention||'';
+  $('needs-box-container').innerHTML=''; $('inspiration-container').innerHTML='';
+  renderBeats(sc); showView('beat'); renderTree();
 }
 
-function renderBeats(sc) {
-  const list = $('beat-list');
-  list.innerHTML = '';
-
-  const beats = sc.beats || [];
-  if (!beats.length) return;
-
-  beats.forEach((beat, i) => {
-    const card = make('div');
-    card.className = `beat-card ${beat.locked ? 'locked' : beat.status === 'draft' ? 'drafted' : beat.status === 'approved' ? 'approved' : ''}`;
-    card.dataset.beatId = beat.id;
-
-    const fnClass = beat.fn.toLowerCase().replace(/\s+/g,'-');
-
-    card.innerHTML = `
-      <div class="bc-drag" title="Drag to reorder">⠿</div>
-      <div class="bc-num">${String(i+1).padStart(2,'0')}</div>
-      <div class="bc-body">
-        <div class="bc-fn-row">
-          <span class="bc-fn-tag ${fnClass}">${beat.fn}</span>
-          <button class="bc-lock-btn ${beat.locked ? 'locked' : ''}" data-beat="${beat.id}">${beat.locked ? '🔒 Locked' : 'Lock'}</button>
-        </div>
-        <div class="bc-intention" contenteditable="true" data-beat="${beat.id}">${beat.intention}</div>
-        <div class="bc-meta">
-          <div class="bc-meta-item">
-            <div class="bc-meta-dot"></div>
-            <span>${beat.status || 'open'}</span>
-          </div>
-        </div>
-      </div>
-      <div class="bc-actions">
-        <button class="bc-action-btn expand-btn" data-beat="${beat.id}">Expand →</button>
-        <button class="bc-action-btn" data-beat="${beat.id}" data-action="provoke">Provoke</button>
-      </div>
-    `;
-
-    // Lock toggle
-    card.querySelector('.bc-lock-btn').addEventListener('click', (e) => {
-      beat.locked = !beat.locked;
-      e.target.textContent = beat.locked ? '🔒 Locked' : 'Lock';
-      e.target.classList.toggle('locked', beat.locked);
-      card.classList.toggle('locked', beat.locked);
-      persist();
-    });
-
-    // Inline edit
-    card.querySelector('.bc-intention[contenteditable]').addEventListener('blur', (e) => {
-      beat.intention = e.target.textContent.trim();
-      persist();
-    });
-
-    list.appendChild(card);
-  });
-}
-
-// ─────────────────────────────────────────────
-// SCENE / MOVEMENT ACTIONS
-// ─────────────────────────────────────────────
 function addScene(movId) {
-  const result = getMovement(movId);
-  if (!result) return;
-  const { movement: mov } = result;
-  const id = 'sc' + Date.now();
-  const idx = mov.scenes.length + 1;
-  mov.scenes.push({
-    id, name: `Scene ${idx}`, intention: '', fn: 'To be defined',
-    beats: [], status: 'open'
-  });
-  persist();
-  renderTree();
-  selectMovement(movId);
-  toast('Scene added');
+  const result=getMovement(movId); if(!result) return;
+  const {movement:mov}=result;
+  const id=uid(); const idx=mov.scenes.length+1;
+  mov.scenes.push({id,name:`Scene ${idx}`,intention:'',fn:'To be defined',beats:[],status:'open'});
+  persist(); renderTree(); selectMovement(movId); toast('Scene added');
 }
 
 // ─────────────────────────────────────────────
-// DEMO LOAD
+// DEMO / BLANK
 // ─────────────────────────────────────────────
 function loadDemo() {
-  S.project = { ...DEMO.project };
-  $('tb-title').textContent = S.project.title;
-  $('sb-project-name').textContent = S.project.title;
-
-  // Deep copy arc template and populate with demo content
-  S.acts = JSON.parse(JSON.stringify(ARC_3ACT));
-
-  S.acts.forEach(act => {
-    act.movements.forEach(mov => {
-      mov.summary = DEMO.summaries[mov.id] || '';
-      mov.scenes  = DEMO.scenes[mov.id]   || [];
-      mov.status  = mov.summary ? 'approved' : 'open';
-    });
-  });
-
-  // Add demo beats to first scene
-  if (S.acts[0]?.movements[0]?.scenes[0]) {
-    S.acts[0].movements[0].scenes[0].beats = JSON.parse(JSON.stringify(DEMO_BEATS));
-    S.acts[0].movements[0].scenes[0].status = 'approved';
-  }
-
-  $('welcome-state').style.display = 'none';
-  renderTree();
-  // Auto-select first movement
-  selectMovement(S.acts[0].movements[0].id);
-  persist();
-  toast('Demo story loaded — Ashes of Us', 'success');
+  S.project={...DEMO.project};
+  $('tb-title').textContent=S.project.title;
+  $('sb-project-name').textContent=S.project.title;
+  S.acts=JSON.parse(JSON.stringify(ARC_3ACT));
+  S.acts.forEach(act=>act.movements.forEach(mov=>{
+    mov.summary=DEMO.summaries[mov.id]||'';
+    mov.scenes=DEMO.scenes[mov.id]||[];
+    mov.status=mov.summary?'approved':'open';
+  }));
+  $('welcome-state').style.display='none';
+  renderTree(); selectMovement(S.acts[0].movements[0].id);
+  persist(); toast('Demo loaded — Ashes of Us','success');
 }
 
-// ─────────────────────────────────────────────
-// BLANK START
-// ─────────────────────────────────────────────
 function startBlank() {
-  S.project = { title:'Untitled story', genre:'', tone:'', pov:'', premise:'', ending:'' };
-  S.acts = JSON.parse(JSON.stringify(S.mode === 'screenplay' ? ARC_SCREENPLAY : ARC_3ACT));
-  $('welcome-state').style.display = 'none';
-  renderTree();
-  selectMovement(S.acts[0].movements[0].id);
-  persist();
-  toast('Blank project created');
+  S.project={title:'Untitled story',genre:'',tone:'',pov:'',premise:'',ending:''};
+  S.acts=JSON.parse(JSON.stringify(S.mode==='screenplay'?ARC_SCREENPLAY:ARC_3ACT));
+  $('welcome-state').style.display='none';
+  renderTree(); selectMovement(S.acts[0].movements[0].id);
+  persist(); toast('Blank project created');
 }
 
 // ─────────────────────────────────────────────
 // STATS
 // ─────────────────────────────────────────────
 function updateStats() {
-  const allScenes = S.acts.flatMap(a => a.movements.flatMap(m => m.scenes));
-  const allBeats  = allScenes.flatMap(s => s.beats || []);
-  const draftedScenes = allScenes.filter(s => s.status === 'draft').length;
-
-  $('stat-words').textContent  = '0'; // populated in Chunk 4
-  $('stat-scenes').textContent = `${draftedScenes} / ${allScenes.length}`;
-  $('stat-beats').textContent  = `${allBeats.filter(b=>b.status==='approved'||b.status==='draft').length} approved`;
+  const allScenes=S.acts.flatMap(a=>a.movements.flatMap(m=>m.scenes));
+  const allBeats=allScenes.flatMap(s=>s.beats||[]);
+  const drafted=allScenes.filter(s=>s.status==='draft').length;
+  $('stat-words').textContent='0';
+  $('stat-scenes').textContent=`${drafted}/${allScenes.length}`;
+  $('stat-beats').textContent=`${allBeats.filter(b=>b.status==='approved'||b.status==='draft').length} approved`;
 }
 
 // ─────────────────────────────────────────────
-// BEAT GENERATION (placeholder — Chunk 3)
+// GLOBAL BINDINGS
 // ─────────────────────────────────────────────
-$('bv-gen-beats').addEventListener('click', () => {
-  const sceneResult = getScene(S.activeSceneId);
-  if (!sceneResult) { toast('Select a scene first.'); return; }
-  const { scene: sc } = sceneResult;
-
-  // Update intention from input
-  const intentionText = $('bv-intention-input').value.trim();
-  sc.intention = intentionText;
-  $('bv-intention-display').textContent = intentionText;
-
-  // For now: load demo beats if no API key
-  if (!S.apiKey) {
-    sc.beats = JSON.parse(JSON.stringify(DEMO_BEATS));
-    renderBeats(sc);
-    renderTree();
-    persist();
-    toast('Demo beats loaded — add API key for AI beat generation', 'info');
-    return;
-  }
-  toast('Beat generation with AI — coming in Chunk 3', 'info');
-});
-
-// ─────────────────────────────────────────────
-// BINDINGS
-// ─────────────────────────────────────────────
-
-// Mode toggle
-$('mode-novel').addEventListener('click', () => setMode('novel'));
-$('mode-screenplay').addEventListener('click', () => setMode('screenplay'));
-
-// Sidebar toggle
-const sbToggle = () => {
-  $('shell').classList.toggle('sb-closed');
-  $('rail-structure').classList.toggle('active', !$('shell').classList.contains('sb-closed'));
-};
-$('rail-structure').addEventListener('click', sbToggle);
-
-// Rail stubs (Chunk 5/6)
-['rail-intel','rail-frags','rail-inspire','rail-settings'].forEach(id => {
-  $(id)?.addEventListener('click', () => toast(`${id.replace('rail-','')} panel — coming in later chunks`, 'info'));
-});
-
-// Welcome actions
-// ─────────────────────────────────────────────
-// CHUNK 2 — IMPORT & AI PARSE
-// ─────────────────────────────────────────────
-
-// Arc templates for confirm screen
-const ARC_5PART = [
-  { label: 'Part I', movements: [
-    { id:'p1', name:'Exposition',     fn:'World & character',    emotional:'Grounding',   pacing:'open',       tension:.15, status:'open', summary:'', scenes:[] },
-    { id:'p2', name:'Rising action',  fn:'Destabilisation',      emotional:'Unease',      pacing:'building',   tension:.55, status:'open', summary:'', scenes:[] },
-  ]},
-  { label: 'Part II', movements: [
-    { id:'p3', name:'Climax',         fn:'Peak conflict',        emotional:'Maximum',     pacing:'relentless', tension:1.0, status:'open', summary:'', scenes:[] },
-    { id:'p4', name:'Falling action', fn:'Consequences',         emotional:'Exhaustion',  pacing:'easing',     tension:.55, status:'open', summary:'', scenes:[] },
-    { id:'p5', name:'Denouement',     fn:'Resolution',           emotional:'Clarity',     pacing:'still',      tension:.2,  status:'open', summary:'', scenes:[] },
-  ]},
-];
-
-const ARC_CUSTOM = [
-  { label: 'Part I', movements: [
-    { id:'c1', name:'Opening',  fn:'Establish',  emotional:'Grounding',  pacing:'open',     tension:.2, status:'open', summary:'', scenes:[] },
-    { id:'c2', name:'Middle',   fn:'Develop',    emotional:'Escalate',   pacing:'building', tension:.7, status:'open', summary:'', scenes:[] },
-  ]},
-  { label: 'Part II', movements: [
-    { id:'c3', name:'Closing',  fn:'Resolve',    emotional:'Release',    pacing:'still',    tension:.25,status:'open', summary:'', scenes:[] },
-  ]},
-];
-
-const ALL_ARCS = { '3act': ARC_3ACT, '5part': ARC_5PART, 'custom': ARC_CUSTOM };
-
-// Proxy-aware API call
-async function callClaude(system, user, maxTokens = 1200) {
-  if (!S.apiKey) throw new Error('no-key');
-  const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-  const url = isLocal ? '/api/claude' : 'https://api.anthropic.com/v1/messages';
-  const headers = { 'Content-Type': 'application/json', 'x-api-key': S.apiKey };
-  if (!isLocal) headers['anthropic-version'] = '2023-06-01';
-  const r = await fetch(url, {
-    method: 'POST', headers,
-    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: maxTokens, system, messages: [{ role: 'user', content: user }] })
-  });
-  const d = await r.json();
-  if (d.error) throw new Error(d.error.message);
-  return d.content[0].text.trim();
-}
-
-// Deep parse via AI
-async function deepParseWithAI(text) {
-  const sys = `You are a narrative analysis engine. Read this story outline and return ONLY valid JSON — no markdown fences, no explanation.
-
-JSON structure:
-{
-  "title": string,
-  "genre": string,
-  "tone": string,
-  "pov": string,
-  "premise": string,
-  "ending": string,
-  "centralConflict": string,
-  "characters": [{"name":string,"role":string,"want":string,"fear":string,"belief":string,"arc":string,"confidence":"high"|"med"|"low"}],
-  "themes": [string],
-  "openThreads": [string],
-  "plotEvents": [{"event":string,"position":"early"|"mid"|"late","weight":"pivotal"|"supporting"}],
-  "emotionalBeats": [{"beat":string,"type":"revelation"|"rupture"|"connection"|"collapse"|"shift"}],
-  "subtextGaps": [string],
-  "movementSummaries": {
-    "act1_mov1": string,
-    "act1_mov2": string,
-    "act2_mov1": string,
-    "act2_mov2": string,
-    "act2_mov3": string,
-    "act3_mov1": string,
-    "act3_mov2": string
-  },
-  "sceneIntentions": [
-    {"movementKey":"act1_mov1","name":string,"intention":string,"fn":string},
-    {"movementKey":"act1_mov2","name":string,"intention":string,"fn":string}
-  ]
-}
-
-movementSummaries: write one rich paragraph per movement showing what story material belongs there.
-sceneIntentions: propose 1-3 scenes per movement with clear dramatic intentions.
-Be specific and literary — not generic.`;
-
-  const raw = await callClaude(sys, `Analyse this story:\n\n${text}`, 3000);
-  return JSON.parse(raw.replace(/```json|```/g, '').trim());
-}
-
-// Heuristic fallback (no API key)
-function heuristicParse(text) {
-  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-  const title = lines[0]?.length < 70 ? lines[0].replace(/^#+\s*/, '') : 'Untitled story';
-  const lower = text.toLowerCase();
-
-  // Characters
-  const chars = [];
-  const csec = text.match(/[Cc]haracters?:([\s\S]*?)(?:\n\n|\n[A-Z][^\n]{5,}:|$)/);
-  if (csec) {
-    csec[1].split('\n').filter(Boolean).forEach(l => {
-      const m = l.match(/^([A-Z][a-z]+)/);
-      if (!m) return;
-      chars.push({ name: m[1], role: 'Character', want: l.match(/[Ww]ants?:?\s*([^.]+)/)?.[1]?.trim() || 'Unknown', fear: l.match(/[Ff]ears?:?\s*([^.]+)/)?.[1]?.trim() || 'Unknown', belief: 'Unknown', arc: 'To be determined', confidence: 'high' });
-    });
-  }
-
-  // Themes
-  const themeWords = ['friendship','love','power','betrayal','identity','memory','loss','redemption','truth','family','ambition','loyalty','grief','mortality','dissociation','justice','fire','class'];
-  const themes = themeWords.filter(t => lower.includes(t)).map(t => t[0].toUpperCase() + t.slice(1));
-  const tsec = text.match(/[Tt]hemes?:([^\n]+)/)?.[1];
-  if (tsec) tsec.split(/[,;]/).map(s => s.trim()).filter(Boolean).forEach(t => { if (!themes.includes(t)) themes.push(t); });
-
-  const threads = (text.match(/[A-Z][^.!?]*\?/g) || []).slice(0, 4).map(s => s.trim());
-
-  const genreMap = { literary: 'Literary fiction', thriller: 'Thriller', romance: 'Romance', fantasy: 'Fantasy', horror: 'Horror', mystery: 'Mystery', screenplay: 'Screenplay' };
-  let genre = 'Fiction';
-  for (const [k, v] of Object.entries(genreMap)) { if (lower.includes(k)) { genre = v; break; } }
-
-  return {
-    title, genre,
-    tone: lower.includes('melanchol') || lower.includes('dark') ? 'Dark, melancholic' : 'Dramatic',
-    pov: 'Third person',
-    premise: lines.find(l => l.length > 60)?.substring(0, 220) || text.substring(0, 220),
-    ending: null, centralConflict: '',
-    characters: chars.slice(0, 6), themes: themes.slice(0, 8),
-    openThreads: threads.slice(0, 5),
-    plotEvents: [], emotionalBeats: [], subtextGaps: [],
-    movementSummaries: {}, sceneIntentions: []
-  };
-}
-
-// Animate parse stream
-async function runParseStream(parsed) {
-  const stream = $('po-stream');
-  const bar = $('po-bar');
-  const steps = [
-    ['Reading', 'outline structure and intent'],
-    ['Finding', 'characters and psychology'],
-    ['Mapping', 'themes and motifs'],
-    ['Extracting', 'turning points and beats'],
-    ['Building', 'movement summaries'],
-    ['Calibrating', 'scene intentions across arc'],
-  ];
-  const parsePromise = parsed; // already a promise or value
-  for (let i = 0; i < steps.length; i++) {
-    bar.style.width = Math.round((i / steps.length) * 85) + '%';
-    const row = document.createElement('div');
-    row.className = 'po-finding'; row.style.animationDelay = '0s';
-    row.innerHTML = `<span class="po-key">${steps[i][0]}</span> <span class="po-val">${steps[i][1]}</span>`;
-    stream.appendChild(row);
-    await sleep(320);
-  }
-  const result = await parsePromise;
-  bar.style.width = '100%';
-
-  // Stream results
-  await sleep(200);
-  if (result.characters?.length) { addFinding('People', result.characters.slice(0, 3).map(c => c.name).join(', ')); await sleep(160); }
-  if (result.themes?.length) { addFinding('Themes', result.themes.slice(0, 4).join(', ')); await sleep(160); }
-  if (result.openThreads?.length) { addFinding('Threads', `${result.openThreads.length} open`); await sleep(160); }
-  if (result.subtextGaps?.length) { addFinding('Gaps', `${result.subtextGaps.length} narrative gaps identified`); await sleep(160); }
-  await sleep(350);
-  return result;
-}
-
-function addFinding(key, val) {
-  const row = document.createElement('div');
-  row.className = 'po-finding'; row.style.animationDelay = '0s';
-  row.innerHTML = `<span class="po-key">${key}</span> <span class="po-val">${val}</span>`;
-  $('po-stream').appendChild(row);
-}
-
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-// Show confirm screen
-function showConfirmScreen(parsed) {
-  $('cs-title').textContent = parsed.title || 'Your story';
-  $('cs-genre').value = parsed.genre || '';
-  $('cs-tone').value = parsed.tone || '';
-  $('cs-pov').value = parsed.pov || '';
-  $('cs-premise').value = parsed.premise || '';
-  $('cs-ending').value = parsed.ending || '';
-
-  // Extracted tags
-  let html = '';
-  if (parsed.characters?.length) {
-    html += `<div class="cs-tag-row"><span class="cs-tag-key">People</span>${parsed.characters.slice(0, 5).map(c => `<span class="cs-tag ${c.confidence === 'high' ? 'hi' : ''}">${c.name}</span>`).join('')}</div>`;
-  }
-  if (parsed.themes?.length) {
-    html += `<div class="cs-tag-row"><span class="cs-tag-key">Themes</span>${parsed.themes.slice(0, 6).map(t => `<span class="cs-tag">${t}</span>`).join('')}</div>`;
-  }
-  if (parsed.openThreads?.length) {
-    html += `<div class="cs-tag-row"><span class="cs-tag-key">Threads</span>${parsed.openThreads.slice(0, 3).map(t => `<span class="cs-tag">${t.substring(0, 48)}${t.length > 48 ? '…' : ''}</span>`).join('')}</div>`;
-  }
-  if (parsed.subtextGaps?.length) {
-    html += `<div class="cs-tag-row"><span class="cs-tag-key">Gaps</span>${parsed.subtextGaps.slice(0, 2).map(g => `<span class="cs-tag" style="border-color:rgba(91,79,207,.3)">${g.substring(0, 52)}${g.length > 52 ? '…' : ''}</span>`).join('')}</div>`;
-  }
-  $('cs-extracted').innerHTML = html;
-
-  S._pendingParsed = parsed;
-  $('confirm-screen').classList.add('active');
-}
-
-// Apply parsed data to arc structure
-function applyParsedToArc(parsed, arcType) {
-  const arcTemplate = JSON.parse(JSON.stringify(ALL_ARCS[arcType] || ARC_3ACT));
-
-  // Movement key map for 3-act
-  const movKeyMap3 = { act1_mov1: 'm1', act1_mov2: 'm2', act2_mov1: 'm3', act2_mov2: 'm4', act2_mov3: 'm5', act3_mov1: 'm6', act3_mov2: 'm7' };
-  // For 5-part
-  const movKeyMap5 = { act1_mov1: 'p1', act1_mov2: 'p2', act2_mov1: 'p3', act2_mov2: 'p4', act2_mov3: 'p5' };
-
-  const movKeyMap = arcType === '5part' ? movKeyMap5 : arcType === 'custom' ? {} : movKeyMap3;
-
-  // Apply summaries
-  if (parsed.movementSummaries) {
-    arcTemplate.forEach(act => {
-      act.movements.forEach(mov => {
-        const key = Object.keys(movKeyMap).find(k => movKeyMap[k] === mov.id);
-        if (key && parsed.movementSummaries[key]) {
-          mov.summary = parsed.movementSummaries[key];
-          mov.status = 'approved';
-        }
-      });
-    });
-  }
-
-  // Apply scene intentions
-  if (parsed.sceneIntentions?.length) {
-    parsed.sceneIntentions.forEach((si, idx) => {
-      const movId = movKeyMap[si.movementKey];
-      if (!movId) return;
-      let targetMov = null;
-      arcTemplate.forEach(act => { act.movements.forEach(m => { if (m.id === movId) targetMov = m; }); });
-      if (!targetMov) return;
-      targetMov.scenes.push({
-        id: 'sc_' + si.movementKey + '_' + idx,
-        name: si.name || `Scene ${targetMov.scenes.length + 1}`,
-        intention: si.intention || '',
-        fn: si.fn || 'Scene',
-        beats: [], status: 'open'
-      });
-    });
-  }
-
-  // Distribute plot events across movements (fallback if no sceneIntentions)
-  const allMovements = arcTemplate.flatMap(a => a.movements);
-  if (parsed.plotEvents?.length && !parsed.sceneIntentions?.length) {
-    const n = allMovements.length;
-    parsed.plotEvents.forEach((evt, i) => {
-      const pos = evt.position === 'early' ? 0 : evt.position === 'late' ? n - 1 : Math.floor(n / 2);
-      const ci = Math.min(pos + Math.floor(i / Math.max(parsed.plotEvents.length / 3, 1)), n - 1);
-      const mov = allMovements[ci];
-      if (mov && !mov.scenes.some(s => s.intention === evt.event)) {
-        mov.scenes.push({ id: 'ev_' + i, name: evt.event.substring(0, 40), intention: evt.event, fn: evt.weight === 'pivotal' ? 'Turning point' : 'Scene', beats: [], status: 'open' });
-      }
-    });
-  }
-
-  return arcTemplate;
-}
-
-// Main parse flow
-async function startParseFlow(text) {
-  // Show parse overlay
-  $('po-stream').innerHTML = '';
-  $('po-bar').style.width = '0';
-  $('parse-overlay').classList.add('active');
-
-  let parsePromise;
-  if (S.apiKey) {
-    parsePromise = deepParseWithAI(text).catch(e => {
-      console.warn('AI parse failed, using heuristic:', e.message);
-      return heuristicParse(text);
-    });
-  } else {
-    parsePromise = Promise.resolve(heuristicParse(text));
-  }
-
-  const parsed = await runParseStream(parsePromise);
-  await sleep(300);
-  $('parse-overlay').classList.remove('active');
-  showConfirmScreen(parsed);
-}
-
-// Begin writing from confirmed data
-function beginWriting() {
-  const parsed = S._pendingParsed;
-  if (!parsed) return;
-
-  // Save project
-  S.project = {
-    title:   $('cs-title').textContent || parsed.title || 'Untitled',
-    genre:   $('cs-genre').value,
-    tone:    $('cs-tone').value,
-    pov:     $('cs-pov').value,
-    premise: $('cs-premise').value,
-    ending:  $('cs-ending').value,
-  };
-  S.characters = parsed.characters || [];
-  S.themes     = parsed.themes || [];
-  S.threads    = parsed.openThreads || [];
-
-  const arcType = document.querySelector('.cs-arc-pill.on')?.dataset.arc || '3act';
-  S.acts = applyParsedToArc(parsed, arcType);
-
-  $('tb-title').textContent = S.project.title;
-  $('sb-project-name').textContent = S.project.title;
-  $('confirm-screen').classList.remove('active');
-  $('welcome-state').style.display = 'none';
-
-  renderTree();
-  if (S.acts.length) selectMovement(S.acts[0].movements[0].id);
-  persist();
-  toast(`Story structured — ${S.acts.flatMap(a => a.movements).length} movements ready`, 'success');
-}
-
-// Wire up confirm screen
-$('cs-begin').addEventListener('click', beginWriting);
-$('cs-back').addEventListener('click', () => {
-  $('confirm-screen').classList.remove('active');
-  $('welcome-state').style.display = '';
-});
-document.querySelectorAll('.cs-arc-pill').forEach(pill => {
-  pill.addEventListener('click', () => {
-    document.querySelectorAll('.cs-arc-pill').forEach(p => p.classList.remove('on'));
-    pill.classList.add('on');
-  });
-});
-
-$('btn-demo').addEventListener('click', loadDemo);
-$('btn-new-blank').addEventListener('click', startBlank);
-$('btn-analyse').addEventListener('click', () => {
-  const text = $('outline-input').value.trim();
-  if (!text) { toast('Paste your story first.'); return; }
-  startParseFlow(text);
-});
-
-// Back button in beat view
-$('bv-back').addEventListener('click', () => {
-  if (S.activeMovId) selectMovement(S.activeMovId);
-});
-
-// Add scene from movement view
-$('mv-add-scene-btn').addEventListener('click', () => {
-  if (S.activeMovId) addScene(S.activeMovId);
-});
-
-// Beat add row
-$('beat-add-row').addEventListener('click', () => {
-  if (!S.activeSceneId) return;
-  const result = getScene(S.activeSceneId);
-  if (!result) return;
-  const { scene: sc } = result;
-  sc.beats = sc.beats || [];
-  sc.beats.push({ id:'b'+Date.now(), fn:'Beat', intention:'', locked:false, status:'open' });
-  renderBeats(sc);
-  persist();
-});
-
-// Intention input — auto-save on blur
-$('bv-intention-input').addEventListener('blur', () => {
-  if (!S.activeSceneId) return;
-  const result = getScene(S.activeSceneId);
-  if (!result) return;
-  result.scene.intention = $('bv-intention-input').value.trim();
-  $('bv-intention-display').textContent = result.scene.intention;
-  persist();
-});
-
-// Context bar buttons (stubs)
-$('ctx-what-needs').addEventListener('click', () => toast('What does this need? — coming in Chunk 5', 'info'));
-$('ctx-diagnose').addEventListener('click',   () => toast('Scene diagnosis — coming in Chunk 5', 'info'));
-$('ctx-inspire').addEventListener('click',    () => toast('Inspiration layer — coming in Chunk 5', 'info'));
-
-// Topbar buttons
-$('btn-settings').addEventListener('click', () => $('settings-modal').classList.add('open'));
-$('btn-read').addEventListener('click',     () => toast('Reading mode — coming in Chunk 7', 'info'));
-$('btn-export').addEventListener('click',   () => toast('Export — coming in Chunk 7', 'info'));
-
-// Settings modal
-$('settings-cancel').addEventListener('click', () => $('settings-modal').classList.remove('open'));
-$('settings-save').addEventListener('click', () => {
-  const key = $('api-key-input').value.trim();
-  S.apiKey = key || null;
-  if (key) { localStorage.setItem('nv4_key', btoa(key)); }
-  else { localStorage.removeItem('nv4_key'); }
+const sbToggle=()=>{ $('shell').classList.toggle('sb-closed'); $('rail-structure').classList.toggle('active',!$('shell').classList.contains('sb-closed')); };
+$('rail-structure').addEventListener('click',sbToggle);
+['rail-intel','rail-frags','rail-inspire','rail-settings'].forEach(id=>$(id)?.addEventListener('click',()=>toast(`${id.replace('rail-','')} panel — coming in Chunk 6`,'info')));
+$('btn-demo').addEventListener('click',loadDemo);
+$('btn-new-blank').addEventListener('click',startBlank);
+$('btn-analyse').addEventListener('click',()=>{ const t=$('outline-input').value.trim(); if(!t){toast('Paste your story first.');return;} toast('AI story parsing — Chunk 2. Loading blank.','info'); startBlank(); });
+$('bv-back').addEventListener('click',()=>{ if(S.activeMovId) selectMovement(S.activeMovId); });
+$('mv-add-scene-btn').addEventListener('click',()=>{ if(S.activeMovId) addScene(S.activeMovId); });
+$('btn-settings').addEventListener('click',()=>$('settings-modal').classList.add('open'));
+$('btn-read').addEventListener('click',()=>toast('Reading mode — Chunk 7','info'));
+$('btn-export').addEventListener('click',()=>toast('Export — Chunk 7','info'));
+$('settings-cancel').addEventListener('click',()=>$('settings-modal').classList.remove('open'));
+$('settings-save').addEventListener('click',()=>{
+  const k=$('api-key-input').value.trim(); S.apiKey=k||null;
+  if(k) localStorage.setItem('nv4_key',btoa(k)); else localStorage.removeItem('nv4_key');
   $('settings-modal').classList.remove('open');
-  toast(key ? 'API key saved — AI features enabled' : 'Running in demo mode', key ? 'success' : '');
+  toast(k?'API key saved — AI beat generation enabled':'Running in demo mode',k?'success':'');
 });
-
-// Title edit
-$('tb-title').addEventListener('blur', () => {
-  if (S.project) {
-    S.project.title = $('tb-title').textContent.trim();
-    $('sb-project-name').textContent = S.project.title;
-    persist();
-  }
+$('tb-title').addEventListener('blur',()=>{ if(S.project){S.project.title=$('tb-title').textContent.trim();$('sb-project-name').textContent=S.project.title;persist();}});
+$('tb-title').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('tb-title').blur();}});
+$('bv-intention-input').addEventListener('blur',()=>{
+  if(!S.activeSceneId) return;
+  const r=getScene(S.activeSceneId); if(!r) return;
+  r.scene.intention=$('bv-intention-input').value.trim();
+  $('bv-intention-display').textContent=r.scene.intention; persist();
 });
-$('tb-title').addEventListener('keydown', e => { if (e.key==='Enter') { e.preventDefault(); $('tb-title').blur(); } });
-
-// Keyboard shortcuts
-document.addEventListener('keydown', e => {
-  const mod = e.metaKey || e.ctrlKey;
-  if (mod && e.key === '\\') { e.preventDefault(); sbToggle(); }
-  if (mod && e.key === 'i')  { e.preventDefault(); toast('Intelligence panel — Chunk 6', 'info'); }
-  if (mod && e.key === 'Enter') {
-    e.preventDefault();
-    if ($('beat-view').classList.contains('visible')) $('bv-gen-beats').click();
-    else if ($('welcome-state').style.display !== 'none') $('btn-analyse').click();
+document.addEventListener('keydown',e=>{
+  const mod=e.metaKey||e.ctrlKey;
+  if(mod&&e.key==='\\'){e.preventDefault();sbToggle();}
+  if(mod&&e.key==='i'){e.preventDefault();toast('Intelligence panel — Chunk 6','info');}
+  if(mod&&e.key==='Enter'){e.preventDefault();
+    if($('beat-view').classList.contains('visible')) $('bv-gen-beats').click();
+    else if($('welcome-state').style.display!=='none') $('btn-analyse').click();
   }
-  if (e.key === 'Escape') $('settings-modal').classList.remove('open');
+  if(e.key==='Escape') $('settings-modal').classList.remove('open');
 });
 
 // ─────────────────────────────────────────────
@@ -2483,42 +2442,34 @@ document.addEventListener('keydown', e => {
 // ─────────────────────────────────────────────
 function restoreSession() {
   try {
-    const stored = localStorage.getItem('nv4_state');
-    if (stored) {
-      const saved = JSON.parse(stored);
-      if (saved.project) {
-        Object.assign(S, { mode:saved.mode||'novel', project:saved.project, acts:saved.acts||[], apiKey:saved.apiKey||null });
-        document.body.classList.toggle('screenplay', S.mode === 'screenplay');
-        $('mode-novel').classList.toggle('active', S.mode === 'novel');
-        $('mode-screenplay').classList.toggle('active', S.mode === 'screenplay');
-        $('mode-badge').textContent = S.mode === 'novel' ? 'Novel' : 'Screenplay';
-        $('sb-mode-pill').textContent = S.mode === 'novel' ? 'Novel' : 'Screenplay';
-        $('tb-title').textContent = S.project.title;
-        $('sb-project-name').textContent = S.project.title;
-        $('welcome-state').style.display = 'none';
+    const stored=localStorage.getItem('nv4_state');
+    if(stored){
+      const saved=JSON.parse(stored);
+      if(saved.project){
+        Object.assign(S,{mode:saved.mode||'novel',project:saved.project,acts:saved.acts||[],apiKey:saved.apiKey||null});
+        document.body.classList.toggle('screenplay',S.mode==='screenplay');
+        $('mode-novel').classList.toggle('active',S.mode==='novel');
+        $('mode-screenplay').classList.toggle('active',S.mode==='screenplay');
+        $('mode-badge').textContent=S.mode==='novel'?'Novel':'Screenplay';
+        $('sb-mode-pill').textContent=S.mode==='novel'?'Novel':'Screenplay';
+        $('tb-title').textContent=S.project.title;
+        $('sb-project-name').textContent=S.project.title;
+        $('welcome-state').style.display='none';
         renderTree();
-        if (S.acts.length) selectMovement(S.acts[0].movements[0].id);
+        if(S.acts.length) selectMovement(S.acts[0].movements[0].id);
         return true;
       }
     }
-  } catch(e) {}
-
-  // Restore API key
-  try {
-    const k = localStorage.getItem('nv4_key');
-    if (k) { S.apiKey = atob(k); $('api-key-input').value = S.apiKey; }
-  } catch(e) {}
-
+  } catch(e){}
+  try { const k=localStorage.getItem('nv4_key'); if(k){S.apiKey=atob(k);$('api-key-input').value=S.apiKey;} } catch(e){}
   return false;
 }
 
 // ─────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  if (!restoreSession()) {
-    renderTree(); // show empty state in sidebar
-  }
+document.addEventListener('DOMContentLoaded',()=>{
+  if(!restoreSession()) renderTree();
 });
 </script>
 </body>
