@@ -410,6 +410,49 @@ body.reading #reading-mode{display:block}
 .rm-prose{font-family:var(--serif);font-size:18px;line-height:2;color:var(--ink)}
 .rm-prose p{margin-bottom:1.1em}
 
+/* Story map tab */
+#story-map-tab { padding: 0; }
+.sm-header { padding: 12px 14px 8px; border-bottom: 1px solid var(--border); }
+.sm-header-title { font-size: .62rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 6px; }
+.sm-legend { display: flex; gap: 10px; flex-wrap: wrap; }
+.sm-leg-item { display: flex; align-items: center; gap: 4px; font-size: .6rem; color: var(--ink-4); }
+.sm-leg-dot { width: 6px; height: 6px; border-radius: 50%; }
+.sm-body { padding: 0; }
+.sm-cluster { border-bottom: 1px solid var(--border); cursor: pointer; transition: background var(--dur); }
+.sm-cluster:hover { background: var(--paper-2); }
+.sm-cluster.sm-active { background: var(--accent-l); }
+.sm-cluster-head { display: flex; align-items: center; gap: 8px; padding: 10px 14px 8px; }
+.sm-clu-num { font-size: .6rem; font-weight: 600; color: var(--ink-5); width: 16px; flex-shrink: 0; }
+.sm-clu-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.sm-clu-info { flex: 1; min-width: 0; }
+.sm-clu-name { font-size: .8rem; font-weight: 600; color: var(--ink); margin-bottom: 1px; }
+.sm-cluster.sm-active .sm-clu-name { color: var(--accent); }
+.sm-clu-fn { font-size: .65rem; color: var(--ink-4); }
+.sm-temp-bar { flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.sm-temp-num { font-size: .58rem; color: var(--ink-5); }
+.sm-temp-track { width: 32px; height: 3px; border-radius: 2px; background: var(--paper-3); overflow: hidden; }
+.sm-temp-fill { height: 100%; border-radius: 2px; transition: width .4s; }
+.sm-cluster-body { padding: 0 14px 10px 38px; display: none; }
+.sm-cluster.open .sm-cluster-body { display: block; }
+.sm-events { margin-bottom: 8px; }
+.sm-events-title { font-size: .58rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-5); margin-bottom: 4px; }
+.sm-event { font-size: .72rem; color: var(--ink-2); line-height: 1.45; padding: 3px 0; border-bottom: 1px solid var(--border); display: flex; gap: 5px; }
+.sm-event:last-child { border: none; }
+.sm-event-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); flex-shrink: 0; margin-top: 5px; }
+.sm-event-text { flex: 1; }
+.sm-beats { margin-bottom: 8px; }
+.sm-beat { font-size: .7rem; color: var(--ink-3); line-height: 1.4; padding: 2px 0; display: flex; gap: 5px; font-style: italic; }
+.sm-beat-icon { color: var(--violet); flex-shrink: 0; font-style: normal; font-size: .65rem; }
+.sm-chars-row { display: flex; gap: 4px; flex-wrap: wrap; }
+.sm-char-pill { font-size: .62rem; padding: 1px 7px; border-radius: 3px; background: var(--green-l); color: var(--green); border: 1px solid rgba(45,106,79,.2); }
+.sm-scene-accepted { font-size: .7rem; color: var(--green); font-weight: 500; margin-top: 5px; display: flex; align-items: center; gap:4px; }
+.sm-scene-accepted::before { content: '✓'; }
+.sm-empty-cluster { font-size: .7rem; color: var(--ink-5); font-style: italic; padding: 3px 0; }
+.sm-add-event { display: flex; gap: 5px; margin-top: 6px; }
+.sm-add-event input { flex: 1; height: 24px; background: var(--paper); border: 1px solid var(--border-2); border-radius: 4px; padding: 0 7px; font-size: .72rem; }
+.sm-add-event input:focus { border-color: var(--accent); outline: none; }
+.sm-add-event button { height: 24px; padding: 0 8px; border-radius: 4px; background: var(--ink); color: var(--paper); font-size: .68rem; font-weight: 500; }
+
 /* Kbd hint */
 #kbd{position:fixed;bottom:8px;right:10px;font-size:.58rem;color:var(--ink-5);display:flex;gap:8px;z-index:10;pointer-events:none}
 .kh{display:flex;gap:2px;align-items:center}
@@ -655,6 +698,7 @@ kbd{font-family:var(--sans);font-size:.56rem;background:var(--paper-2);border:1p
   <aside id="panel">
     <div id="panel-tabs">
       <div class="ptab on" data-tab="intel">Intelligence</div>
+      <div class="ptab" data-tab="map">Story map</div>
       <div class="ptab" data-tab="chars">Characters</div>
       <div class="ptab" data-tab="frags">Fragments</div>
     </div>
@@ -945,32 +989,43 @@ async function generateScene() {
   cluster.status = 'drafting';
   hideEmpty();
   $('shimmer').classList.add('on');
+  $('manuscript').style.display = 'block';
 
   // Gather fragments for this cluster
   const clusterFrags = S.fragments.filter(f=>f.clusterId===cluster.id&&f.state!=='used');
 
+  let prose = '';
   try {
-    let prose;
     if (S.apiKey) {
       prose = await generateWithAI(cluster, clusterFrags);
     } else {
-      await sleep(1600);
+      await sleep(1200);
+      // Demo prose for known clusters, fallback for others
       prose = DEMO_PROSE[cluster.id] || buildFallbackProse(cluster);
     }
-    $('shimmer').classList.remove('on');
-    S.isGenerating = false;
-    btn.disabled = false;
+  } catch(e) {
+    // If AI fails, fall back to demo prose rather than failing silently
+    console.warn('AI generation failed, using fallback:', e.message);
+    prose = DEMO_PROSE[cluster.id] || buildFallbackProse(cluster);
+    if (e.message !== 'no-key') toast('AI error — using demo prose. Check API key.');
+  }
+
+  $('shimmer').classList.remove('on');
+  S.isGenerating = false;
+  btn.disabled = false;
+
+  if (prose) {
     insertAIProse(prose);
     cluster.status = 'drafted';
     renderSidebar();
     updateClusterBar();
     showFragReminder(clusterFrags);
-  } catch(e) {
-    $('shimmer').classList.remove('on');
-    S.isGenerating = false;
-    btn.disabled = false;
+    if (!S.apiKey) {
+      toast('Demo mode — add API key in ⚙ for live AI generation');
+    }
+  } else {
     showEmpty();
-    toast(e.message === 'no-key' ? 'Add API key in settings to enable AI generation.' : 'Generation failed: ' + e.message);
+    toast('No prose generated. Check your API key in settings.');
   }
 }
 
@@ -1158,49 +1213,53 @@ Return ONLY the rewritten text, nothing else.`;
 function insertAIProse(prose, isVoice=false) {
   const ms = $('manuscript');
   ms.contentEditable = 'true';
-  const paras = prose.split('\n').filter(p=>p.trim());
   const cls = isVoice ? 'voice-block' : 'ai-block';
 
-  // Insert at cursor or end
+  // Build paragraph HTML
+  const paras = prose.split('\n').filter(p=>p.trim());
+  const html = paras.map(p=>`<p class="${cls}">${escHtml(p)}</p>`).join('');
+
+  // Find insertion point — after last existing paragraph if cursor not inside
   const sel = window.getSelection();
-  let insertAfter = null;
+  let inserted = false;
+
   if (sel && sel.rangeCount && ms.contains(sel.anchorNode)) {
+    // Find the paragraph-level ancestor inside manuscript
     let node = sel.anchorNode;
     while (node && node.parentElement !== ms) node = node.parentElement;
-    insertAfter = node;
+    if (node && node !== ms) {
+      node.insertAdjacentHTML('afterend', html);
+      inserted = true;
+    }
   }
 
-  const fragment = document.createDocumentFragment();
-  paras.forEach(p => {
-    const el = document.createElement('p');
-    el.className = cls;
-    el.textContent = p;
-    fragment.appendChild(el);
-  });
-
-  if (insertAfter && insertAfter !== ms) {
-    insertAfter.after(fragment);
-  } else {
-    ms.appendChild(fragment);
+  if (!inserted) {
+    ms.insertAdjacentHTML('beforeend', html);
   }
 
-  // Stream in effect: briefly show cursor at end
-  const newCur = document.createElement('span');
-  newCur.className = 'stream-cur';
-  ms.appendChild(newCur);
-  setTimeout(()=>newCur.remove(), 2200);
+  // Add streaming cursor at very end
+  const cur = document.createElement('span');
+  cur.className = 'stream-cur';
+  ms.appendChild(cur);
+  setTimeout(()=>{ if(cur.parentNode) cur.remove(); }, 2400);
 
-  // Schedule tint fade
+  // Scroll to bottom of active zone
+  const az = $('ed-scroll');
+  setTimeout(()=>{ az.scrollTop = az.scrollHeight; }, 100);
+
+  // Schedule tint fade after 14s
   setTimeout(()=>{
-    ms.querySelectorAll(`.${cls}:not(.fading)`).forEach(el=>{
-      if (!el.classList.contains('fading')) {
-        el.classList.add('fading');
-      }
+    ms.querySelectorAll(`.${cls}`).forEach(el=>{
+      el.classList.add('fading');
     });
-  }, 12000);
+  }, 14000);
 
   $('empty-state').classList.add('gone');
   scheduleAutosave();
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1446,11 +1505,125 @@ function updateIntelModel() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// PANEL RENDERING
+// STORY MAP TAB
 // ═══════════════════════════════════════════════════════════════
+function renderMapTab() {
+  const pb = $('panel-body');
+  if (!S.clusters.length) {
+    pb.innerHTML = '<div style="padding:20px;font-size:.8rem;color:var(--ink-4);font-style:italic">Import a story to see the story map.</div>';
+    return;
+  }
+
+  const dotColor = st => st==='accepted'?'var(--green)':st==='drafted'||st==='drafting'?'var(--accent)':st==='active-w'?'var(--accent)':'var(--ink-5)';
+
+  const clustersHtml = S.clusters.map((c, i) => {
+    const isActive = i === S.activeIdx;
+    const tempPct = Math.round((c.temp||0.3)*100);
+    const tempColor = tempPct>70?'#b85a28':tempPct>45?'#a07c20':'#2d6a4f';
+    const acceptedScenes = c.scenes.filter(s=>s.status==='accepted');
+
+    // Events
+    const events = (c.extractedEvents||[]).map(ev =>
+      `<div class="sm-event"><div class="sm-event-dot"></div><div class="sm-event-text">${ev}</div></div>`
+    ).join('');
+
+    // Emotional beats assigned to this cluster from parsed data
+    const beats = (S.parsedData?.emotionalBeats||[])
+      .filter((_,bi)=>Math.floor(bi/(Math.max((S.parsedData?.emotionalBeats?.length||1),1)/S.clusters.length))===i)
+      .slice(0,2)
+      .map(b=>`<div class="sm-beat"><span class="sm-beat-icon">◈</span>${b.beat}</div>`)
+      .join('');
+
+    // Characters active in this cluster (from accepted scenes)
+    const activeChars = S.characters.filter(ch => acceptedScenes.some(s=>s.prose?.includes(ch.name)));
+    const charPills = activeChars.map(ch=>`<span class="sm-char-pill">${ch.name}</span>`).join('');
+
+    // Fragments assigned
+    const frags = S.fragments.filter(f=>f.clusterId===c.id);
+
+    return `<div class="sm-cluster ${isActive?'sm-active':''} ${i===0?'open':''}" data-ci="${i}">
+      <div class="sm-cluster-head">
+        <span class="sm-clu-num">${i+1}</span>
+        <div class="sm-clu-dot" style="background:${dotColor(c.status)}"></div>
+        <div class="sm-clu-info">
+          <div class="sm-clu-name">${c.label}</div>
+          <div class="sm-clu-fn">${c.fn} · ${c.emotional}</div>
+        </div>
+        <div class="sm-temp-bar">
+          <span class="sm-temp-num">${tempPct}°</span>
+          <div class="sm-temp-track"><div class="sm-temp-fill" style="width:${tempPct}%;background:${tempColor}"></div></div>
+        </div>
+      </div>
+      <div class="sm-cluster-body">
+        ${events ? `<div class="sm-events"><div class="sm-events-title">Events in this cluster</div>${events}</div>` : ''}
+        ${beats ? `<div class="sm-beats">${beats}</div>` : ''}
+        ${charPills ? `<div style="margin-bottom:6px"><div class="sm-events-title">Characters active</div><div class="sm-chars-row">${charPills}</div></div>` : ''}
+        ${frags.length ? `<div style="margin-bottom:6px"><div class="sm-events-title">Fragments assigned (${frags.length})</div>${frags.map(f=>`<div class="sm-beat"><span class="sm-beat-icon">✦</span>${f.text.substring(0,55)}${f.text.length>55?'…':''}</div>`).join('')}</div>` : ''}
+        ${acceptedScenes.length ? `<div class="sm-scene-accepted">${acceptedScenes.length} scene${acceptedScenes.length>1?'s':''} accepted — ${(c.wordCount||0).toLocaleString()} words</div>` : `<div class="sm-empty-cluster">Not yet written</div>`}
+        <div class="sm-add-event">
+          <input type="text" placeholder="Add a story event to this cluster…" data-ci="${i}">
+          <button data-ci="${i}">Add</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  pb.innerHTML = `<div id="story-map-tab">
+    <div class="sm-header">
+      <div class="sm-header-title">Calibrated story spine — ${S.clusters.length} clusters</div>
+      <div class="sm-legend">
+        <div class="sm-leg-item"><div class="sm-leg-dot" style="background:var(--ink-5)"></div>Planned</div>
+        <div class="sm-leg-item"><div class="sm-leg-dot" style="background:var(--accent)"></div>Drafted</div>
+        <div class="sm-leg-item"><div class="sm-leg-dot" style="background:var(--green)"></div>Accepted</div>
+        <div class="sm-leg-item"><div class="sm-leg-dot" style="background:var(--violet)"></div>Beat</div>
+      </div>
+    </div>
+    <div class="sm-body">${clustersHtml}</div>
+  </div>`;
+
+  // Expand/collapse clusters
+  pb.querySelectorAll('.sm-cluster-head').forEach(head => {
+    head.onclick = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+      const cluster = head.closest('.sm-cluster');
+      const ci = parseInt(cluster.dataset.ci);
+      // Navigate to cluster
+      S.activeIdx = ci;
+      activateCluster();
+      drawArc();
+      // Toggle open
+      pb.querySelectorAll('.sm-cluster').forEach(c=>c.classList.remove('open','sm-active'));
+      cluster.classList.toggle('open');
+      cluster.classList.add('sm-active');
+    };
+  });
+
+  // Add event buttons
+  pb.querySelectorAll('.sm-add-event button').forEach(btn => {
+    btn.onclick = () => {
+      const ci = parseInt(btn.dataset.ci);
+      const input = btn.previousElementSibling;
+      const val = input.value.trim();
+      if (!val) return;
+      if (!S.clusters[ci].extractedEvents) S.clusters[ci].extractedEvents = [];
+      S.clusters[ci].extractedEvents.push(val);
+      input.value = '';
+      persist();
+      renderMapTab();
+    };
+  });
+
+  // Add event on Enter
+  pb.querySelectorAll('.sm-add-event input').forEach(inp => {
+    inp.addEventListener('keydown', e => {
+      if (e.key==='Enter') inp.nextElementSibling.click();
+    });
+  });
+}
 function renderPanel() {
   const tab = S.panelTab;
   if (tab==='intel') renderIntelTab();
+  else if (tab==='map') renderMapTab();
   else if (tab==='chars') renderCharsTab();
   else if (tab==='frags') renderFragsTab();
 }
@@ -1819,6 +1992,10 @@ function beginWriting() {
   updateCrumb();
   updateStats();
   drawArc();
+
+  // Default to Story Map tab after import
+  S.panelTab = 'map';
+  $$('.ptab').forEach(t=>t.classList.toggle('on', t.dataset.tab==='map'));
   renderPanel();
   persist();
   toast('Story model ready — begin writing', true);
