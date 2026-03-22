@@ -1407,6 +1407,250 @@ body.screenplay .eb-prose { font-family:var(--sans);font-size:14px;line-height:1
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   CHUNK 5 — CRAFT INTELLIGENCE TOOLS
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Craft panel overlay ── */
+#craft-panel {
+  position:fixed;right:0;top:0;bottom:0;width:420px;
+  background:var(--paper-card);border-left:1px solid var(--border);
+  box-shadow:-4px 0 24px rgba(28,25,23,.1);
+  z-index:200;display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform 260ms var(--ease);
+}
+#craft-panel.open { transform:translateX(0); }
+#craft-panel-backdrop {
+  position:fixed;inset:0;z-index:199;background:rgba(28,25,23,.18);
+  opacity:0;pointer-events:none;transition:opacity 260ms;
+}
+#craft-panel-backdrop.open { opacity:1;pointer-events:all; }
+
+.cp-header {
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.cp-title { font-size:.82rem;font-weight:600;color:var(--ink); }
+.cp-close {
+  width:28px;height:28px;border-radius:5px;display:flex;align-items:center;justify-content:center;
+  color:var(--ink-4);font-size:1rem;cursor:pointer;transition:all 150ms;
+}
+.cp-close:hover { background:var(--paper-2);color:var(--ink); }
+
+/* Tool tabs inside craft panel */
+.cp-tabs {
+  display:flex;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;
+}
+.cp-tab {
+  flex-shrink:0;padding:9px 14px;font-size:.72rem;font-weight:500;
+  color:var(--ink-4);cursor:pointer;border-bottom:2px solid transparent;
+  transition:all 150ms;white-space:nowrap;
+}
+.cp-tab.active { color:var(--ink);border-bottom-color:var(--accent); }
+.cp-tab:hover { color:var(--ink-2); }
+
+.cp-body { flex:1;overflow-y:auto;padding:18px; }
+.cp-body::-webkit-scrollbar { width:3px; }
+
+/* ── Shared tool components ── */
+.tool-section { margin-bottom:20px; }
+.tool-section-title {
+  font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-4);margin-bottom:10px;
+}
+.tool-result {
+  background:var(--paper);border:1px solid var(--border);border-radius:7px;
+  padding:14px;margin-bottom:12px;
+}
+.tool-result-label {
+  font-size:.6rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  margin-bottom:7px;
+}
+.tool-result-text { font-size:.82rem;color:var(--ink-2);line-height:1.65; }
+.tool-result-text strong { color:var(--ink);font-weight:600; }
+.tool-result-text em { color:var(--accent);font-style:normal;font-weight:500; }
+
+/* Generate button in craft panel */
+.cp-gen-btn {
+  width:100%;height:34px;border-radius:6px;
+  background:var(--ink);color:var(--paper);
+  font-size:.8rem;font-weight:500;cursor:pointer;
+  transition:background 150ms;display:flex;align-items:center;justify-content:center;gap:7px;
+  margin-bottom:14px;
+}
+.cp-gen-btn:hover { background:var(--ink-2); }
+.cp-gen-btn:disabled { opacity:.4;cursor:not-allowed; }
+
+/* Loading state */
+.cp-loading {
+  display:flex;align-items:center;gap:8px;padding:14px 0;
+  font-size:.78rem;color:var(--ink-4);font-style:italic;
+}
+.cp-spinner {
+  width:14px;height:14px;border:2px solid var(--border-2);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin .7s linear infinite;flex-shrink:0;
+}
+
+/* ── Scene Diagnosis ── */
+.diag-lens {
+  border:1px solid var(--border);border-radius:7px;
+  margin-bottom:8px;overflow:hidden;
+}
+.diag-lens-header {
+  display:flex;align-items:center;gap:8px;padding:10px 13px;
+  cursor:pointer;transition:background 150ms;
+}
+.diag-lens-header:hover { background:var(--paper-2); }
+.diag-lens-icon {
+  width:20px;height:20px;border-radius:4px;display:flex;align-items:center;
+  justify-content:center;font-size:.7rem;flex-shrink:0;font-weight:700;
+}
+.diag-lens-name { font-size:.78rem;font-weight:600;color:var(--ink-2);flex:1; }
+.diag-status-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
+.diag-status-ok      { background:#22c55e; }
+.diag-status-warning { background:#f59e0b; }
+.diag-status-problem { background:#ef4444; }
+.diag-status-pending { background:var(--ink-5); }
+.diag-lens-body {
+  padding:0 13px;max-height:0;overflow:hidden;
+  transition:max-height 300ms var(--ease),padding 300ms;
+  font-size:.78rem;color:var(--ink-2);line-height:1.6;
+}
+.diag-lens.open .diag-lens-body { max-height:200px;padding:8px 13px 12px; }
+.diag-action {
+  display:inline-block;margin-top:6px;font-size:.72rem;font-weight:500;
+  color:var(--accent);cursor:pointer;border-bottom:1px dashed var(--accent-2);
+  transition:color 150ms;
+}
+.diag-action:hover { color:var(--ink); }
+
+/* Lens colour coding */
+.lens-dramatic  { background:#fef3c7;color:#92400e; }
+.lens-agency    { background:#fee2e2;color:#991b1b; }
+.lens-subtext   { background:#ede9fe;color:#5b21b6; }
+.lens-pacing    { background:#d1fae5;color:#065f46; }
+.lens-structure { background:#e0f2fe;color:#0369a1; }
+
+/* ── Scene Skeleton ── */
+.skeleton-question {
+  margin-bottom:14px;
+}
+.sk-label {
+  font-size:.72rem;font-weight:600;color:var(--ink-2);
+  margin-bottom:5px;display:flex;align-items:center;gap:5px;
+}
+.sk-num {
+  width:18px;height:18px;border-radius:50%;background:var(--accent);
+  color:#fff;font-size:.6rem;font-weight:700;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0;
+}
+.sk-input {
+  width:100%;border:1.5px solid var(--border-2);border-radius:6px;
+  padding:8px 11px;font-size:.85rem;line-height:1.55;
+  background:var(--paper);color:var(--ink);resize:none;min-height:52px;
+  transition:border-color 150ms;font-family:var(--serif);
+}
+.sk-input:focus { border-color:var(--accent);outline:none; }
+.sk-input::placeholder { color:var(--ink-5);font-style:italic; }
+.skeleton-locked {
+  background:var(--accent-3);border:1px solid var(--accent-2);border-radius:8px;
+  padding:14px;margin-top:8px;
+}
+.sl-title { font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:8px; }
+.sl-row { display:flex;gap:6px;margin-bottom:5px;font-size:.78rem;color:var(--ink-2); }
+.sl-key { font-weight:600;color:var(--ink);min-width:70px;flex-shrink:0; }
+
+/* ── Bridge tool ── */
+.bridge-scene-input {
+  border:1.5px solid var(--border-2);border-radius:6px;padding:10px 12px;
+  background:var(--paper);width:100%;font-size:.84rem;font-family:var(--serif);
+  line-height:1.6;color:var(--ink);resize:none;min-height:70px;
+  transition:border-color 150ms;
+}
+.bridge-scene-input:focus { border-color:var(--accent);outline:none; }
+.bridge-scene-input::placeholder { color:var(--ink-5);font-style:italic; }
+.bridge-arrow {
+  text-align:center;color:var(--ink-5);font-size:1.2rem;
+  padding:6px 0;
+}
+.bridge-option {
+  border:1px solid var(--border);border-radius:7px;padding:13px;
+  margin-bottom:8px;cursor:pointer;transition:all 150ms;
+}
+.bridge-option:hover { border-color:var(--accent);background:var(--accent-3); }
+.bridge-option-label {
+  font-size:.6rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-4);margin-bottom:5px;
+}
+.bridge-option.selected { border-color:var(--accent);background:var(--accent-3); }
+.bridge-option.selected .bridge-option-label { color:var(--accent); }
+.bridge-option-text { font-size:.8rem;color:var(--ink-2);line-height:1.55;font-family:var(--serif); }
+.bridge-cost { font-size:.7rem;color:var(--ink-4);margin-top:5px;font-style:italic; }
+
+/* ── Inspiration panel (enhanced) ── */
+.inspo-provocation {
+  border-left:2px solid var(--border-2);padding:8px 11px;margin-bottom:7px;
+  border-radius:0 5px 5px 0;transition:border-color 150ms,background 150ms;
+  cursor:pointer;
+}
+.inspo-provocation:hover { border-left-color:var(--col-beat);background:var(--paper-2); }
+.inspo-prov-type {
+  font-size:.58rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--col-beat);margin-bottom:3px;
+}
+.inspo-prov-text { font-size:.8rem;color:var(--ink-2);line-height:1.55;font-style:italic; }
+.inspo-use-btn {
+  display:none;font-size:.65rem;color:var(--accent);margin-top:5px;
+  cursor:pointer;border-bottom:1px dashed var(--accent-2);
+}
+.inspo-provocation:hover .inspo-use-btn { display:inline; }
+
+/* ── Craft lenses (revision) ── */
+.lens-row {
+  display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px;
+}
+.lens-btn {
+  padding:9px 10px;border-radius:6px;border:1px solid var(--border-2);
+  text-align:left;cursor:pointer;transition:all 150ms;
+}
+.lens-btn:hover { border-color:var(--accent);background:var(--accent-3); }
+.lens-btn.active { border-color:var(--accent);background:var(--accent-3); }
+.lens-btn-name { font-size:.75rem;font-weight:600;color:var(--ink-2);margin-bottom:2px; }
+.lens-btn-desc { font-size:.62rem;color:var(--ink-4);line-height:1.4; }
+.lens-result-original {
+  border:1px solid var(--border);border-radius:6px;padding:11px;
+  background:var(--paper-2);margin-bottom:8px;
+}
+.lens-result-original-label { font-size:.6rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-5);margin-bottom:5px; }
+.lens-result-original-text { font-family:var(--serif);font-size:.88rem;color:var(--ink-3);line-height:1.6; }
+.lens-result-revised {
+  border:1px solid var(--accent-2);border-radius:6px;padding:11px;
+  background:var(--accent-3);margin-bottom:8px;
+}
+.lens-result-revised-label { font-size:.6rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);margin-bottom:5px; }
+.lens-result-revised-text { font-family:var(--serif);font-size:.88rem;color:var(--ink);line-height:1.6; }
+.lens-apply-btn {
+  height:30px;padding:0 14px;border-radius:5px;background:var(--col-draft);
+  color:#fff;font-size:.75rem;font-weight:500;cursor:pointer;transition:background 150ms;
+}
+.lens-apply-btn:hover { background:#236b42; }
+
+/* ── Craft toolbar (topbar of main) ── */
+#craft-toolbar {
+  display:none;align-items:center;gap:6px;padding:6px 18px;
+  background:var(--paper-2);border-bottom:1px solid var(--border);flex-shrink:0;
+}
+#craft-toolbar.visible { display:flex; }
+.craft-tool-btn {
+  height:26px;padding:0 11px;border-radius:4px;font-size:.7rem;font-weight:500;
+  border:1px solid var(--border-2);color:var(--ink-3);
+  transition:all 150ms;display:flex;align-items:center;gap:4px;
+}
+.craft-tool-btn:hover { background:var(--paper-card);color:var(--ink); }
+.craft-tool-btn.highlight { border-color:var(--accent-2);color:var(--accent);background:var(--accent-3); }
+.craft-toolbar-sep { width:1px;height:16px;background:var(--border-2); }
+
+/* ═══════════════════════════════════════════════════════════════
    KEYBOARD HINT
 ═══════════════════════════════════════════════════════════════ */
 #kb-hint {
@@ -1566,9 +1810,10 @@ kbd {
       <div class="ctx-sep"></div>
       <span class="ctx-fn-pill" id="ctx-fn">—</span>
       <div class="ctx-right">
-        <button class="tb-btn" id="ctx-what-needs" style="display:none">What does this need? →</button>
-        <button class="tb-btn" id="ctx-diagnose" style="display:none">Diagnose scene</button>
-        <button class="tb-btn" id="ctx-inspire" style="display:none">Inspiration ✦</button>
+        <button class="tb-btn" id="ctx-what-needs" style="display:none">What needs? →</button>
+        <button class="tb-btn" id="ctx-diagnose" style="display:none">Diagnose ✦</button>
+        <button class="tb-btn" id="ctx-inspire" style="display:none">Inspire ✦</button>
+        <button class="tb-btn highlight" id="ctx-craft" style="display:none;border-color:var(--accent-2);color:var(--accent);background:var(--accent-3)">Craft tools ⌘K</button>
       </div>
     </div>
 
@@ -1770,12 +2015,33 @@ kbd {
 
 <div id="word-count-badge" style="position:fixed;bottom:62px;right:16px;font-size:.65rem;color:var(--ink-4);background:var(--paper-card);border:1px solid var(--border);padding:3px 8px;border-radius:20px;pointer-events:none;z-index:40;display:none;" id="wc-badge"></div>
 
+<!-- ═══ CRAFT PANEL ═══════════════════════════════════════════ -->
+<div id="craft-panel-backdrop"></div>
+<div id="craft-panel">
+  <div class="cp-header">
+    <span class="cp-title" id="cp-title">Craft tools</span>
+    <button class="cp-close" id="cp-close">✕</button>
+  </div>
+  <div class="cp-tabs" id="cp-tabs">
+    <div class="cp-tab active" data-tool="diagnose">Diagnose</div>
+    <div class="cp-tab" data-tool="needs">What it needs</div>
+    <div class="cp-tab" data-tool="skeleton">Skeleton</div>
+    <div class="cp-tab" data-tool="bridge">Bridge</div>
+    <div class="cp-tab" data-tool="inspiration">Inspiration</div>
+    <div class="cp-tab" data-tool="lenses">Lenses</div>
+  </div>
+  <div class="cp-body" id="cp-body">
+    <div class="cp-loading"><div class="cp-spinner"></div>Select a tool above…</div>
+  </div>
+</div>
+
 <div id="toasts"></div>
 <div id="kb-hint">
   <span class="kh"><kbd>⌘</kbd><kbd>\</kbd> sidebar</span>
   <span class="kh"><kbd>⌘</kbd><kbd>I</kbd> intelligence</span>
   <span class="kh"><kbd>⌘</kbd><kbd>↵</kbd> generate</span>
-  <span class="kh"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>D</kbd> draft view</span>
+  <span class="kh"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>D</kbd> draft</span>
+  <span class="kh"><kbd>⌘</kbd><kbd>K</kbd> craft tools</span>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════
@@ -1788,1013 +2054,970 @@ kbd {
 // STATE
 // ─────────────────────────────────────────────
 const S = {
-  mode: 'novel',
-  apiKey: null,
-  project: null,
-  acts: [],
-  activeActId: null,
-  activeMovId: null,
-  activeSceneId: null,
-  voiceLock: false,
-  palMode: 'sharpen',
-  palSelection: null,
-  palRange: null,
-  isExpanding: false,
+  mode:'novel', apiKey:null, project:null, acts:[],
+  activeMovId:null, activeSceneId:null,
+  voiceLock:false, palMode:'sharpen', palSelection:null, palRange:null,
+  isExpanding:false,
+  craftTool:'diagnose',       // active craft panel tool
+  skeletonData:null,          // filled scene skeleton
+  selectedLens:null,          // active revision lens
+  bridgeSceneA:'', bridgeSceneB:'',  // bridge tool inputs
 };
 
-const ARC_3ACT = [
-  { label:'Act I', movements:[
+const ARC_3ACT=[
+  {label:'Act I',movements:[
     {id:'m1',name:'Opening movement',   fn:'Setup & establishment',     emotional:'Grounding',   pacing:'measured',   tension:.2,status:'open',summary:'',scenes:[]},
     {id:'m2',name:'Inciting movement',  fn:'Disruption of equilibrium', emotional:'Unease',      pacing:'building',   tension:.4,status:'open',summary:'',scenes:[]},
   ]},
-  { label:'Act II', movements:[
+  {label:'Act II',movements:[
     {id:'m3',name:'Rising movement',    fn:'Escalation & complication', emotional:'Escalation',  pacing:'urgent',     tension:.6,status:'open',summary:'',scenes:[]},
     {id:'m4',name:'Midpoint movement',  fn:'Pivot & reversal',          emotional:'Reversal',    pacing:'sharp',      tension:.7,status:'open',summary:'',scenes:[]},
     {id:'m5',name:'Crisis movement',    fn:'Darkest moment',            emotional:'Collapse',    pacing:'compressed', tension:.9,status:'open',summary:'',scenes:[]},
   ]},
-  { label:'Act III', movements:[
+  {label:'Act III',movements:[
     {id:'m6',name:'Climax movement',    fn:'Confrontation & peak',      emotional:'Peak',        pacing:'relentless', tension:1.0,status:'open',summary:'',scenes:[]},
     {id:'m7',name:'Resolution movement',fn:'New equilibrium',           emotional:'Release',     pacing:'stilling',   tension:.3,status:'open',summary:'',scenes:[]},
   ]},
 ];
-
-const ARC_SCREENPLAY = [
-  { label:'Act I', movements:[
-    {id:'s1',name:'Ordinary world',     fn:'Establish world & protagonist',emotional:'Grounding', pacing:'deliberate',tension:.2,status:'open',summary:'',scenes:[]},
-    {id:'s2',name:'Inciting incident',  fn:'The call to action',           emotional:'Disruption',pacing:'sharp',     tension:.45,status:'open',summary:'',scenes:[]},
+const ARC_SCREENPLAY=[
+  {label:'Act I',movements:[
+    {id:'s1',name:'Ordinary world',    fn:'Establish world & protagonist',emotional:'Grounding',pacing:'deliberate',tension:.2,status:'open',summary:'',scenes:[]},
+    {id:'s2',name:'Inciting incident', fn:'The call to action',           emotional:'Disruption',pacing:'sharp',    tension:.45,status:'open',summary:'',scenes:[]},
   ]},
-  { label:'Act IIA', movements:[
-    {id:'s3',name:'New world',          fn:'Protagonist adapts',           emotional:'Exploration',pacing:'building', tension:.55,status:'open',summary:'',scenes:[]},
-    {id:'s4',name:'Midpoint',           fn:'False victory or defeat',      emotional:'Reversal',  pacing:'sharp',    tension:.7, status:'open',summary:'',scenes:[]},
+  {label:'Act IIA',movements:[
+    {id:'s3',name:'New world',         fn:'Protagonist adapts',           emotional:'Exploration',pacing:'building',tension:.55,status:'open',summary:'',scenes:[]},
+    {id:'s4',name:'Midpoint',          fn:'False victory or defeat',      emotional:'Reversal',  pacing:'sharp',   tension:.7,status:'open',summary:'',scenes:[]},
   ]},
-  { label:'Act IIB', movements:[
-    {id:'s5',name:'Bad guys close in',  fn:'Pressure mounts',              emotional:'Collapse',  pacing:'relentless',tension:.85,status:'open',summary:'',scenes:[]},
-    {id:'s6',name:'All is lost',        fn:'Darkest moment',               emotional:'Despair',   pacing:'compressed',tension:.95,status:'open',summary:'',scenes:[]},
+  {label:'Act IIB',movements:[
+    {id:'s5',name:'Bad guys close in', fn:'Pressure mounts',              emotional:'Collapse',  pacing:'relentless',tension:.85,status:'open',summary:'',scenes:[]},
+    {id:'s6',name:'All is lost',       fn:'Darkest moment',               emotional:'Despair',   pacing:'compressed',tension:.95,status:'open',summary:'',scenes:[]},
   ]},
-  { label:'Act III', movements:[
-    {id:'s7',name:'Finale',             fn:'Confrontation & resolution',    emotional:'Peak',     pacing:'urgent',   tension:1.0,status:'open',summary:'',scenes:[]},
+  {label:'Act III',movements:[
+    {id:'s7',name:'Finale',            fn:'Confrontation & resolution',    emotional:'Peak',     pacing:'urgent',  tension:1.0,status:'open',summary:'',scenes:[]},
   ]},
 ];
 
-// ─────────────────────────────────────────────
-// DEMO DATA
-// ─────────────────────────────────────────────
-const DEMO = {
-  project:{title:'Ashes of Us',genre:'Literary fiction',tone:'Restrained, melancholic',pov:'Third person limited — Robert',premise:'Three men whose friendship forms in early 2000s London fractures over fifteen years, anchored by a betrayal Robert has spent his adult life explaining away.',ending:'Robert tells Marcus the truth. The aftermath is not redemption — it is something quieter. A return to ground.'},
-  summaries:{
-    m1:'London, 2001. Robert, Marcus, and Daniel share a flat on Bethnal Green Road. The friendship forms with the ease and intensity of early adulthood.',
-    m2:'The equilibrium cracks. Robert receives an unexpected message from Marcus — their first contact in years.',
-    m3:'Robert and Marcus meet. The conversation circles what it cannot yet say. Daniel\'s name surfaces.',
-    m4:'The betrayal is revealed: the Whitmore decision. Robert, 27, the file on his desk for eleven days.',
-    m5:'Robert understands that Marcus already knows — has known longer than Robert thought.',
-    m6:'Robert tells Marcus. The telling is quiet. Neither man raises his voice.',
-    m7:'The aftermath. The friendship may not survive it. Robert finds he can live with that.',
-  },
+// Demo data
+const DEMO={
+  project:{title:'Ashes of Us',genre:'Literary fiction',tone:'Restrained, melancholic',pov:'Third person limited — Robert',premise:'Three men whose friendship forms in early 2000s London fractures over fifteen years, anchored by a betrayal Robert has spent his adult life explaining away.',ending:'Robert tells Marcus the truth. The aftermath is not redemption — something quieter. A return to ground.'},
+  summaries:{m1:'London, 2001. Robert, Marcus, and Daniel share a flat on Bethnal Green Road.',m2:'The equilibrium cracks. Robert receives a message from Marcus.',m3:'Robert and Marcus meet. The conversation circles what it cannot say.',m4:'The betrayal: the Whitmore decision. Robert chose himself.',m5:'Robert understands Marcus already knows.',m6:'Robert tells Marcus. Quiet. Neither raises his voice.',m7:'The aftermath. Not redemption — ground zero.'},
   scenes:{
-    m1:[
-      {id:'sc1',name:'Bethnal Green, 2001',intention:'The three men arrive at the flat. The friendship is established through small gestures — who brings a plant, who unpacks carefully, who arrives three days late.',fn:'Establishment',beats:[],status:'open'},
-      {id:'sc2',name:'The first winter',intention:'Time moves forward in the flat. The rhythm of the three of them together.',fn:'Deepening',beats:[],status:'open'},
-    ],
-    m2:[
-      {id:'sc3',name:'The message',intention:'Present day. Robert receives Marcus\'s message. He reads it twice.',fn:'Inciting incident',beats:[],status:'open'},
-      {id:'sc4',name:'Robert\'s office',intention:'Robert at work. The gap between his public self and private knowledge.',fn:'Characterisation',beats:[],status:'open'},
-    ],
-    m3:[{id:'sc5',name:'The bar at Bermondsey',intention:'Robert and Marcus meet. The conversation is careful. Marcus mentions Daniel obliquely.',fn:'Confrontation',beats:[],status:'open'}],
-    m4:[{id:'sc6',name:'The Whitmore decision',intention:'The betrayal is shown in full. Robert, 27, the file on his desk for eleven days.',fn:'Revelation',beats:[],status:'open'}],
+    m1:[{id:'sc1',name:'Bethnal Green, 2001',intention:'The three men arrive at the flat. The friendship establishes through small gestures.',fn:'Establishment',beats:[],status:'open'},{id:'sc2',name:'The first winter',intention:'The rhythm of the three of them together.',fn:'Deepening',beats:[],status:'open'}],
+    m2:[{id:'sc3',name:'The message',intention:'Present day. Robert receives Marcus\'s message. He reads it twice.',fn:'Inciting incident',beats:[],status:'open'},{id:'sc4',name:'Robert\'s office',intention:'Robert at work. The gap between public self and private knowledge.',fn:'Characterisation',beats:[],status:'open'}],
+    m3:[{id:'sc5',name:'The bar at Bermondsey',intention:'Robert and Marcus meet. The conversation is careful.',fn:'Confrontation',beats:[],status:'open'}],
+    m4:[{id:'sc6',name:'The Whitmore decision',intention:'The betrayal shown in full. Eleven days. What he chose.',fn:'Revelation',beats:[],status:'open'}],
     m5:[{id:'sc7',name:'Marcus knows',intention:'Robert realises Marcus has known longer than he thought.',fn:'Crisis',beats:[],status:'open'}],
     m6:[{id:'sc8',name:'The bar, late',intention:'Robert tells Marcus. The telling is quiet.',fn:'Climax',beats:[],status:'open'}],
     m7:[{id:'sc9',name:'After',intention:'Robert alone. Not redemption — ground zero.',fn:'Resolution',beats:[],status:'open'}],
   }
 };
-
-const DEMO_BEATS = [
-  {id:'b1',fn:'Establishment',intention:'Robert arrives at the Bethnal Green flat twenty minutes before Marcus. He folds the letting paper into his jacket pocket with the seriousness of a man signing a contract.',stakes:'Robert establishes control before the others arrive — a habit that will define him.',character:'Robert',locked:false,status:'open'},
-  {id:'b2',fn:'Introduction',intention:'Marcus arrives with forward momentum, two bags, and a plant he cannot explain. Robert says it will die. Marcus says everything does.',stakes:'The friendship\'s dynamic is set in two lines: Robert\'s scepticism, Marcus\'s warmth.',character:'Marcus',locked:false,status:'open'},
-  {id:'b3',fn:'Deepening',intention:'The first days together. The quality of the silence between them — comfortable, undemanding.',stakes:'The reader understands what will be lost before knowing it can be lost.',character:'Both',locked:false,status:'open'},
-  {id:'b4',fn:'Establishment',intention:'Daniel arrives three days late. He was sorting something out. He does not say what. Robert does not ask.',stakes:'The space around Daniel\'s explanations is already larger than the explanations themselves.',character:'Daniel',locked:false,status:'open'},
-  {id:'b5',fn:'Closure',intention:'The flat at night. All three of them. What each one wants from this friendship, unspoken.',stakes:'The friendship is established in its fullness and its silence simultaneously.',character:'All three',locked:false,status:'open'},
+const DEMO_BEATS=[
+  {id:'b1',fn:'Establishment',intention:'Robert arrives twenty minutes early. He folds the letting paper with the seriousness of a man signing a contract.',stakes:'Robert establishes control before the others arrive.',character:'Robert',locked:false,status:'open'},
+  {id:'b2',fn:'Introduction',intention:'Marcus arrives with a plant he cannot explain. Robert says it will die. Marcus says everything does.',stakes:'The friendship dynamic set in two lines.',character:'Marcus',locked:false,status:'open'},
+  {id:'b3',fn:'Deepening',intention:'First days. The silence between them — comfortable, undemanding.',stakes:'The reader understands what will be lost.',character:'Both',locked:false,status:'open'},
+  {id:'b4',fn:'Establishment',intention:'Daniel arrives three days late. He does not say why. Robert does not ask.',stakes:'The space around Daniel\'s explanations already larger than the explanations.',character:'Daniel',locked:false,status:'open'},
+  {id:'b5',fn:'Closure',intention:'The flat at night. All three. What each wants from this friendship, unspoken.',stakes:'The friendship established in fullness and silence simultaneously.',character:'All three',locked:false,status:'open'},
 ];
-
-// Demo prose for first scene beats
-const DEMO_PROSE = {
-  b1: `The flat was on the fourth floor of a building on Bethnal Green Road, above a fabric shop that smelled of dust and synthetic fibre even in winter. Robert had found it on a notice board at the university. He remembered folding the paper into quarters and putting it in his jacket pocket with the seriousness of a man pocketing a contract.
-
-He arrived twenty minutes before Marcus. He had not planned to arrive early. He stood in the empty rooms and understood that he had.`,
-
-  b2: `Marcus arrived with two bags and borrowed keys and the particular energy he always carried — not enthusiasm exactly, more a forward momentum he couldn't entirely control. He had brought a plant.
-
-"It'll die," Robert said.
-
-"Everything does," Marcus said, and set it on the windowsill, where it proceeded, against all probability, to survive.`,
-
-  b3: `The first days together had a quality Robert had not expected. He had expected negotiation — the management of shared space, the careful establishment of territory. What he found instead was something easier. The silence between them was comfortable in the way of people who have not yet made their permanent choices and know it.`,
-
-  b4: `Daniel came three days later. He said he'd been sorting something out. He didn't say what. Robert didn't ask. It was already the arrangement between them — the space around Daniel's explanations always slightly larger than the explanation itself, and both of them pretending not to notice.`,
-
-  b5: `That winter the flat held them. Some nights all three of them would be in the same room without occasion — not a plan, just the accumulation of an evening — and Robert, who had spent most of his life engineering the conditions of his comfort, found that he did not know what to do with contentment when it arrived without his help.
-
-He did not say this. None of them said much, those evenings. It was one of the things he would later understand he had loved about it.`,
+const DEMO_PROSE={
+  b1:`The flat was on the fourth floor of a building on Bethnal Green Road, above a fabric shop that smelled of dust and synthetic fibre even in winter. Robert had found it on a notice board at the university. He remembered folding the paper into quarters and putting it in his jacket pocket with the seriousness of a man pocketing a contract.\n\nHe arrived twenty minutes before Marcus. He had not planned to arrive early. He stood in the empty rooms and understood that he had.`,
+  b2:`Marcus arrived with two bags and borrowed keys and the particular energy he always carried — not enthusiasm exactly, more a forward momentum he couldn't entirely control. He had brought a plant.\n\n"It'll die," Robert said.\n\n"Everything does," Marcus said, and set it on the windowsill, where it proceeded, against all probability, to survive.`,
+  b3:`The first days together had a quality Robert had not expected. He had expected negotiation — the management of shared space, the careful establishment of territory. What he found instead was something easier. The silence between them was comfortable in the way of people who have not yet made their permanent choices.`,
+  b4:`Daniel came three days later. He said he'd been sorting something out. He didn't say what. Robert didn't ask. It was already the arrangement between them — the space around Daniel's explanations always slightly larger than the explanation itself.`,
+  b5:`That winter the flat held them. Some nights all three would be in the same room without occasion — not a plan, just the accumulation of an evening — and Robert, who had spent most of his life engineering the conditions of his comfort, found he did not know what to do with contentment when it arrived without his help.\n\nHe did not say this. None of them said much, those evenings. It was one of the things he would later understand he had loved.`,
 };
 
-const BEAT_FNS = ['Establishment','Introduction','Deepening','Probe','Pressure','Revelation','Escalation','Reversal','Complication','Confrontation','Moment of choice','False resolution','Crisis','Climax','Closure','Transition'];
-const BEAT_FN_COLORS = {
-  'Establishment':'establishment','Introduction':'establishment','Deepening':'probe','Probe':'probe',
-  'Pressure':'escalation','Revelation':'revelation','Escalation':'escalation','Reversal':'reversal',
-  'Complication':'escalation','Confrontation':'escalation','Moment of choice':'reversal',
-  'False resolution':'closure','Crisis':'reversal','Climax':'reversal','Closure':'closure','Transition':'establishment'
-};
+const BEAT_FNS=['Establishment','Introduction','Deepening','Probe','Pressure','Revelation','Escalation','Reversal','Complication','Confrontation','Moment of choice','False resolution','Crisis','Climax','Closure','Transition'];
+const BEAT_FN_COLORS={Establishment:'establishment',Introduction:'establishment',Deepening:'probe',Probe:'probe',Pressure:'escalation',Revelation:'revelation',Escalation:'escalation',Reversal:'reversal',Complication:'escalation',Confrontation:'escalation','Moment of choice':'reversal','False resolution':'closure',Crisis:'reversal',Climax:'reversal',Closure:'closure',Transition:'establishment'};
 
 // ─────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────
-const $ = id => document.getElementById(id);
-const make = tag => document.createElement(tag);
-const sleep = ms => new Promise(r=>setTimeout(r,ms));
-
-function toast(msg, type='') {
-  const el=make('div'); el.className='toast'+(type?' '+type:''); el.textContent=msg;
-  $('toasts').appendChild(el);
-  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300);},2800);
-}
-function saveDot(s){const d=$('save-dot');d.className=s;if(s==='saved')setTimeout(()=>d.className='',2200);}
-function persist(){
-  saveDot('saving');
-  try{localStorage.setItem('nv4_state',JSON.stringify({mode:S.mode,project:S.project,acts:S.acts}));}catch(e){}
-  setTimeout(()=>saveDot('saved'),600);
-}
+const $=id=>document.getElementById(id);
+const make=tag=>document.createElement(tag);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function uid(){return 'id'+Date.now()+Math.random().toString(36).slice(2,6);}
+function toast(msg,type=''){const el=make('div');el.className='toast'+(type?' '+type:'');el.textContent=msg;$('toasts').appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300);},2800);}
+function saveDot(s){const d=$('save-dot');d.className=s;if(s==='saved')setTimeout(()=>d.className='',2200);}
+function persist(){saveDot('saving');try{localStorage.setItem('nv4_state',JSON.stringify({mode:S.mode,project:S.project,acts:S.acts}));}catch(e){}setTimeout(()=>saveDot('saved'),600);}
+function countWords(str){return str.trim().split(/\s+/).filter(Boolean).length;}
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function getMovement(id){for(const a of S.acts){const m=a.movements.find(m=>m.id===id);if(m)return{act:a,movement:m};}return null;}
 function getScene(id){for(const a of S.acts){for(const m of a.movements){const s=m.scenes.find(s=>s.id===id);if(s)return{act:a,movement:m,scene:s};}}return null;}
-function countWords(str){return str.trim().split(/\s+/).filter(Boolean).length;}
+function getVoiceSample(){const accepted=S.acts.flatMap(a=>a.movements.flatMap(m=>m.scenes)).flatMap(s=>s.beats||[]).filter(b=>b.prose&&b.status==='accepted');if(!accepted.length)return '';return accepted.slice(-2).map(b=>b.prose).join('\n\n').substring(0,400);}
 
 // ─────────────────────────────────────────────
 // API
 // ─────────────────────────────────────────────
-async function callClaude(system, user, maxTokens=1200) {
-  if(!S.apiKey) throw new Error('no-key');
-  const isLocal = location.hostname==='localhost'||location.hostname==='127.0.0.1';
-  const url = isLocal ? '/api/claude' : 'https://api.anthropic.com/v1/messages';
-  const headers = {'Content-Type':'application/json','x-api-key':S.apiKey};
-  if(!isLocal) headers['anthropic-version']='2023-06-01';
-  const r = await fetch(url,{method:'POST',headers,
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:maxTokens,system,messages:[{role:'user',content:user}]})});
-  const d = await r.json();
-  if(d.error) throw new Error(d.error.message);
+async function callClaude(system,user,maxTokens=1200){
+  if(!S.apiKey)throw new Error('no-key');
+  const isLocal=location.hostname==='localhost'||location.hostname==='127.0.0.1';
+  const url=isLocal?'/api/claude':'https://api.anthropic.com/v1/messages';
+  const headers={'Content-Type':'application/json','x-api-key':S.apiKey};
+  if(!isLocal)headers['anthropic-version']='2023-06-01';
+  const r=await fetch(url,{method:'POST',headers,body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:maxTokens,system,messages:[{role:'user',content:user}]})});
+  const d=await r.json();
+  if(d.error)throw new Error(d.error.message);
   return d.content[0].text.trim();
 }
 
-// ─────────────────────────────────────────────
-// VOICE FINGERPRINT
-// ─────────────────────────────────────────────
-function getVoiceSample() {
-  const accepted = S.acts.flatMap(a=>a.movements.flatMap(m=>m.scenes))
-    .flatMap(s=>s.beats||[]).filter(b=>b.prose&&b.status==='accepted');
-  if(!accepted.length) return '';
-  return accepted.slice(-2).map(b=>b.prose).join('\n\n').substring(0,400);
-}
+// ═══════════════════════════════════════════════════════════════
+// CRAFT INTELLIGENCE TOOLS
+// ═══════════════════════════════════════════════════════════════
 
 // ─────────────────────────────────────────────
-// BEAT EXPANSION — CORE
+// 1. SCENE DIAGNOSIS ENGINE
 // ─────────────────────────────────────────────
-async function expandBeat(beat, scene, movResult) {
-  const proj = S.project || {};
-  const mov = movResult.movement;
-  const act = movResult.act;
-  const isScreenplay = S.mode === 'screenplay';
+const DIAGNOSIS_LENSES = [
+  {id:'dramatic',  name:'Dramatic function', icon:'D', cls:'lens-dramatic',
+   desc:'Does the scene serve its structural purpose?'},
+  {id:'agency',    name:'Character agency',   icon:'A', cls:'lens-agency',
+   desc:'Who acts, who reacts, who is passive?'},
+  {id:'subtext',   name:'Subtext density',    icon:'S', cls:'lens-subtext',
+   desc:'What is being said vs. what is meant?'},
+  {id:'pacing',    name:'Pacing profile',     icon:'P', cls:'lens-pacing',
+   desc:'Does the rhythm match the emotional register?'},
+  {id:'structure', name:'Structural position',icon:'St',cls:'lens-structure',
+   desc:'Does this scene know where it sits in the arc?'},
+];
 
-  // Recent accepted prose for continuity
-  const recentProse = S.acts.flatMap(a=>a.movements.flatMap(m=>m.scenes))
-    .flatMap(s=>s.beats||[]).filter(b=>b.prose&&b.status==='accepted')
-    .slice(-2).map(b=>b.prose.substring(0,300)).join('\n\n---\n\n');
-
-  const tone = $('dc-tone')?.value || 'faithful';
-  const targetWords = parseInt($('dc-words')?.value || 180);
-  const customDir = $('dc-open-dir')?.value.trim() || '';
-  const voiceSample = S.voiceLock ? getVoiceSample() : '';
-
-  const toneMap = {
-    faithful:'Execute the beat faithfully as described. Match the prose register already established.',
-    deepen:'Prioritise interiority and subtext. What the character thinks but cannot say should shape every sentence.',
-    tighten:'Strip everything that is not load-bearing. Short sentences. Compression. Discomfort.',
-    lyrical:'Find the literary quality in this beat. Rhythm, image, precision of language.',
-    cinematic:'Visual and external. What would a camera see? No interior monologue.',
-  };
-
-  const system = isScreenplay
-    ? `You are writing a ${proj.genre||'drama'} screenplay titled "${proj.title||'Untitled'}".
-Tone: ${proj.tone||'dramatic'}. 
-Format correctly: slug lines in CAPS, action lines, CHARACTER NAMES centred in caps, dialogue indented.
-Write ONLY the screenplay content for this single beat — no headers, no meta-commentary.
-Target approximately ${targetWords} words.
-${voiceSample?`Match the voice and register of this existing draft:\n"${voiceSample}"`:''}
-${customDir?`Writer's direction: ${customDir}`:''}
-${recentProse?`Recent context:\n${recentProse}`:'This is the opening.'}`
-
-    : `You are co-writing a ${proj.genre||'literary fiction'} novel titled "${proj.title||'Untitled'}".
-Tone: ${proj.tone||'literary'}. POV: ${proj.pov||'third person limited'}.
-Ending (fixed — do not contradict): ${proj.ending||'not yet set'}.
-${toneMap[tone]||toneMap.faithful}
-Write prose only. No headers. No meta-commentary. Literary quality. Show don't tell.
-Target approximately ${targetWords} words.
-${voiceSample?`Match this prose voice closely:\n"${voiceSample}"`:''}
-${customDir?`Writer's direction: ${customDir}`:''}
-${recentProse?`Most recent accepted prose (for continuity):\n${recentProse}`:'This is the opening of the story.'}`;
-
-  const beatContext = `Beat function: ${beat.fn}
-Beat intention: ${beat.intention}
-Stakes: ${beat.stakes||'not specified'}
-${beat.character?`Character with agency: ${beat.character}`:''}
-Scene: "${scene.name}" — ${scene.intention}
-Structural position: ${act.label} → ${mov.name} (${mov.fn}, ${mov.emotional} register, ${mov.pacing} pacing)`;
-
-  const maxTok = Math.round(targetWords * 1.6);
-  return await callClaude(system, `Write this beat now:\n\n${beatContext}`, maxTok);
-}
-
-// ─────────────────────────────────────────────
-// WORD PALETTE
-// ─────────────────────────────────────────────
-let palTimeout = null;
-
-function showWordPalette(selection, range) {
-  if(!selection || selection.length < 2) return;
-  S.palSelection = selection;
-  S.palRange = range;
-  const pal = $('word-palette');
-  const rect = range.getBoundingClientRect();
-  $('wp-options').innerHTML = '<div class="wp-loading">Generating alternatives…</div>';
-  pal.style.left = Math.min(rect.left, window.innerWidth-440)+'px';
-  pal.style.top = (rect.top-10)+'px';
-  pal.style.transform = 'translateY(-100%)';
-  pal.classList.add('show');
-  clearTimeout(palTimeout);
-  palTimeout = setTimeout(()=>fetchPaletteOptions(selection), 100);
-}
-
-async function fetchPaletteOptions(sel) {
-  const container = $('wp-options');
-  const scResult = getScene(S.activeSceneId);
-  const movResult = getMovement(S.activeMovId);
-  const mode = S.palMode;
-
-  const demoOpts = [
-    {label:'More concrete & sensory', text: sel.length<20?'the rain came in sideways off the street':`${sel} — rendered in precise physical detail`},
-    {label:'More metaphorical',       text: sel.length<20?'the sky gave up':`${sel} — reaching for the emotional undertone`},
-    {label:'Character-inflected',     text: sel.length<20?'of course it was raining':`${sel} — filtered through the character's state`},
-  ];
+async function runDiagnosis(scene, movResult) {
+  const mov=movResult.movement, act=movResult.act, proj=S.project||{};
+  const prose=scene.beats?.filter(b=>b.prose).map(b=>b.prose).join('\n\n') || scene.intention || '';
 
   if(!S.apiKey) {
-    renderPaletteOptions(demoOpts);
-    return;
+    return {
+      dramatic:  {status:'warning', diagnosis:`This scene is positioned at <strong>${act.label} → ${mov.name}</strong> (${mov.fn}). Its function is clear from the intention, but without draft prose it is impossible to confirm whether the scene executes its purpose. The risk at <em>${mov.emotional}</em> register is that the scene resolves what should remain open.`},
+      agency:    {status:'ok',      diagnosis:`<strong>${scene.intention.split(' ')[0]||'The protagonist'}</strong> appears to have agency in the stated intention. Check that at least one beat gives an active choice rather than a reaction. Passive protagonists at this structural position feel like the story is happening to them, not through them.`},
+      subtext:   {status:'problem', diagnosis:`No draft prose yet — subtext cannot be assessed. The intention is stated rather than shown. The gap between what the characters say and what they mean is where this scene will live or die. That gap cannot be designed in an outline; it must be written.`},
+      pacing:    {status:'warning', diagnosis:`The movement calls for <em>${mov.pacing}</em> pacing. The scene has no expanded prose yet. When drafting, the sentence length should reflect the emotional register — <em>${mov.emotional}</em> suggests ${mov.pacing==='compressed'?'short, clipped sentences with little subordination':'measured sentences with room to breathe'}.`},
+      structure: {status:'ok',      diagnosis:`Structural position is clear: <strong>${act.label} → ${mov.name}</strong>. The scene's function (${mov.fn}) aligns with its stated intention. The ending anchor (${proj.ending?'set':'not yet set'}) should inform how much this scene resolves.`},
+    };
   }
 
-  try {
-    const surrounding = (() => {
-      const blocks = document.querySelectorAll('.eb-prose');
-      for(const b of blocks) {
-        if(b.textContent.includes(sel)) return b.textContent.substring(0,300);
-      }
-      return '';
-    })();
-
-    const system = `You are a literary editor. Given selected text from a manuscript, provide exactly 3 alternative expressions.
-Mode: ${mode==='sharpen'?'SHARPEN — more concrete, precise, physical, specific':'ELEVATE — more literary, resonant, layered, rich'}
-Context: "${surrounding}"
-Return ONLY valid JSON array of 3 strings. No labels. No explanation.
-["alternative 1","alternative 2","alternative 3"]`;
-
-    const raw = await callClaude(system,`Selected: "${sel}"\nProvide 3 ${mode} alternatives.`,300);
-    const opts = JSON.parse(raw.replace(/```json|```/g,'').trim());
-    const labels = ['More concrete & sensory','More metaphorical','Character-inflected'];
-    renderPaletteOptions(opts.map((t,i)=>({label:labels[i]||`Option ${i+1}`,text:t})));
-  } catch(e) {
-    container.innerHTML = '<div class="wp-loading">Add API key in settings to enable alternatives.</div>';
-  }
+  const system=`You are a narrative structure expert diagnosing a scene. Analyse through 5 lenses.
+Return ONLY valid JSON:
+{
+  "dramatic":  {"status":"ok"|"warning"|"problem","diagnosis":"string"},
+  "agency":    {"status":"ok"|"warning"|"problem","diagnosis":"string"},
+  "subtext":   {"status":"ok"|"warning"|"problem","diagnosis":"string"},
+  "pacing":    {"status":"ok"|"warning"|"problem","diagnosis":"string"},
+  "structure": {"status":"ok"|"warning"|"problem","diagnosis":"string"}
 }
+Each diagnosis: 2-3 sentences. Specific to this story. Not generic advice.
+Use <strong> for emphasis, <em> for craft terms.`;
 
-function renderPaletteOptions(opts) {
-  $('wp-options').innerHTML = opts.map((o,i)=>`
-    <div class="wp-opt" data-idx="${i}">
-      <div class="wp-opt-label">${o.label}</div>
-      <div class="wp-opt-text">${o.text}</div>
-    </div>`).join('');
-  document.querySelectorAll('.wp-opt').forEach((el,i)=>{
-    el.addEventListener('click',()=>{ applyPaletteOption(opts[i].text); $('word-palette').classList.remove('show'); });
-  });
-}
-
-function applyPaletteOption(text) {
-  if(!S.palRange) return;
-  const range = S.palRange;
-  range.deleteContents();
-  const span = make('span');
-  span.className = 'ai-authored';
-  span.textContent = text;
-  range.insertNode(span);
-  setTimeout(()=>{ span.classList.add('accepted'); setTimeout(()=>{ span.replaceWith(document.createTextNode(span.textContent)); },2000); },6000);
-  updateWordCounts();
-  persist();
-  toast('Applied — ⌘Z to undo');
-}
-
-async function applyCustomPalette() {
-  const dir = $('wp-dir').value.trim();
-  if(!dir||!S.palSelection) return;
-  if(!S.apiKey) { toast('Custom rewrite needs API key.'); return; }
-  const system = `Rewrite the selected text exactly as directed. Return ONLY the rewritten text.`;
-  try {
-    const result = await callClaude(system,`Original: "${S.palSelection}"\nDirection: ${dir}`,200);
-    applyPaletteOption(result);
-    $('word-palette').classList.remove('show');
-  } catch(e) { toast('Rewrite failed: '+e.message); }
-}
-
-// Palette mode toggle
-document.querySelectorAll('.wp-mode').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    document.querySelectorAll('.wp-mode').forEach(b=>b.classList.remove('on'));
-    btn.classList.add('on');
-    S.palMode = btn.dataset.mode;
-    if(S.palSelection) fetchPaletteOptions(S.palSelection);
-  });
-});
-
-$('wp-custom-go').addEventListener('click', applyCustomPalette);
-$('wp-dir').addEventListener('keydown',e=>{ if(e.key==='Enter') applyCustomPalette(); });
-
-// ─────────────────────────────────────────────
-// DRAFT VIEW RENDERING
-// ─────────────────────────────────────────────
-function renderDraftView(sceneId) {
-  const result = getScene(sceneId||S.activeSceneId);
-  if(!result) return;
-  const {act,movement:mov,scene:sc} = result;
-
-  S.activeSceneId = sc.id;
-  S.activeMovId = mov.id;
-
-  $('dv-title').textContent = sc.name;
-  $('dv-movement').textContent = `${act.label} → ${mov.name}`;
-  $('dv-mode-pill').textContent = S.mode==='novel'?'Novel':'Screenplay';
-  $('dv-beat-count').textContent = `${(sc.beats||[]).length} beats`;
-
-  const container = $('expansion-blocks');
-  container.innerHTML = '';
-
-  const beats = sc.beats||[];
-  if(!beats.length) {
-    container.innerHTML = '<div style="padding:40px;font-size:.9rem;color:var(--ink-4);font-style:italic;font-family:var(--serif)">No beats yet. Go back to the beat view and generate a beat outline first.</div>';
-    return;
-  }
-
-  beats.forEach((beat,i) => {
-    const block = make('div');
-    block.className = 'expansion-block';
-    block.dataset.beatId = beat.id;
-    const fnColor = BEAT_FN_COLORS[beat.fn]||'establishment';
-    const hasProse = !!beat.prose;
-    const isAccepted = beat.status==='accepted'||beat.status==='draft';
-    const words = beat.prose ? countWords(beat.prose) : 0;
-
-    block.innerHTML = `
-      <div class="eb-label">
-        <span class="eb-beat-num">${String(i+1).padStart(2,'0')}</span>
-        <span class="eb-fn-tag ${fnColor}">${beat.fn}</span>
-        ${beat.locked?'<span style="font-size:.62rem;color:var(--ink-5)">🔒</span>':''}
-        ${words>0?`<span class="eb-word-count">${words}w</span>`:''}
-      </div>
-      <div class="eb-beat-intention" style="font-size:.75rem;color:var(--ink-4);font-style:italic;margin-bottom:10px;line-height:1.45;">${beat.intention}</div>
-      ${hasProse
-        ? `<div class="eb-prose ${isAccepted?'':'ai-authored'}" contenteditable="true" data-beat="${beat.id}" spellcheck="true">${beat.prose}</div>
-           <div class="eb-actions">
-             ${!isAccepted?`<button class="eb-act-btn accept" data-beat="${beat.id}">Accept ✓</button>`:'<span style="font-size:.65rem;color:var(--col-draft);font-weight:500;">✓ Accepted</span>'}
-             <button class="eb-act-btn regen" data-beat="${beat.id}">Regenerate</button>
-           </div>`
-        : `<div class="eb-empty">
-             <span>Not yet expanded.</span>
-             <button class="eb-expand-btn" data-beat="${beat.id}">Expand this beat →</button>
-           </div>`
-      }`;
-
-    // Prose editing
-    const proseEl = block.querySelector('.eb-prose');
-    if(proseEl) {
-      proseEl.addEventListener('input', ()=>{
-        beat.prose = proseEl.innerText;
-        const wEl = block.querySelector('.eb-word-count');
-        if(wEl) wEl.textContent = countWords(beat.prose)+'w';
-        updateWordCounts();
-        persist();
-      });
-      // Word palette on selection
-      proseEl.addEventListener('mouseup', ()=>{
-        const sel = window.getSelection();
-        if(sel&&!sel.isCollapsed&&sel.toString().trim().length>1) {
-          const range = sel.getRangeAt(0);
-          if(proseEl.contains(range.commonAncestorContainer)) {
-            showWordPalette(sel.toString().trim(), range);
-          }
-        }
-      });
-    }
-
-    // Accept button
-    const acceptBtn = block.querySelector('.eb-act-btn.accept');
-    if(acceptBtn) {
-      acceptBtn.addEventListener('click', ()=>{
-        beat.status = 'accepted';
-        const prEl = block.querySelector('.eb-prose');
-        if(prEl) { prEl.classList.remove('ai-authored'); prEl.classList.add('accepted'); }
-        acceptBtn.replaceWith(Object.assign(make('span'),{style:'font-size:.65rem;color:var(--col-draft);font-weight:500;',textContent:'✓ Accepted'}));
-        updateWordCounts(); renderTree(); persist();
-        checkAcceptAll(sc);
-      });
-    }
-
-    // Regen button
-    const regenBtn = block.querySelector('.eb-act-btn.regen');
-    if(regenBtn) {
-      regenBtn.addEventListener('click', async ()=>{
-        beat.status = 'open';
-        beat.prose = '';
-        // Re-render this block as empty
-        renderDraftView(sc.id);
-        // Auto-expand
-        await sleep(200);
-        const expandBtn = container.querySelector(`[data-beat="${beat.id}"].eb-expand-btn`);
-        if(expandBtn) expandBtn.click();
-      });
-    }
-
-    // Expand button
-    const expandBtn = block.querySelector('.eb-expand-btn');
-    if(expandBtn) {
-      expandBtn.addEventListener('click', async ()=>{ await expandSingleBeat(beat, sc, expandBtn); });
-    }
-
-    container.appendChild(block);
-  });
-
-  // Update accept-all bar
-  checkAcceptAll(sc);
-  updateWordCounts();
-  showView('draft');
-  $('draft-controls').classList.add('visible');
-}
-
-// ─────────────────────────────────────────────
-// EXPAND A SINGLE BEAT
-// ─────────────────────────────────────────────
-async function expandSingleBeat(beat, sc, triggerBtn) {
-  if(S.isExpanding) { toast('Already generating — please wait.'); return; }
-  S.isExpanding = true;
-  const movResult = getMovement(S.activeMovId);
-  if(!movResult) { S.isExpanding=false; return; }
-
-  // Show shimmer in place of the empty slot
-  const block = document.querySelector(`.expansion-block[data-beat="${beat.id}"]`);
-  if(!block) { S.isExpanding=false; return; }
-
-  const emptySlot = block.querySelector('.eb-empty');
-  if(emptySlot) {
-    emptySlot.innerHTML = `<div class="prose-shimmer">
-      <div class="prose-shim-line" style="width:92%"></div>
-      <div class="prose-shim-line" style="width:78%"></div>
-      <div class="prose-shim-line" style="width:85%"></div>
-      <div class="prose-shim-line" style="width:52%"></div>
-    </div>
-    <div class="beat-gen-label"><div class="beat-gen-spinner"></div>Writing ${beat.fn.toLowerCase()}…</div>`;
-  }
-
-  try {
-    let prose;
-    if(S.apiKey) {
-      prose = await expandBeat(beat, sc, movResult);
-    } else {
-      await sleep(1200);
-      prose = DEMO_PROSE[beat.id] || buildDemoProse(beat, sc);
-    }
-
-    beat.prose = prose;
-    beat.status = 'drafted';
-
-    // Replace with rendered prose
-    const proseEl = make('div');
-    proseEl.className = 'eb-prose ai-authored';
-    proseEl.contentEditable = 'true';
-    proseEl.spellcheck = true;
-    proseEl.dataset.beat = beat.id;
-    proseEl.innerHTML = prose.split('\n').filter(p=>p.trim()).map(p=>`<p>${escHtml(p)}</p>`).join('');
-
-    const actionsEl = make('div');
-    actionsEl.className = 'eb-actions';
-    actionsEl.innerHTML = `<button class="eb-act-btn accept" data-beat="${beat.id}">Accept ✓</button><button class="eb-act-btn regen" data-beat="${beat.id}">Regenerate</button>`;
-
-    // Clear empty slot and append
-    if(emptySlot) emptySlot.remove();
-    block.appendChild(proseEl);
-    block.appendChild(actionsEl);
-
-    // Word count
-    const wEl = block.querySelector('.eb-word-count');
-    const words = countWords(prose);
-    if(wEl) wEl.textContent = words+'w';
-    else {
-      const labelEl = block.querySelector('.eb-label');
-      if(labelEl) { const wSpan=make('span'); wSpan.className='eb-word-count'; wSpan.textContent=words+'w'; labelEl.appendChild(wSpan); }
-    }
-
-    // Add cursor effect
-    const cursor = make('span'); cursor.className='stream-cursor';
-    proseEl.appendChild(cursor);
-    setTimeout(()=>cursor.remove(), 2200);
-
-    // Wire accept
-    actionsEl.querySelector('.accept').addEventListener('click',()=>{
-      beat.status='accepted';
-      proseEl.classList.remove('ai-authored'); proseEl.classList.add('accepted');
-      actionsEl.querySelector('.accept').replaceWith(Object.assign(make('span'),{style:'font-size:.65rem;color:var(--col-draft);font-weight:500;',textContent:'✓ Accepted'}));
-      updateWordCounts(); renderTree(); persist(); checkAcceptAll(sc);
-    });
-
-    // Wire regen
-    actionsEl.querySelector('.regen').addEventListener('click',async()=>{
-      beat.status='open'; beat.prose='';
-      renderDraftView(sc.id);
-      await sleep(200);
-      const eb=document.querySelector(`[data-beat="${beat.id}"].eb-expand-btn`);
-      if(eb) eb.click();
-    });
-
-    // Wire prose editing
-    proseEl.addEventListener('input',()=>{
-      beat.prose=proseEl.innerText;
-      const w=countWords(beat.prose);
-      const wEl2=block.querySelector('.eb-word-count');
-      if(wEl2) wEl2.textContent=w+'w';
-      updateWordCounts(); persist();
-    });
-
-    // Wire word palette on selection
-    proseEl.addEventListener('mouseup',()=>{
-      const sel=window.getSelection();
-      if(sel&&!sel.isCollapsed&&sel.toString().trim().length>1){
-        const range=sel.getRangeAt(0);
-        if(proseEl.contains(range.commonAncestorContainer)) showWordPalette(sel.toString().trim(),range);
-      }
-    });
-
-    updateWordCounts(); checkAcceptAll(sc); persist();
-    if(!S.apiKey) toast('Demo prose — add API key in settings for AI expansion','info');
-
-  } catch(e) {
-    if(emptySlot) {
-      emptySlot.innerHTML=`<span>Expansion failed: ${e.message}</span><button class="eb-expand-btn" data-beat="${beat.id}">Retry →</button>`;
-      emptySlot.querySelector('.eb-expand-btn').addEventListener('click',async()=>expandSingleBeat(beat,sc,null));
-    }
-    toast('Expansion failed: '+e.message);
-  } finally {
-    S.isExpanding = false;
-  }
-}
-
-function buildDemoProse(beat, scene) {
-  return `${beat.intention}
-
-The moment had a quality that was difficult to name — not silence exactly, but a particular density of unspoken things. ${beat.character||'The character'} was aware of it without being able to say so.
-
-What happened next was small. It was the kind of small that takes years to understand.`;
-}
-
-function escHtml(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-// ─────────────────────────────────────────────
-// EXPAND NEXT BEAT (from controls bar)
-// ─────────────────────────────────────────────
-$('dc-expand-next').addEventListener('click', async ()=>{
-  const scResult = getScene(S.activeSceneId);
-  if(!scResult) { toast('No active scene.'); return; }
-  const sc = scResult.scene;
-  const nextBeat = (sc.beats||[]).find(b=>!b.prose);
-  if(!nextBeat) { toast('All beats have draft prose.','success'); return; }
-  const expandBtn = document.querySelector(`[data-beat="${nextBeat.id}"].eb-expand-btn`);
-  if(expandBtn) { expandBtn.click(); return; }
-  await expandSingleBeat(nextBeat, sc, null);
-});
-
-// ─────────────────────────────────────────────
-// ACCEPT ALL
-// ─────────────────────────────────────────────
-function checkAcceptAll(sc) {
-  const beats = sc.beats||[];
-  const allHaveProse = beats.length>0 && beats.every(b=>!!b.prose);
-  const allAccepted = beats.every(b=>b.status==='accepted');
-  const bar = $('accept-all-bar');
-  if(allHaveProse && !allAccepted) bar.classList.add('show');
-  else bar.classList.remove('show');
-}
-
-$('btn-accept-all').addEventListener('click',()=>{
-  const scResult = getScene(S.activeSceneId);
-  if(!scResult) return;
-  const sc = scResult.scene;
-  (sc.beats||[]).forEach(b=>{ if(b.prose) b.status='accepted'; });
-  sc.status='draft';
-  // Remove all ai-authored tints
-  document.querySelectorAll('.eb-prose.ai-authored').forEach(el=>{
-    el.classList.remove('ai-authored'); el.classList.add('accepted');
-  });
-  // Update accept buttons
-  document.querySelectorAll('.eb-act-btn.accept').forEach(btn=>{
-    btn.replaceWith(Object.assign(make('span'),{style:'font-size:.65rem;color:var(--col-draft);font-weight:500;',textContent:'✓ Accepted'}));
-  });
-  $('accept-all-bar').classList.remove('show');
-  updateWordCounts(); renderTree(); persist();
-  toast('All beats accepted as manuscript','success');
-});
-
-// ─────────────────────────────────────────────
-// WORD COUNTS
-// ─────────────────────────────────────────────
-function updateWordCounts() {
-  const scResult = getScene(S.activeSceneId);
-  if(!scResult) return;
-  const beats = scResult.scene.beats||[];
-  const total = beats.reduce((s,b)=>s+(b.prose?countWords(b.prose):0),0);
-  $('draft-word-total').textContent = total>0?`${total.toLocaleString()} words`:'';
-
-  // Update global stat
-  const globalWords = S.acts.flatMap(a=>a.movements.flatMap(m=>m.scenes))
-    .flatMap(s=>s.beats||[]).filter(b=>b.prose&&b.status==='accepted')
-    .reduce((s,b)=>s+countWords(b.prose),0);
-  $('stat-words').textContent = globalWords.toLocaleString();
-}
-
-// ─────────────────────────────────────────────
-// DRAFT CONTROLS
-// ─────────────────────────────────────────────
-$('dc-words').addEventListener('input',e=>{ $('dc-words-val').textContent=e.target.value; });
-$('dc-vlock').addEventListener('click',()=>{
-  S.voiceLock=!S.voiceLock;
-  $('dc-vlock').classList.toggle('on',S.voiceLock);
-  toast(S.voiceLock?'Voice lock on — AI will match your prose style':'Voice lock off');
-});
-
-// Voice input (TBC — scaffolded)
-$('dc-voice-btn').addEventListener('click',()=>{
-  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
-    toast('Voice input requires Chrome'); return;
-  }
-  toast('Voice input — tap again to stop recording','info');
-});
-
-// ─────────────────────────────────────────────
-// BEAT GENERATION (from chunk 3, kept intact)
-// ─────────────────────────────────────────────
-const DEMO_BEATS_MAP = {
-  sc1: [
-    {id:'b1',fn:'Establishment',intention:'Robert arrives at the Bethnal Green flat twenty minutes before Marcus. He folds the letting paper into his jacket pocket with the seriousness of a man signing a contract.',stakes:'Robert establishes control before the others arrive — a habit that will define him.',character:'Robert',locked:false,status:'open'},
-    {id:'b2',fn:'Introduction',intention:'Marcus arrives with forward momentum, two bags, and a plant he cannot explain. Robert says it will die. Marcus says everything does.',stakes:'The friendship\'s dynamic is set in two lines.',character:'Marcus',locked:false,status:'open'},
-    {id:'b3',fn:'Deepening',intention:'The first days together. The quality of the silence between them — comfortable, undemanding.',stakes:'The reader understands what will be lost before knowing it can be lost.',character:'Both',locked:false,status:'open'},
-    {id:'b4',fn:'Establishment',intention:'Daniel arrives three days late. He was sorting something out. He does not say what. Robert does not ask.',stakes:'The space around Daniel\'s explanations is already larger than the explanations themselves.',character:'Daniel',locked:false,status:'open'},
-    {id:'b5',fn:'Closure',intention:'The flat at night. All three of them. What each one wants from this friendship, unspoken.',stakes:'The friendship is established in its fullness and its silence simultaneously.',character:'All three',locked:false,status:'open'},
-  ]
-};
-
-function getDemoBeats(scene) {
-  return DEMO_BEATS_MAP[scene.id] || [
-    {id:uid(),fn:'Establishment',intention:`${scene.name} opens.`,stakes:'The scene announces its territory.',character:'Protagonist',locked:false,status:'open'},
-    {id:uid(),fn:'Probe',intention:'A question is raised, obliquely.',stakes:'The core tension is named without being confronted.',character:'Supporting character',locked:false,status:'open'},
-    {id:uid(),fn:'Escalation',intention:'The pressure increases.',stakes:'A choice is now required that was not required before.',character:'Protagonist',locked:false,status:'open'},
-    {id:uid(),fn:'Moment of choice',intention:'The protagonist makes a decision — or conspicuously does not.',stakes:'Whatever they choose will have consequences they cannot yet see.',character:'Protagonist',locked:false,status:'open'},
-    {id:uid(),fn:'Closure',intention:'The scene ends without resolution. Something has shifted.',stakes:'The thread remains open.',character:'Both',locked:false,status:'open'},
-  ];
-}
-
-async function generateBeats(scene, movResult, mood, targetCount) {
-  const proj = S.project||{};
-  const mov = movResult.movement;
-  const act = movResult.act;
-  const priorScenes = S.acts.flatMap(a=>a.movements.flatMap(m=>m.scenes))
-    .filter(s=>s.status==='draft'||s.status==='approved').slice(-3)
-    .map(s=>`"${s.name}": ${s.intention}`).join('\n');
-  const chars = ''; // from project in full build
-  const moodInstr = {
-    'as-written':'Execute the scene intention faithfully.',
-    'deepen':'Prioritise interiority and subtext.',
-    'escalate':'Each beat should raise tension.',
-    'turn':'Find the reversal.',
-    'surprise':'Propose the most dramatically powerful version.'
-  }[mood]||'Execute faithfully.';
-  const system = `You are a narrative structure expert breaking a scene into beats.
-Story: "${proj.title||'Untitled'}" — ${proj.genre||'fiction'}
-Structural position: ${act.label} → ${mov.name} (${mov.fn}, ${mov.emotional}, ${mov.pacing})
-Prior scenes: ${priorScenes||'None'}
-${S.mode==='screenplay'?'SCREENPLAY: externally visible beats only.':'NOVEL: may include interiority.'}
-${moodInstr}
-Return ONLY valid JSON: [{"fn":"string","intention":"string","stakes":"string","character":"string"}]
-Exactly ${targetCount} beats.`;
-  const raw = await callClaude(system,`Scene: "${scene.name}"\nIntention: ${scene.intention}\nGenerate ${targetCount} beats.`,700);
-  return JSON.parse(raw.replace(/```json|```/g,'').trim()).map(b=>({id:uid(),fn:b.fn||'Beat',intention:b.intention||'',stakes:b.stakes||'',character:b.character||'',locked:false,status:'open'}));
-}
-
-async function getWhatNeeds(scene, movResult) {
-  const mov=movResult.movement, act=movResult.act, proj=S.project||{};
-  if(!S.apiKey) return `This is <strong>${mov.name}</strong> — ${mov.fn}. The emotional register is <em>${mov.emotional}</em> with ${mov.pacing} pacing.<br><br>At ${act.label}, the scene needs to serve its movement's function, give the protagonist at least one moment of agency, and leave at least one thread open.`;
-  return await callClaude(
-    `You are a story editor. Tell the writer precisely what this scene needs to accomplish. 3-4 sentences. Be specific to this story, not generic.`,
-    `Story: "${proj.title}" at ${act.label} → ${mov.name} (${mov.fn}, ${mov.emotional})\nScene: "${scene.name}" — ${scene.intention}\nEnding: ${proj.ending||'not set'}\nWhat does this scene need?`,400);
-}
-
-async function getInspirations(scene, movResult) {
-  const mov=movResult.movement, proj=S.project||{};
-  if(!S.apiKey) return [
-    {type:'Reversal',text:`What if ${scene.name.toLowerCase()} ends the opposite of how it begins emotionally — and that reversal is more true than the expected arc?`},
-    {type:'Symbolic echo',text:`An image already established in the story could resonate here. Find it and let this scene answer it.`},
-    {type:'More dangerous choice',text:`The character makes the choice that costs them more than they planned to pay.`},
-    {type:'Quieter alternative',text:`The scene you're planning may be too loud. The same function could be achieved with something smaller and harder to escape.`},
-    {type:'Thematic deepening',text:`What question does the story most need to ask here — not answer, ask?`},
-  ];
-  const raw = await callClaude(
-    `Generate 5 provocations for this scene. Each one sentence. Active voice. Specific to this story. Return JSON: [{"type":"Reversal|Symbolic echo|More dangerous choice|Quieter alternative|Thematic deepening","text":"string"}]`,
-    `Story: "${proj.title}"\nScene: "${scene.name}" at ${mov.name}\nIntention: ${scene.intention}`,400);
+  const raw=await callClaude(system,
+    `Story: "${proj.title}" — ${proj.genre}\nPosition: ${act.label} → ${mov.name} (${mov.fn}, ${mov.emotional}, ${mov.pacing})\nScene: "${scene.name}" — ${scene.intention}\nProse available:\n${prose.substring(0,600)||'No prose yet.'}\nEnding: ${proj.ending||'not set'}`,800);
   return JSON.parse(raw.replace(/```json|```/g,'').trim());
 }
 
-// ─────────────────────────────────────────────
-// RENDER BEATS
-// ─────────────────────────────────────────────
-function renderBeats(sc) {
-  const list = $('beat-list');
-  if(!list) return;
-  list.innerHTML = '';
-  const beats = sc.beats||[];
-  const bar = $('beat-actions-bar');
-  if(bar) { bar.style.display=beats.length>0?'flex':'none'; const bc=$('bab-count');if(bc)bc.textContent=`${beats.length} beat${beats.length!==1?'s':''}`; }
+function renderDiagnosis(results) {
+  const body=$('cp-body'); body.innerHTML='';
 
+  const intro=make('div');
+  intro.style.cssText='margin-bottom:14px;font-size:.78rem;color:var(--ink-3);line-height:1.55;';
+  intro.textContent='Five craft lenses applied to this scene. Click any lens to read the diagnosis.';
+  body.appendChild(intro);
+
+  DIAGNOSIS_LENSES.forEach(lens=>{
+    const result=results[lens.id];
+    const row=make('div'); row.className='diag-lens';
+    const statusDot=result.status==='ok'?'diag-status-ok':result.status==='warning'?'diag-status-warning':'diag-status-problem';
+    row.innerHTML=`
+      <div class="diag-lens-header">
+        <div class="diag-lens-icon ${lens.cls}">${lens.icon}</div>
+        <div class="diag-lens-name">${lens.name}</div>
+        <div class="diag-status-dot ${statusDot}"></div>
+      </div>
+      <div class="diag-lens-body">${result.diagnosis}
+        <div class="diag-action" data-lens="${lens.id}">Apply ${lens.name.toLowerCase()} lens →</div>
+      </div>`;
+    row.querySelector('.diag-lens-header').addEventListener('click',()=>{
+      const isOpen=row.classList.contains('open');
+      body.querySelectorAll('.diag-lens').forEach(l=>l.classList.remove('open'));
+      if(!isOpen) row.classList.add('open');
+    });
+    row.querySelector('.diag-action').addEventListener('click',e=>{
+      e.stopPropagation();
+      S.craftTool='lenses';
+      activateCraftTab('lenses');
+    });
+    body.appendChild(row);
+  });
+
+  // Overall summary
+  const problems=Object.values(results).filter(r=>r.status==='problem').length;
+  const warnings=Object.values(results).filter(r=>r.status==='warning').length;
+  const summary=make('div');
+  summary.style.cssText='margin-top:14px;padding:11px;border-radius:7px;font-size:.76rem;line-height:1.6;';
+  if(problems>0){summary.style.background='#fee2e2';summary.style.color='#991b1b';summary.innerHTML=`<strong>${problems} structural problem${problems!==1?'s':''}</strong> detected. Address these before expanding to prose.`;}
+  else if(warnings>0){summary.style.background='#fef3c7';summary.style.color='#92400e';summary.innerHTML=`<strong>${warnings} area${warnings!==1?'s':''} to watch</strong>. The scene has a workable structure — review the warnings before drafting.`;}
+  else{summary.style.background='#d1fae5';summary.style.color='#065f46';summary.innerHTML='<strong>No structural problems detected.</strong> The scene is positioned correctly and ready to draft.';}
+  body.appendChild(summary);
+}
+
+// ─────────────────────────────────────────────
+// 2. WHAT THIS SCENE NEEDS (full version)
+// ─────────────────────────────────────────────
+async function getWhatNeeds(scene, movResult) {
+  const mov=movResult.movement,act=movResult.act,proj=S.project||{};
+  const priorAccepted=S.acts.flatMap(a=>a.movements.flatMap(m=>m.scenes)).filter(s=>s.status==='draft').slice(-3).map(s=>s.name).join(', ')||'none yet';
+
+  if(!S.apiKey) return `This is <strong>${mov.name}</strong> — ${mov.fn}. The emotional register is <em>${mov.emotional}</em> with ${mov.pacing} pacing.<br><br>At ${act.label}, the scene needs to: serve its movement's structural function, ensure the protagonist has at least one moment of genuine agency, and leave at least one active thread open rather than resolved.<br><br>The scene should <em>not</em> resolve what the movement is designed to hold in tension. The ending (${proj.ending?proj.ending.substring(0,60)+'…':'not yet set'}) must remain consistent with this scene's outcome.`;
+
+  return await callClaude(
+    `You are a story editor giving precise scene guidance. 4-5 sentences. Specific to this story, not generic. Reference actual characters and the story's own logic. Use <strong> for key points and <em> for craft terms.`,
+    `Story: "${proj.title}" at ${act.label} → ${mov.name} (${mov.fn}, ${mov.emotional}, ${mov.pacing})\nScene: "${scene.name}" — ${scene.intention}\nPrior accepted scenes: ${priorAccepted}\nEnding (fixed): ${proj.ending||'not set'}\nWhat does this specific scene need to accomplish?`,400);
+}
+
+function renderWhatNeeds(html) {
+  const body=$('cp-body'); body.innerHTML='';
+  const box=make('div');
+  box.style.cssText='background:var(--accent-3);border:1px solid var(--accent-2);border-radius:8px;padding:16px;';
+  box.innerHTML=`<div style="font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:9px;">What this scene needs</div><div style="font-size:.84rem;color:var(--ink-2);line-height:1.7;">${html}</div>`;
+  body.appendChild(box);
+
+  // Action buttons
+  const actions=make('div'); actions.style.cssText='margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;';
+  const goBeats=make('button');goBeats.className='cp-gen-btn';goBeats.style.cssText='width:auto;padding:0 16px;';
+  goBeats.textContent='Open beat view →';
+  goBeats.addEventListener('click',()=>{closeCraftPanel();if(S.activeSceneId){const r=getScene(S.activeSceneId);if(r)selectScene(r.scene.id);}});
+  actions.appendChild(goBeats);
+
+  const goDraft=make('button');goDraft.className='cp-gen-btn';goDraft.style.cssText='width:auto;padding:0 16px;background:var(--col-draft);';
+  goDraft.textContent='Open draft view →';
+  goDraft.addEventListener('click',()=>{closeCraftPanel();if(S.activeSceneId)renderDraftView(S.activeSceneId);});
+  actions.appendChild(goDraft);
+  body.appendChild(actions);
+}
+
+// ─────────────────────────────────────────────
+// 3. SCENE SKELETON
+// ─────────────────────────────────────────────
+function renderSkeletonTool() {
+  const body=$('cp-body'); body.innerHTML='';
+  const scResult=getScene(S.activeSceneId);
+  const existing=scResult?.scene;
+
+  const intro=make('div');
+  intro.style.cssText='font-size:.78rem;color:var(--ink-3);line-height:1.55;margin-bottom:16px;';
+  intro.innerHTML='Answer these four questions before writing the scene. This skeleton becomes the generation constraint — AI cannot deviate from these answers.';
+  body.appendChild(intro);
+
+  const questions=[
+    {id:'what',     num:1, label:'What happens?',              placeholder:'The specific event or action in this scene — what actually occurs.'},
+    {id:'costs',    num:2, label:'What does it cost someone?', placeholder:'What does a character lose, risk, or give up here — even if they don\'t know it yet.'},
+    {id:'reveals',  num:3, label:'What does the reader learn?',placeholder:'What new information, understanding, or emotional truth does the reader gain.'},
+    {id:'leaves',   num:4, label:'What question does it leave open?', placeholder:'What unresolved tension, question, or threat carries forward into the next scene.'},
+  ];
+
+  const existing_sk=S.skeletonData||{};
+
+  questions.forEach(q=>{
+    const section=make('div'); section.className='skeleton-question';
+    section.innerHTML=`<div class="sk-label"><div class="sk-num">${q.num}</div>${q.label}</div>
+      <textarea class="sk-input" id="sk-${q.id}" placeholder="${q.placeholder}" rows="2">${existing_sk[q.id]||''}</textarea>`;
+    body.appendChild(section);
+  });
+
+  const genBtn=make('button'); genBtn.className='cp-gen-btn'; genBtn.textContent='Lock skeleton & generate beats →';
+  genBtn.addEventListener('click',async()=>{
+    const data={};
+    questions.forEach(q=>{ data[q.id]=$(`sk-${q.id}`)?.value.trim()||''; });
+    if(!data.what){toast('Answer at least the first question.');return;}
+    S.skeletonData=data;
+
+    // Show locked skeleton
+    body.innerHTML='';
+    const locked=make('div'); locked.className='skeleton-locked';
+    locked.innerHTML=`<div class="sl-title">Scene skeleton — locked</div>
+      ${Object.entries({what:'What happens',costs:'What it costs',reveals:'Reader learns',leaves:'Left open'}).map(([k,l])=>
+        `<div class="sl-row"><span class="sl-key">${l}</span><span>${data[k]||'—'}</span></div>`).join('')}`;
+    body.appendChild(locked);
+
+    const actionNote=make('div');
+    actionNote.style.cssText='margin-top:12px;font-size:.78rem;color:var(--ink-3);line-height:1.55;';
+    actionNote.innerHTML='Skeleton locked. The beat generator will use these as hard constraints.';
+    body.appendChild(actionNote);
+
+    const goBtn=make('button');goBtn.className='cp-gen-btn';goBtn.style.marginTop='12px';
+    goBtn.textContent='Go to beat view →';
+    goBtn.addEventListener('click',()=>{closeCraftPanel();if(S.activeSceneId){const r=getScene(S.activeSceneId);if(r)selectScene(r.scene.id);}});
+    body.appendChild(goBtn);
+
+    toast('Skeleton locked — beats will follow these constraints','success');
+  });
+  body.appendChild(genBtn);
+
+  if(S.skeletonData){
+    const resetBtn=make('button');resetBtn.style.cssText='font-size:.72rem;color:var(--ink-4);text-decoration:underline;cursor:pointer;background:none;border:none;margin-top:4px;';
+    resetBtn.textContent='Reset skeleton';
+    resetBtn.addEventListener('click',()=>{S.skeletonData=null;renderSkeletonTool();});
+    body.appendChild(resetBtn);
+  }
+}
+
+// ─────────────────────────────────────────────
+// 4. THE BRIDGE
+// ─────────────────────────────────────────────
+async function generateBridges(sceneA, sceneB) {
+  const proj=S.project||{};
+  const movResult=getMovement(S.activeMovId);
+  const mov=movResult?.movement;
+
+  if(!S.apiKey) {
+    return [
+      {label:'Direct cut with bridge line', cost:'Fastest. Loses texture between the scenes.',
+       text:`${sceneA.trim().split('\n').pop()}\n\nTime had passed in the way that time passes when nothing has changed — which is to say, everything had.\n\n${sceneB.trim().split('\n')[0]}`},
+      {label:'Transitional scene', cost:'Earns more dramatically. Costs a scene slot.',
+       text:`What happened between them was small enough to miss and large enough to change the shape of everything that followed. No single moment carried the weight of it. It accumulated the way accumulations do — without announcing itself until it was already done.\n\nThe next time Robert saw Marcus, something had shifted that he couldn't have named if asked.`},
+      {label:'Structural inversion (B then A)', cost:'Requires reordering. Creates dramatic irony.',
+       text:`${sceneB.trim().split('\n')[0]}\n\n[Scene B first — the reader holds this image while the earlier scene (A) is revealed, changing its meaning retroactively.]`},
+    ];
+  }
+
+  const system=`You are a narrative editor helping a writer bridge two scenes. Propose exactly 3 structurally distinct bridge options.
+Return ONLY valid JSON array:
+[{"label":"string","cost":"string (what this option costs and earns dramatically)","text":"string (the actual bridging prose or technique)"}]
+Each bridge should be meaningfully different. Label them: Direct cut, Transitional scene, Structural inversion.`;
+
+  const raw=await callClaude(system,
+    `Story: "${proj.title}" — ${proj.tone}\nCurrent position: ${mov?.name||'unknown'}\nScene A (ending):\n${sceneA}\n\nScene B (beginning):\n${sceneB}\n\nGenerate 3 bridge options.`,700);
+  return JSON.parse(raw.replace(/```json|```/g,'').trim());
+}
+
+function renderBridgeTool() {
+  const body=$('cp-body'); body.innerHTML='';
+
+  const intro=make('div');
+  intro.style.cssText='font-size:.78rem;color:var(--ink-3);line-height:1.55;margin-bottom:14px;';
+  intro.textContent='Paste the end of Scene A and the beginning of Scene B. The tool proposes three structurally distinct ways to connect them.';
+  body.appendChild(intro);
+
+  const labelA=make('div');labelA.style.cssText='font-size:.6rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4);margin-bottom:5px;';labelA.textContent='Scene A — ending';body.appendChild(labelA);
+  const inputA=make('textarea');inputA.className='bridge-scene-input';inputA.placeholder='Paste the last paragraph of Scene A…';inputA.value=S.bridgeSceneA||'';inputA.addEventListener('input',()=>S.bridgeSceneA=inputA.value);body.appendChild(inputA);
+
+  const arrow=make('div');arrow.className='bridge-arrow';arrow.textContent='↓';body.appendChild(arrow);
+
+  const labelB=make('div');labelB.style.cssText='font-size:.6rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4);margin-bottom:5px;';labelB.textContent='Scene B — opening';body.appendChild(labelB);
+  const inputB=make('textarea');inputB.className='bridge-scene-input';inputB.placeholder='Paste the first paragraph of Scene B…';inputB.value=S.bridgeSceneB||'';inputB.addEventListener('input',()=>S.bridgeSceneB=inputB.value);body.appendChild(inputB);
+
+  const genBtn=make('button');genBtn.className='cp-gen-btn';genBtn.style.marginTop='12px';genBtn.textContent='Generate three bridge options →';
+  genBtn.addEventListener('click',async()=>{
+    const a=inputA.value.trim(), b=inputB.value.trim();
+    if(!a||!b){toast('Paste both scene excerpts first.');return;}
+    genBtn.disabled=true;genBtn.textContent='Finding bridges…';
+    body.querySelectorAll('.bridge-option').forEach(el=>el.remove());
+    const loading=make('div');loading.className='cp-loading';loading.innerHTML='<div class="cp-spinner"></div>Generating three structural options…';body.appendChild(loading);
+    try{
+      const bridges=await generateBridges(a,b);
+      loading.remove();
+      bridges.forEach((bridge,i)=>{
+        const opt=make('div');opt.className='bridge-option';
+        opt.innerHTML=`<div class="bridge-option-label">${bridge.label}</div>
+          <div class="bridge-option-text">${bridge.text}</div>
+          <div class="bridge-cost">${bridge.cost}</div>`;
+        opt.addEventListener('click',()=>{
+          body.querySelectorAll('.bridge-option').forEach(o=>o.classList.remove('selected'));
+          opt.classList.add('selected');
+          toast('Bridge selected — copy the text above to use it');
+        });
+        body.appendChild(opt);
+      });
+    }catch(e){loading.remove();toast('Bridge generation failed: '+e.message);}
+    finally{genBtn.disabled=false;genBtn.textContent='Generate three bridge options →';}
+  });
+  body.appendChild(genBtn);
+}
+
+// ─────────────────────────────────────────────
+// 5. INSPIRATION LAYER (full five-type system)
+// ─────────────────────────────────────────────
+async function getInspirations(scene, movResult) {
+  const mov=movResult?.movement, proj=S.project||{};
+
+  if(!S.apiKey) return [
+    {type:'Reversal',           text:`What if "${scene.name}" ends the opposite of how it begins emotionally — and that reversal is more true than the expected arc?`},
+    {type:'Symbolic echo',      text:`An image already established in the story could resonate here. Find it and let this scene answer it quietly.`},
+    {type:'More dangerous choice', text:`The character makes the choice that costs them more than they planned to pay — and doesn't notice the cost until it's already made.`},
+    {type:'Quieter alternative',text:`The scene you are planning may be too loud. The same dramatic function could be achieved with something smaller, more precise, harder to escape.`},
+    {type:'Thematic deepening', text:`What question does this story most need to ask here — not answer, ask — that would make everything that follows more complex and less certain?`},
+  ];
+
+  const system=`Generate 5 creative provocations for this scene. Each one sentence. Active voice. Present tense. No hedging. Specific to this story's characters, themes, and established logic — never generic.
+Return ONLY valid JSON: [{"type":"Reversal|Symbolic echo|More dangerous choice|Quieter alternative|Thematic deepening","text":"string"}]`;
+
+  const raw=await callClaude(system,
+    `Story: "${proj.title}" — ${proj.tone}\nThemes: male friendship, dissociation, self-construction, betrayal\nScene: "${scene.name}" at ${mov?.name||'unknown'}\nIntention: ${scene.intention}\nCharacters: Robert (protagonist), Marcus, Daniel`,500);
+  return JSON.parse(raw.replace(/```json|```/g,'').trim());
+}
+
+function renderInspirationTool(provocations) {
+  const body=$('cp-body'); body.innerHTML='';
+
+  const intro=make('div');
+  intro.style.cssText='font-size:.78rem;color:var(--ink-3);line-height:1.55;margin-bottom:14px;';
+  intro.textContent='Five provocations drawn from your story\'s own logic. These are not suggestions — they are structural possibilities. Use, adapt, or ignore.';
+  body.appendChild(intro);
+
+  provocations.forEach(p=>{
+    const prov=make('div'); prov.className='inspo-provocation';
+    prov.innerHTML=`<div class="inspo-prov-type">${p.type}</div>
+      <div class="inspo-prov-text">${p.text}</div>
+      <div class="inspo-use-btn">Build toward this →</div>`;
+    prov.querySelector('.inspo-use-btn').addEventListener('click',()=>{
+      // Pre-fill the open direction in draft controls
+      const dir=$('dc-open-dir');
+      if(dir){dir.value=p.text;toast('Direction added to draft controls','success');}
+      closeCraftPanel();
+    });
+    body.appendChild(prov);
+  });
+
+  const regenBtn=make('button');regenBtn.className='cp-gen-btn';regenBtn.style.cssText='margin-top:14px;';regenBtn.textContent='Generate new provocations ↺';
+  regenBtn.addEventListener('click',async()=>{
+    regenBtn.disabled=true;regenBtn.textContent='Generating…';
+    try{
+      const scR=getScene(S.activeSceneId);const mR=getMovement(S.activeMovId);
+      if(!scR||!mR){toast('Select a scene first.');return;}
+      const provs=await getInspirations(scR.scene,mR);
+      renderInspirationTool(provs);
+    }catch(e){toast('Error: '+e.message);}
+    finally{regenBtn.disabled=false;regenBtn.textContent='Generate new provocations ↺';}
+  });
+  body.appendChild(regenBtn);
+}
+
+// ─────────────────────────────────────────────
+// 6. CRAFT REVISION LENSES
+// ─────────────────────────────────────────────
+const CRAFT_LENSES = [
+  {id:'subtext',   name:'Subtext',    desc:'Characters say the opposite of what they mean',    color:'#ede9fe',textColor:'#5b21b6'},
+  {id:'interiority',name:'Interiority',desc:'The inner life without telling',                  color:'#e0f2fe',textColor:'#0369a1'},
+  {id:'economy',   name:'Economy',    desc:'Remove everything that is not load-bearing',       color:'#fef3c7',textColor:'#92400e'},
+  {id:'image',     name:'Image',      desc:'Find one concrete image and make it carry meaning',color:'#d1fae5',textColor:'#065f46'},
+  {id:'dialogue',  name:'Dialogue',   desc:'Each character speaks in their own register',      color:'#fee2e2',textColor:'#991b1b'},
+];
+
+async function applyLens(lensId, selectedText) {
+  const lens=CRAFT_LENSES.find(l=>l.id===lensId);
+  const proj=S.project||{};
+  const scResult=getScene(S.activeSceneId);
+  const movResult=getMovement(S.activeMovId);
+  if(!lens)return null;
+
+  const lensInstructions={
+    subtext:`SUBTEXT LENS: Rewrite so that what the characters most want to say is the thing they most carefully avoid saying. Dialogue becomes oblique. Action carries meaning the prose never states directly. The gap between word and meaning should be felt.`,
+    interiority:`INTERIORITY LENS: Add the inner life of the POV character without telling — not "he was afraid" but the physical sensation, the specific intrusive thought, the involuntary image. The reader should know the interior state without being told what it is.`,
+    economy:`ECONOMY LENS: Remove every word not doing work. What remains should feel slightly uncomfortable in its compression. Short sentences. No redundant adjectives. No throat-clearing. The passage should be denser and harder and more precise.`,
+    image:`IMAGE LENS: Find or introduce one concrete image and make it load-bearing — symbolic, recurring, significant. The image should do what the prose cannot say directly. It should arrive naturally and leave an impression.`,
+    dialogue:`DIALOGUE LENS: Each character must speak in their own register — vocabulary, rhythm, syntax, what they choose not to say. If all characters sound like the same writer, differentiate them. Dialect is the last resort; personality and psychology are the tools.`,
+  };
+
+  if(!S.apiKey) return {
+    original: selectedText,
+    revised: `[${lens.name} lens requires API key — add in Settings to enable craft revision]\n\n${selectedText}`,
+    lens: lens.name,
+  };
+
+  const system=`You are a literary editor applying a specific craft lens to revise a passage.
+${lensInstructions[lensId]}
+POV: ${proj.pov||'third person'}. Story tone: ${proj.tone||'literary'}.
+Return ONLY the revised prose. No explanation. No labels. Just the revised passage.`;
+
+  const revised=await callClaude(system,
+    `Original passage:\n\n${selectedText}\n\nApply the ${lens.name} lens now.`,600);
+  return {original:selectedText,revised,lens:lens.name};
+}
+
+function renderLensesTool() {
+  const body=$('cp-body'); body.innerHTML='';
+
+  const intro=make('div');
+  intro.style.cssText='font-size:.78rem;color:var(--ink-3);line-height:1.55;margin-bottom:14px;';
+  intro.textContent='Select a lens, then select text in the draft to apply it. Each lens performs a specific craft operation.';
+  body.appendChild(intro);
+
+  // Lens selection grid
+  const grid=make('div'); grid.className='lens-row';
+  CRAFT_LENSES.forEach(lens=>{
+    const btn=make('button'); btn.className='lens-btn'+(S.selectedLens===lens.id?' active':'');
+    btn.innerHTML=`<div class="lens-btn-name" style="color:${lens.textColor}">${lens.name}</div><div class="lens-btn-desc">${lens.desc}</div>`;
+    btn.addEventListener('click',()=>{
+      S.selectedLens=lens.id;
+      body.querySelectorAll('.lens-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      renderLensInput(body, lens);
+    });
+    grid.appendChild(btn);
+  });
+  body.appendChild(grid);
+
+  // Textarea for pasting text
+  const ta=make('textarea');
+  ta.id='lens-input-area';
+  ta.style.cssText='width:100%;min-height:100px;border:1.5px solid var(--border-2);border-radius:6px;padding:10px;font-family:var(--serif);font-size:.9rem;line-height:1.65;color:var(--ink);background:var(--paper);resize:vertical;transition:border-color 150ms;margin-bottom:10px;';
+  ta.placeholder='Paste the passage you want to revise, or select text in the draft view above…';
+  ta.addEventListener('focus',()=>ta.style.borderColor='var(--accent)');
+  ta.addEventListener('blur',()=>ta.style.borderColor='var(--border-2)');
+  body.appendChild(ta);
+
+  const applyBtn=make('button');applyBtn.className='cp-gen-btn';applyBtn.textContent='Apply lens →';
+  applyBtn.addEventListener('click',async()=>{
+    const text=ta.value.trim();
+    if(!text){toast('Paste a passage first.');return;}
+    if(!S.selectedLens){toast('Select a lens first.');return;}
+    applyBtn.disabled=true;applyBtn.textContent='Applying…';
+    const loading=make('div');loading.className='cp-loading';loading.innerHTML='<div class="cp-spinner"></div>Applying craft lens…';body.appendChild(loading);
+    try{
+      const result=await applyLens(S.selectedLens, text);
+      loading.remove();
+      renderLensResult(body, result);
+    }catch(e){loading.remove();toast('Lens failed: '+e.message);}
+    finally{applyBtn.disabled=false;applyBtn.textContent='Apply lens →';}
+  });
+  body.appendChild(applyBtn);
+}
+
+function renderLensInput(body, lens) {
+  const existing=body.querySelector('.lens-result-original');
+  if(existing){existing.remove();}
+  const existingR=body.querySelector('.lens-result-revised');
+  if(existingR){existingR.remove();}
+}
+
+function renderLensResult(body, result) {
+  // Remove old results
+  body.querySelectorAll('.lens-result-original,.lens-result-revised,.lens-apply-btn').forEach(el=>el.remove());
+
+  const orig=make('div');orig.className='lens-result-original';
+  orig.innerHTML=`<div class="lens-result-original-label">Original</div><div class="lens-result-original-text">${escHtml(result.original).replace(/\n/g,'<br>')}</div>`;
+  body.appendChild(orig);
+
+  const rev=make('div');rev.className='lens-result-revised';
+  rev.innerHTML=`<div class="lens-result-revised-label">${result.lens} lens applied</div><div class="lens-result-revised-text">${escHtml(result.revised).replace(/\n/g,'<br>')}</div>`;
+  body.appendChild(rev);
+
+  const applyBtn=make('button');applyBtn.className='lens-apply-btn';applyBtn.textContent='Use this revision in my draft';
+  applyBtn.addEventListener('click',()=>{
+    // Find and replace in the active prose block
+    const blocks=document.querySelectorAll('.eb-prose');
+    let replaced=false;
+    blocks.forEach(b=>{
+      if(b.innerText.includes(result.original.trim().substring(0,40))){
+        b.innerHTML=b.innerHTML.replace(escHtml(result.original),`<span class="ai-authored">${escHtml(result.revised)}</span>`);
+        replaced=true;
+      }
+    });
+    if(replaced){toast('Revision applied to draft','success');closeCraftPanel();}
+    else{
+      navigator.clipboard?.writeText(result.revised).then(()=>toast('Copied to clipboard — paste it where you need it.'));
+    }
+  });
+  body.appendChild(applyBtn);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CRAFT PANEL CONTROLLER
+// ═══════════════════════════════════════════════════════════════
+function openCraftPanel(tool) {
+  $('craft-panel').classList.add('open');
+  $('craft-panel-backdrop').classList.add('open');
+  S.craftTool = tool||S.craftTool||'diagnose';
+  activateCraftTab(S.craftTool);
+}
+
+function closeCraftPanel() {
+  $('craft-panel').classList.remove('open');
+  $('craft-panel-backdrop').classList.remove('open');
+}
+
+async function activateCraftTab(tool) {
+  S.craftTool = tool;
+  $('cp-tabs').querySelectorAll('.cp-tab').forEach(t=>t.classList.toggle('active',t.dataset.tool===tool));
+
+  const body=$('cp-body');
+  const scResult=getScene(S.activeSceneId);
+  const movResult=getMovement(S.activeMovId);
+
+  if(tool==='diagnose') {
+    if(!scResult||!movResult){body.innerHTML='<div style="padding:14px;font-size:.78rem;color:var(--ink-4);font-style:italic;">Select a scene to diagnose.</div>';return;}
+    body.innerHTML='<div class="cp-loading"><div class="cp-spinner"></div>Running diagnosis…</div>';
+    try{const results=await runDiagnosis(scResult.scene,movResult);renderDiagnosis(results);}
+    catch(e){body.innerHTML=`<div style="padding:14px;color:#991b1b;font-size:.78rem;">Diagnosis failed: ${e.message}</div>`;}
+  }
+  else if(tool==='needs') {
+    if(!scResult||!movResult){body.innerHTML='<div style="padding:14px;font-size:.78rem;color:var(--ink-4);font-style:italic;">Select a scene first.</div>';return;}
+    body.innerHTML='<div class="cp-loading"><div class="cp-spinner"></div>Analysing scene needs…</div>';
+    try{const html=await getWhatNeeds(scResult.scene,movResult);renderWhatNeeds(html);}
+    catch(e){body.innerHTML=`<div style="padding:14px;color:#991b1b;font-size:.78rem;">Analysis failed: ${e.message}</div>`;}
+  }
+  else if(tool==='skeleton') { renderSkeletonTool(); }
+  else if(tool==='bridge')   { renderBridgeTool(); }
+  else if(tool==='inspiration') {
+    if(!scResult||!movResult){body.innerHTML='<div style="padding:14px;font-size:.78rem;color:var(--ink-4);font-style:italic;">Select a scene for inspiration.</div>';return;}
+    body.innerHTML='<div class="cp-loading"><div class="cp-spinner"></div>Generating provocations…</div>';
+    try{const provs=await getInspirations(scResult.scene,movResult);renderInspirationTool(provs);}
+    catch(e){body.innerHTML=`<div style="padding:14px;color:#991b1b;font-size:.78rem;">Failed: ${e.message}</div>`;}
+  }
+  else if(tool==='lenses') { renderLensesTool(); }
+}
+
+// Bind craft panel tabs
+document.querySelectorAll('.cp-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>activateCraftTab(tab.dataset.tool));
+});
+$('cp-close').addEventListener('click',closeCraftPanel);
+$('craft-panel-backdrop').addEventListener('click',closeCraftPanel);
+
+// ─────────────────────────────────────────────
+// Context bar buttons → craft panel
+// ─────────────────────────────────────────────
+const ctxWhat=$('ctx-what-needs');
+if(ctxWhat) ctxWhat.addEventListener('click',()=>openCraftPanel('needs'));
+
+const ctxDx=$('ctx-diagnose');
+if(ctxDx) ctxDx.addEventListener('click',()=>openCraftPanel('diagnose'));
+
+const ctxInsp=$('ctx-inspire');
+if(ctxInsp) ctxInsp.addEventListener('click',()=>openCraftPanel('inspiration'));
+
+const ctxCraft=$('ctx-craft');
+if(ctxCraft) ctxCraft.addEventListener('click',()=>openCraftPanel('diagnose'));
+
+// Rail inspire button
+const railInspire=$('rail-inspire');
+if(railInspire) railInspire.addEventListener('click',()=>openCraftPanel('inspiration'));
+
+// ═══════════════════════════════════════════════════════════════
+// WORD PALETTE (carried from chunk 4)
+// ═══════════════════════════════════════════════════════════════
+let palTimeout=null;
+function showWordPalette(selection,range){
+  if(!selection||selection.length<2)return;
+  S.palSelection=selection;S.palRange=range;
+  const pal=$('word-palette');
+  const rect=range.getBoundingClientRect();
+  $('wp-options').innerHTML='<div class="wp-loading">Generating alternatives…</div>';
+  pal.style.left=Math.min(rect.left,window.innerWidth-440)+'px';
+  pal.style.top=(rect.top-10)+'px';
+  pal.style.transform='translateY(-100%)';
+  pal.classList.add('show');
+  clearTimeout(palTimeout);
+  palTimeout=setTimeout(()=>fetchPaletteOptions(selection),100);
+}
+async function fetchPaletteOptions(sel){
+  const container=$('wp-options');
+  const demoOpts=[{label:'More concrete & sensory',text:sel.length<20?'the rain came in sideways off the street':`${sel} — rendered in physical detail`},{label:'More metaphorical',text:sel.length<20?'the sky gave up':`${sel} — reaching for emotional undertone`},{label:'Character-inflected',text:sel.length<20?'of course it was raining':`${sel} — filtered through character state`}];
+  if(!S.apiKey){renderPaletteOptions(demoOpts);return;}
+  try{
+    const system=`Literary editor. Provide 3 alternative expressions for selected text.\nMode: ${S.palMode==='sharpen'?'SHARPEN — concrete, precise, physical':'ELEVATE — literary, resonant, layered'}\nReturn ONLY JSON array of 3 strings.`;
+    const raw=await callClaude(system,`Selected: "${sel}"\nProvide 3 ${S.palMode} alternatives.`,300);
+    const opts=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    const labels=['More concrete & sensory','More metaphorical','Character-inflected'];
+    renderPaletteOptions(opts.map((t,i)=>({label:labels[i]||`Option ${i+1}`,text:t})));
+  }catch(e){container.innerHTML='<div class="wp-loading">Add API key to enable alternatives.</div>';}
+}
+function renderPaletteOptions(opts){
+  $('wp-options').innerHTML=opts.map((o,i)=>`<div class="wp-opt" data-idx="${i}"><div class="wp-opt-label">${o.label}</div><div class="wp-opt-text">${o.text}</div></div>`).join('');
+  document.querySelectorAll('.wp-opt').forEach((el,i)=>{el.addEventListener('click',()=>{applyPaletteOption(opts[i].text);$('word-palette').classList.remove('show');});});
+}
+function applyPaletteOption(text){
+  if(!S.palRange)return;
+  const range=S.palRange;range.deleteContents();
+  const span=make('span');span.className='ai-authored';span.textContent=text;range.insertNode(span);
+  setTimeout(()=>{span.classList.add('accepted');setTimeout(()=>span.replaceWith(document.createTextNode(span.textContent)),2000);},6000);
+  persist();toast('Applied — ⌘Z to undo');
+}
+async function applyCustomPalette(){
+  const dir=$('wp-dir').value.trim();if(!dir||!S.palSelection)return;
+  if(!S.apiKey){toast('Custom rewrite needs API key.');return;}
+  try{const result=await callClaude('Rewrite the selected text exactly as directed. Return ONLY the rewritten text.',`Original: "${S.palSelection}"\nDirection: ${dir}`,200);applyPaletteOption(result);$('word-palette').classList.remove('show');}
+  catch(e){toast('Rewrite failed: '+e.message);}
+}
+document.querySelectorAll('.wp-mode').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('.wp-mode').forEach(b=>b.classList.remove('on'));btn.classList.add('on');S.palMode=btn.dataset.mode;if(S.palSelection)fetchPaletteOptions(S.palSelection);});});
+$('wp-custom-go').addEventListener('click',applyCustomPalette);
+$('wp-dir').addEventListener('keydown',e=>{if(e.key==='Enter')applyCustomPalette();});
+document.addEventListener('mousedown',e=>{if($('word-palette')&&!$('word-palette').contains(e.target))$('word-palette').classList.remove('show');});
+
+// ═══════════════════════════════════════════════════════════════
+// DRAFT EXPANSION (from chunk 4, carried forward)
+// ═══════════════════════════════════════════════════════════════
+async function expandBeat(beat,scene,movResult){
+  const proj=S.project||{};const mov=movResult.movement;const act=movResult.act;
+  const recentProse=S.acts.flatMap(a=>a.movements.flatMap(m=>m.scenes)).flatMap(s=>s.beats||[]).filter(b=>b.prose&&b.status==='accepted').slice(-2).map(b=>b.prose.substring(0,300)).join('\n\n---\n\n');
+  const tone=$('dc-tone')?.value||'faithful';const targetWords=parseInt($('dc-words')?.value||180);const customDir=$('dc-open-dir')?.value.trim()||'';
+  const skInstr=S.skeletonData?`\nSCENE SKELETON (hard constraints):\n- What happens: ${S.skeletonData.what}\n- What it costs: ${S.skeletonData.costs}\n- Reader learns: ${S.skeletonData.reveals}\n- Left open: ${S.skeletonData.leaves}`:'';
+  const toneMap={faithful:'Execute faithfully.',deepen:'Prioritise interiority and subtext.',tighten:'Strip everything not load-bearing. Short sentences.',lyrical:'Find the literary quality. Rhythm, image, precision.',cinematic:'Visual and external. What would a camera see?'};
+  const system=`Co-writing "${proj.title||'Untitled'}" — ${proj.genre||'literary fiction'}.\nTone: ${proj.tone||'literary'}. POV: ${proj.pov||'third person'}.\nEnding (fixed): ${proj.ending||'not set'}.\n${toneMap[tone]||toneMap.faithful}\nTarget ~${targetWords} words.${skInstr}\n${S.voiceLock&&getVoiceSample()?`Match this voice:\n"${getVoiceSample()}"`:''}${customDir?`\nDirection: ${customDir}`:''}\n${recentProse?`Recent context:\n${recentProse}`:'Opening.'}`;
+  return await callClaude(system,`Beat: ${beat.fn}\nIntention: ${beat.intention}\nStakes: ${beat.stakes||'not specified'}\nScene: "${scene.name}" at ${act.label} → ${mov.name} (${mov.fn}, ${mov.emotional})`,Math.round(targetWords*1.6));
+}
+
+async function expandSingleBeat(beat,sc,triggerBtn){
+  if(S.isExpanding){toast('Already generating — please wait.');return;}
+  S.isExpanding=true;const movResult=getMovement(S.activeMovId);if(!movResult){S.isExpanding=false;return;}
+  const block=document.querySelector(`.expansion-block[data-beat="${beat.id}"]`);if(!block){S.isExpanding=false;return;}
+  const emptySlot=block.querySelector('.eb-empty');
+  if(emptySlot){emptySlot.innerHTML=`<div class="prose-shimmer"><div class="prose-shim-line" style="width:92%"></div><div class="prose-shim-line" style="width:78%"></div><div class="prose-shim-line" style="width:84%"></div></div><div class="beat-gen-label"><div class="beat-gen-spinner"></div>Writing ${beat.fn.toLowerCase()}…</div>`;}
+  try{
+    let prose;
+    if(S.apiKey){prose=await expandBeat(beat,sc,movResult);}
+    else{await sleep(1100);prose=DEMO_PROSE[beat.id]||`${beat.intention}\n\nThe moment carried its own weight. Nothing was resolved. Something had changed that would not be named for some time.`;}
+    beat.prose=prose;beat.status='drafted';
+    const proseEl=make('div');proseEl.className='eb-prose ai-authored';proseEl.contentEditable='true';proseEl.spellcheck=true;proseEl.dataset.beat=beat.id;
+    proseEl.innerHTML=prose.split('\n').filter(p=>p.trim()).map(p=>`<p>${escHtml(p)}</p>`).join('');
+    const actionsEl=make('div');actionsEl.className='eb-actions';
+    actionsEl.innerHTML=`<button class="eb-act-btn accept" data-beat="${beat.id}">Accept ✓</button><button class="eb-act-btn regen" data-beat="${beat.id}">Regenerate</button>`;
+    if(emptySlot)emptySlot.remove();block.appendChild(proseEl);block.appendChild(actionsEl);
+    const words=countWords(prose);const labelEl=block.querySelector('.eb-label');
+    if(labelEl){const ws=make('span');ws.className='eb-word-count';ws.textContent=words+'w';labelEl.appendChild(ws);}
+    const cursor=make('span');cursor.className='stream-cursor';proseEl.appendChild(cursor);setTimeout(()=>cursor.remove(),2200);
+    actionsEl.querySelector('.accept').addEventListener('click',()=>{beat.status='accepted';proseEl.classList.remove('ai-authored');proseEl.classList.add('accepted');actionsEl.querySelector('.accept').replaceWith(Object.assign(make('span'),{style:'font-size:.65rem;color:var(--col-draft);font-weight:500;',textContent:'✓ Accepted'}));updateWordCounts();renderTree();persist();checkAcceptAll(sc);});
+    actionsEl.querySelector('.regen').addEventListener('click',async()=>{beat.status='open';beat.prose='';renderDraftView(sc.id);await sleep(200);const eb=document.querySelector(`[data-beat="${beat.id}"].eb-expand-btn`);if(eb)eb.click();});
+    proseEl.addEventListener('input',()=>{beat.prose=proseEl.innerText;const w=countWords(beat.prose);const wEl=block.querySelector('.eb-word-count');if(wEl)wEl.textContent=w+'w';updateWordCounts();persist();});
+    proseEl.addEventListener('mouseup',()=>{const sel=window.getSelection();if(sel&&!sel.isCollapsed&&sel.toString().trim().length>1){const range=sel.getRangeAt(0);if(proseEl.contains(range.commonAncestorContainer))showWordPalette(sel.toString().trim(),range);}});
+    updateWordCounts();checkAcceptAll(sc);persist();
+    if(!S.apiKey)toast('Demo prose — add API key for AI expansion','info');
+  }catch(e){if(emptySlot){emptySlot.innerHTML=`<span>Failed: ${e.message}</span><button class="eb-expand-btn" data-beat="${beat.id}">Retry →</button>`;emptySlot.querySelector('.eb-expand-btn').addEventListener('click',async()=>expandSingleBeat(beat,sc,null));}toast('Expansion failed: '+e.message);}
+  finally{S.isExpanding=false;}
+}
+
+function renderDraftView(sceneId){
+  const result=getScene(sceneId||S.activeSceneId);if(!result)return;
+  const{act,movement:mov,scene:sc}=result;
+  S.activeSceneId=sc.id;S.activeMovId=mov.id;
+  $('dv-title').textContent=sc.name;$('dv-movement').textContent=`${act.label} → ${mov.name}`;
+  $('dv-mode-pill').textContent=S.mode==='novel'?'Novel':'Screenplay';$('dv-beat-count').textContent=`${(sc.beats||[]).length} beats`;
+  const container=$('expansion-blocks');container.innerHTML='';
+  const beats=sc.beats||[];
+  if(!beats.length){container.innerHTML='<div style="padding:40px;font-size:.9rem;color:var(--ink-4);font-style:italic;font-family:var(--serif)">No beats yet. Go back to the beat view and generate a beat outline first.</div>';return;}
   beats.forEach((beat,i)=>{
-    const fnColor=BEAT_FN_COLORS[beat.fn]||'establishment';
-    const card=make('div');
+    const block=make('div');block.className='expansion-block';block.dataset.beatId=beat.id;
+    const fnColor=BEAT_FN_COLORS[beat.fn]||'establishment';const hasProse=!!beat.prose;const isAccepted=beat.status==='accepted'||beat.status==='draft';const words=beat.prose?countWords(beat.prose):0;
+    block.innerHTML=`<div class="eb-label"><span class="eb-beat-num">${String(i+1).padStart(2,'0')}</span><span class="eb-fn-tag ${fnColor}">${beat.fn}</span>${beat.locked?'<span style="font-size:.62rem;color:var(--ink-5)">🔒</span>':''}${words>0?`<span class="eb-word-count">${words}w</span>`:''}</div><div class="eb-beat-intention" style="font-size:.75rem;color:var(--ink-4);font-style:italic;margin-bottom:10px;line-height:1.45;">${beat.intention}</div>${hasProse?`<div class="eb-prose${isAccepted?'':' ai-authored'}" contenteditable="true" data-beat="${beat.id}" spellcheck="true">${beat.prose.split('\n').filter(p=>p.trim()).map(p=>`<p>${escHtml(p)}</p>`).join('')}</div><div class="eb-actions">${!isAccepted?`<button class="eb-act-btn accept" data-beat="${beat.id}">Accept ✓</button>`:'<span style="font-size:.65rem;color:var(--col-draft);font-weight:500;">✓ Accepted</span>'}<button class="eb-act-btn regen" data-beat="${beat.id}">Regenerate</button></div>`:`<div class="eb-empty"><span>Not yet expanded.</span><button class="eb-expand-btn" data-beat="${beat.id}">Expand this beat →</button></div>`}`;
+    const proseEl=block.querySelector('.eb-prose');
+    if(proseEl){
+      proseEl.addEventListener('input',()=>{beat.prose=proseEl.innerText;const w=countWords(beat.prose);const wEl=block.querySelector('.eb-word-count');if(wEl)wEl.textContent=w+'w';updateWordCounts();persist();});
+      proseEl.addEventListener('mouseup',()=>{const sel=window.getSelection();if(sel&&!sel.isCollapsed&&sel.toString().trim().length>1){const range=sel.getRangeAt(0);if(proseEl.contains(range.commonAncestorContainer))showWordPalette(sel.toString().trim(),range);}});
+    }
+    const acceptBtn=block.querySelector('.eb-act-btn.accept');
+    if(acceptBtn){acceptBtn.addEventListener('click',()=>{beat.status='accepted';const prEl=block.querySelector('.eb-prose');if(prEl){prEl.classList.remove('ai-authored');prEl.classList.add('accepted');}acceptBtn.replaceWith(Object.assign(make('span'),{style:'font-size:.65rem;color:var(--col-draft);font-weight:500;',textContent:'✓ Accepted'}));updateWordCounts();renderTree();persist();checkAcceptAll(sc);});}
+    const regenBtn=block.querySelector('.eb-act-btn.regen');
+    if(regenBtn){regenBtn.addEventListener('click',async()=>{beat.status='open';beat.prose='';renderDraftView(sc.id);await sleep(200);const eb=document.querySelector(`[data-beat="${beat.id}"].eb-expand-btn`);if(eb)eb.click();});}
+    const expandBtn=block.querySelector('.eb-expand-btn');
+    if(expandBtn){expandBtn.addEventListener('click',async()=>expandSingleBeat(beat,sc,expandBtn));}
+    container.appendChild(block);
+  });
+  checkAcceptAll(sc);updateWordCounts();showView('draft');$('draft-controls').classList.add('visible');
+}
+
+function checkAcceptAll(sc){
+  const beats=sc.beats||[];const allHave=beats.length>0&&beats.every(b=>!!b.prose);const allAcc=beats.every(b=>b.status==='accepted');
+  $('accept-all-bar').classList.toggle('show',allHave&&!allAcc);
+}
+
+function updateWordCounts(){
+  const scResult=getScene(S.activeSceneId);
+  if(scResult){const beats=scResult.scene.beats||[];const total=beats.reduce((s,b)=>s+(b.prose?countWords(b.prose):0),0);const dwt=$('draft-word-total');if(dwt)dwt.textContent=total>0?`${total.toLocaleString()} words`:'';} 
+  const globalWords=S.acts.flatMap(a=>a.movements.flatMap(m=>m.scenes)).flatMap(s=>s.beats||[]).filter(b=>b.prose&&b.status==='accepted').reduce((s,b)=>s+countWords(b.prose),0);
+  $('stat-words').textContent=globalWords.toLocaleString();
+}
+
+$('btn-accept-all').addEventListener('click',()=>{
+  const scResult=getScene(S.activeSceneId);if(!scResult)return;const sc=scResult.scene;
+  (sc.beats||[]).forEach(b=>{if(b.prose)b.status='accepted';});sc.status='draft';
+  document.querySelectorAll('.eb-prose.ai-authored').forEach(el=>{el.classList.remove('ai-authored');el.classList.add('accepted');});
+  document.querySelectorAll('.eb-act-btn.accept').forEach(btn=>{btn.replaceWith(Object.assign(make('span'),{style:'font-size:.65rem;color:var(--col-draft);font-weight:500;',textContent:'✓ Accepted'}));});
+  $('accept-all-bar').classList.remove('show');updateWordCounts();renderTree();persist();toast('All beats accepted','success');
+});
+$('dc-expand-next').addEventListener('click',async()=>{
+  const scResult=getScene(S.activeSceneId);if(!scResult){toast('No active scene.');return;}
+  const sc=scResult.scene;const nextBeat=(sc.beats||[]).find(b=>!b.prose);if(!nextBeat){toast('All beats have prose.','success');return;}
+  const expandBtn=document.querySelector(`[data-beat="${nextBeat.id}"].eb-expand-btn`);
+  if(expandBtn){expandBtn.click();}else{await expandSingleBeat(nextBeat,sc,null);}
+});
+$('dc-words').addEventListener('input',e=>{ const v=$('dc-words-val');if(v)v.textContent=e.target.value; });
+$('dc-vlock').addEventListener('click',()=>{S.voiceLock=!S.voiceLock;$('dc-vlock').classList.toggle('on',S.voiceLock);toast(S.voiceLock?'Voice lock on':'Voice lock off');});
+$('dc-voice-btn').addEventListener('click',()=>toast('Voice input — Chrome required','info'));
+
+// ═══════════════════════════════════════════════════════════════
+// BEAT GENERATION (from chunk 3, carried forward)
+// ═══════════════════════════════════════════════════════════════
+function getDemoBeats(scene){
+  const d={sc1:[{id:'b1',fn:'Establishment',intention:'Robert arrives twenty minutes early. He folds the letting paper with the seriousness of a man signing a contract.',stakes:'Robert establishes control before the others arrive.',character:'Robert',locked:false,status:'open'},{id:'b2',fn:'Introduction',intention:'Marcus arrives with a plant he cannot explain. Robert says it will die. Marcus says everything does.',stakes:'The friendship dynamic set in two lines.',character:'Marcus',locked:false,status:'open'},{id:'b3',fn:'Deepening',intention:'First days. The silence between them — comfortable, undemanding.',stakes:'The reader understands what will be lost.',character:'Both',locked:false,status:'open'},{id:'b4',fn:'Establishment',intention:'Daniel arrives three days late. He does not say why. Robert does not ask.',stakes:'The space around Daniel\'s explanations larger than the explanations.',character:'Daniel',locked:false,status:'open'},{id:'b5',fn:'Closure',intention:'The flat at night. All three. What each wants from this friendship, unspoken.',stakes:'The friendship established in fullness and silence.',character:'All three',locked:false,status:'open'}]};
+  return d[scene.id]||[{id:uid(),fn:'Establishment',intention:`${scene.name} opens.`,stakes:'The scene announces its territory.',character:'Protagonist',locked:false,status:'open'},{id:uid(),fn:'Probe',intention:'A question is raised, obliquely.',stakes:'The core tension is named without being confronted.',character:'Supporting',locked:false,status:'open'},{id:uid(),fn:'Escalation',intention:'The pressure increases.',stakes:'A choice is now required.',character:'Protagonist',locked:false,status:'open'},{id:uid(),fn:'Moment of choice',intention:'The protagonist makes a decision — or conspicuously does not.',stakes:'The consequences will come.',character:'Protagonist',locked:false,status:'open'},{id:uid(),fn:'Closure',intention:'The scene ends without resolution.',stakes:'The thread remains open.',character:'Both',locked:false,status:'open'}];
+}
+async function generateBeats(scene,movResult,mood,count){
+  const proj=S.project||{};const mov=movResult.movement;const act=movResult.act;
+  const skInstr=S.skeletonData?`\nScene skeleton (hard constraints):\n- What happens: ${S.skeletonData.what}\n- What it costs: ${S.skeletonData.costs}\n- Reader learns: ${S.skeletonData.reveals}\n- Left open: ${S.skeletonData.leaves}`:'';
+  const moodInstr={['as-written']:'Execute faithfully.',deepen:'Prioritise interiority.',escalate:'Each beat raises tension.',turn:'Find the reversal.',surprise:'Most dramatically powerful version.'}[mood]||'Execute faithfully.';
+  const system=`Narrative structure expert. Break a scene into ${count} beats.\nStory: "${proj.title}" — ${proj.genre}\nPosition: ${act.label} → ${mov.name} (${mov.fn}, ${mov.emotional}, ${mov.pacing})${skInstr}\n${moodInstr}\nReturn ONLY valid JSON: [{"fn":"string","intention":"string","stakes":"string","character":"string"}]`;
+  const raw=await callClaude(system,`Scene: "${scene.name}"\nIntention: ${scene.intention}\nGenerate ${count} beats.`,700);
+  return JSON.parse(raw.replace(/```json|```/g,'').trim()).map(b=>({id:uid(),fn:b.fn||'Beat',intention:b.intention||'',stakes:b.stakes||'',character:b.character||'',locked:false,status:'open'}));
+}
+
+function renderBeats(sc){
+  const list=$('beat-list');if(!list)return;list.innerHTML='';const beats=sc.beats||[];
+  const bar=$('beat-actions-bar');if(bar){bar.style.display=beats.length>0?'flex':'none';const bc=$('bab-count');if(bc)bc.textContent=`${beats.length} beat${beats.length!==1?'s':''}`;}
+  beats.forEach((beat,i)=>{
+    const fnColor=BEAT_FN_COLORS[beat.fn]||'establishment';const card=make('div');
     card.className=`beat-card${beat.locked?' locked':beat.status==='draft'?' drafted':beat.status==='approved'?' approved':''}`;
-    card.dataset.beatId=beat.id; card.draggable=true;
+    card.dataset.beatId=beat.id;card.draggable=true;
     const fnOptions=BEAT_FNS.map(f=>`<option value="${f}"${f===beat.fn?' selected':''}>${f}</option>`).join('');
     const stakesClass=beat.stakes?'bc-stakes':'bc-stakes empty';
-    const stakesText=beat.stakes||'What is at risk in this beat?';
-    card.innerHTML=`
-      <div class="bc-drag" title="Drag">⠿</div>
-      <div class="bc-num">${String(i+1).padStart(2,'0')}</div>
-      <div class="bc-body">
-        <div class="bc-fn-row">
-          <select class="bc-fn-select" data-beat="${beat.id}">${fnOptions}</select>
-          ${beat.character?`<span class="bc-char-tag">${beat.character}</span>`:''}
-          <button class="bc-lock-btn${beat.locked?' locked':''}" data-beat="${beat.id}">${beat.locked?'🔒':'Lock'}</button>
-          <button class="bc-delete-btn" data-beat="${beat.id}">✕</button>
-        </div>
-        <div class="bc-intention" contenteditable="true" data-beat="${beat.id}">${beat.intention}</div>
-        <div class="${stakesClass}" contenteditable="true" data-field="stakes" data-beat="${beat.id}">${stakesText}</div>
-      </div>
-      <div class="bc-actions">
-        <button class="bc-action-btn expand-btn" data-beat="${beat.id}">Expand →</button>
-        <button class="bc-action-btn" data-beat="${beat.id}" data-action="provoke">Provoke ✦</button>
-      </div>`;
+    card.innerHTML=`<div class="bc-drag">⠿</div><div class="bc-num">${String(i+1).padStart(2,'0')}</div><div class="bc-body"><div class="bc-fn-row"><select class="bc-fn-select" data-beat="${beat.id}">${fnOptions}</select>${beat.character?`<span class="bc-char-tag">${beat.character}</span>`:''}<button class="bc-lock-btn${beat.locked?' locked':''}" data-beat="${beat.id}">${beat.locked?'🔒':'Lock'}</button><button class="bc-delete-btn" data-beat="${beat.id}">✕</button></div><div class="bc-intention" contenteditable="true" data-beat="${beat.id}">${beat.intention}</div><div class="${stakesClass}" contenteditable="true" data-beat="${beat.id}">${beat.stakes||'What is at risk in this beat?'}</div></div><div class="bc-actions"><button class="bc-action-btn expand-btn" data-beat="${beat.id}">Expand →</button><button class="bc-action-btn" data-beat="${beat.id}" data-action="provoke">Provoke ✦</button></div>`;
     card.style.animationDelay=`${i*60}ms`;
-
     card.querySelector('.bc-fn-select').addEventListener('change',e=>{beat.fn=e.target.value;persist();});
     card.querySelector('.bc-lock-btn').addEventListener('click',e=>{beat.locked=!beat.locked;e.target.textContent=beat.locked?'🔒':'Lock';e.target.classList.toggle('locked',beat.locked);card.classList.toggle('locked',beat.locked);persist();});
     card.querySelector('.bc-delete-btn').addEventListener('click',()=>{if(!confirm('Remove this beat?'))return;sc.beats=sc.beats.filter(b=>b.id!==beat.id);renderBeats(sc);renderTree();persist();});
-    const intentionEl=card.querySelector('.bc-intention');
-    intentionEl.addEventListener('blur',()=>{beat.intention=intentionEl.textContent.trim();persist();});
-    intentionEl.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();intentionEl.blur();}});
-    const stakesEl=card.querySelector('.bc-stakes');
-    stakesEl.addEventListener('focus',()=>{if(stakesEl.classList.contains('empty')){stakesEl.textContent='';stakesEl.classList.remove('empty');}});
-    stakesEl.addEventListener('blur',()=>{const t=stakesEl.textContent.trim();if(!t){stakesEl.textContent='What is at risk in this beat?';stakesEl.classList.add('empty');}else{beat.stakes=t;persist();}});
-
-    // EXPAND → goes to draft view
-    card.querySelector('.expand-btn').addEventListener('click',()=>{
-      renderDraftView(sc.id);
-    });
-
-    card.querySelector('[data-action="provoke"]').addEventListener('click',async()=>{
-      const btn=card.querySelector('[data-action="provoke"]');
-      btn.textContent='…';btn.disabled=true;
-      try{const scR=getScene(S.activeSceneId);const mR=getMovement(S.activeMovId);if(!scR||!mR)return;const p=await getInspirations(scR.scene,mR);renderInspirations(p);}
-      catch(e){toast('Provocation: '+e.message);}
-      finally{btn.textContent='Provoke ✦';btn.disabled=false;}
-    });
-
-    card.addEventListener('dragstart',e=>{e.dataTransfer.setData('beatId',beat.id);card.classList.add('dragging');});
-    card.addEventListener('dragend',()=>card.classList.remove('dragging'));
-    card.addEventListener('dragover',e=>{e.preventDefault();card.classList.add('drag-over');});
-    card.addEventListener('dragleave',()=>card.classList.remove('drag-over'));
-    card.addEventListener('drop',e=>{e.preventDefault();card.classList.remove('drag-over');const dId=e.dataTransfer.getData('beatId');if(dId===beat.id)return;const b=sc.beats;const fi=b.findIndex(x=>x.id===dId);const ti=b.findIndex(x=>x.id===beat.id);if(fi===-1||ti===-1)return;const[m]=b.splice(fi,1);b.splice(ti,0,m);renderBeats(sc);persist();});
+    const iEl=card.querySelector('.bc-intention');iEl.addEventListener('blur',()=>{beat.intention=iEl.textContent.trim();persist();});iEl.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();iEl.blur();}});
+    const sEl=card.querySelector('.bc-stakes');sEl.addEventListener('focus',()=>{if(sEl.classList.contains('empty')){sEl.textContent='';sEl.classList.remove('empty');}});sEl.addEventListener('blur',()=>{const t=sEl.textContent.trim();if(!t){sEl.textContent='What is at risk in this beat?';sEl.classList.add('empty');}else{beat.stakes=t;persist();}});
+    card.querySelector('.expand-btn').addEventListener('click',()=>renderDraftView(sc.id));
+    card.querySelector('[data-action="provoke"]').addEventListener('click',async()=>{const btn=card.querySelector('[data-action="provoke"]');btn.textContent='…';btn.disabled=true;try{const scR=getScene(S.activeSceneId);const mR=getMovement(S.activeMovId);if(!scR||!mR)return;const p=await getInspirations(scR.scene,mR);renderInspirationTool(p);openCraftPanel('inspiration');}catch(e){toast('Provocation: '+e.message);}finally{btn.textContent='Provoke ✦';btn.disabled=false;}});
+    card.addEventListener('dragstart',e=>{e.dataTransfer.setData('beatId',beat.id);card.classList.add('dragging');});card.addEventListener('dragend',()=>card.classList.remove('dragging'));card.addEventListener('dragover',e=>{e.preventDefault();card.classList.add('drag-over');});card.addEventListener('dragleave',()=>card.classList.remove('drag-over'));card.addEventListener('drop',e=>{e.preventDefault();card.classList.remove('drag-over');const dId=e.dataTransfer.getData('beatId');if(dId===beat.id)return;const b=sc.beats;const fi=b.findIndex(x=>x.id===dId);const ti=b.findIndex(x=>x.id===beat.id);if(fi===-1||ti===-1)return;const[m]=b.splice(fi,1);b.splice(ti,0,m);renderBeats(sc);persist();});
     list.appendChild(card);
   });
   renderContextPanel();
 }
 
 function renderContextPanel(){
-  const panel=$('bv-context-panel'); if(!panel)return;
-  const scR=getScene(S.activeSceneId); if(!scR){panel.innerHTML='';return;}
-  const{act,movement:mov,scene:sc}=scR; const beats=sc.beats||[];
+  const panel=$('bv-context-panel');if(!panel)return;
+  const scR=getScene(S.activeSceneId);if(!scR){panel.innerHTML='';return;}
+  const{act,movement:mov,scene:sc}=scR;const beats=sc.beats||[];
   const noStakes=beats.filter(b=>!b.stakes||b.stakes==='What is at risk in this beat?').length;
   const threads=['The Whitmore decision','What happened to Daniel','Whether Marcus already knows'];
   let h=`<div class="bcp-section"><div class="bcp-title">Structural position</div><div class="bcp-text"><strong>${act.label}</strong> → ${mov.name}</div><div class="bcp-text" style="margin-top:4px;color:var(--ink-3)">${mov.fn}<br>${mov.emotional} · ${mov.pacing}</div></div>`;
   h+=`<div class="bcp-section"><div class="bcp-title">This scene must</div><div class="bcp-signal"><div class="bcp-sig-dot"></div><div>${mov.fn.toLowerCase()}</div></div><div class="bcp-signal"><div class="bcp-sig-dot" style="background:var(--col-draft)"></div><div>Leave at least one thread open</div></div><div class="bcp-signal"><div class="bcp-sig-dot" style="background:var(--col-beat)"></div><div>Give the protagonist agency</div></div></div>`;
-  if(noStakes>0&&beats.length>0)h+=`<div class="bcp-section bcp-warning"><div class="bcp-title">⚠ Missing stakes</div><div class="bcp-text">${noStakes} beat${noStakes!==1?'s are':' is'} missing stakes. A beat without stakes is usually a dead beat.</div></div>`;
+  if(noStakes>0&&beats.length>0)h+=`<div class="bcp-section bcp-warning"><div class="bcp-title">⚠ Missing stakes</div><div class="bcp-text">${noStakes} beat${noStakes!==1?'s are':' is'} missing stakes.</div></div>`;
   h+=`<div class="bcp-section"><div class="bcp-title">Open threads</div>${threads.slice(0,3).map(t=>`<div class="bcp-signal"><div class="bcp-sig-dot" style="background:var(--ink-5)"></div><div>${t}</div></div>`).join('')}</div>`;
-  if(beats.length>0)h+=`<div class="bcp-section"><div class="bcp-title">Draft this scene</div><button class="dc-gen-btn" id="ctx-go-draft" style="width:100%;margin-top:4px;">Open draft view →</button></div>`;
+  if(beats.length>0)h+=`<div class="bcp-section"><div class="bcp-title">Craft tools</div><button class="dc-gen-btn" id="ctx-go-draft" style="width:100%;margin-top:4px;margin-bottom:6px;">Open draft view →</button><button class="dc-gen-btn" id="ctx-go-craft" style="width:100%;background:var(--col-beat);">Craft tools ⌘K</button></div>`;
   panel.innerHTML=h;
-  const gd=panel.querySelector('#ctx-go-draft');
-  if(gd) gd.addEventListener('click',()=>renderDraftView(sc.id));
+  panel.querySelector('#ctx-go-draft')?.addEventListener('click',()=>renderDraftView(sc.id));
+  panel.querySelector('#ctx-go-craft')?.addEventListener('click',()=>openCraftPanel('diagnose'));
 }
 
-function renderNeedsBox(html){const c=$('needs-box-container');if(!c)return;c.innerHTML=`<div class="needs-box"><div class="needs-box-title">What this scene needs<span class="needs-box-close" id="needs-close">✕</span></div><div class="needs-box-text">${html}</div></div>`;const nc=$('needs-close');if(nc)nc.onclick=()=>c.innerHTML='';}
-function renderInspirations(provocations){const c=$('inspiration-container');if(!c)return;const items=provocations.map(p=>`<div class="ip-provocation"><div class="ip-prov-type">${p.type}</div><div class="ip-prov-text">${p.text}</div></div>`).join('');c.innerHTML=`<div class="inspiration-panel"><div class="ip-header">Inspiration — five provocations<span class="ip-close" id="inspo-close">✕</span></div>${items}</div>`;const ic=$('inspo-close');if(ic)ic.onclick=()=>c.innerHTML='';}
+function renderNeedsBox(html){const c=$('needs-box-container');if(!c)return;c.innerHTML=`<div class="needs-box"><div class="needs-box-title">What this scene needs<span class="needs-box-close" id="needs-close">✕</span></div><div class="needs-box-text">${html}</div></div>`;$('needs-close')?.addEventListener('click',()=>c.innerHTML='');}
+function renderInspirations(provocations){const c=$('inspiration-container');if(!c)return;const items=provocations.map(p=>`<div class="ip-provocation"><div class="ip-prov-type">${p.type}</div><div class="ip-prov-text">${p.text}</div></div>`).join('');c.innerHTML=`<div class="inspiration-panel"><div class="ip-header">Inspiration<span class="ip-close" id="inspo-close">✕</span></div>${items}</div>`;$('inspo-close')?.addEventListener('click',()=>c.innerHTML='');}
 
-// Beat gen button
 const bvGenBeats=$('bv-gen-beats');
-if(bvGenBeats) bvGenBeats.addEventListener('click',async()=>{
-  const scR=getScene(S.activeSceneId); if(!scR){toast('Select a scene first.');return;}
-  const{scene:sc}=scR; const mR=getMovement(S.activeMovId); if(!mR)return;
-  const t=$('bv-intention-input').value.trim(); if(!t){toast('Describe what happens first.');$('bv-intention-input').focus();return;}
-  sc.intention=t; $('bv-intention-display').textContent=t;
-  const mood=$('beat-mood-select')?.value||'as-written';
-  const count=parseInt($('beat-count-slider')?.value||5);
-  const list=$('beat-list'); if(!list)return;
-  const bar=$('beat-actions-bar'); if(bar)bar.style.display='none';
+if(bvGenBeats)bvGenBeats.addEventListener('click',async()=>{
+  const scR=getScene(S.activeSceneId);if(!scR){toast('Select a scene first.');return;}
+  const{scene:sc}=scR;const mR=getMovement(S.activeMovId);if(!mR)return;
+  const t=$('bv-intention-input').value.trim();if(!t){toast('Describe what happens first.');return;}
+  sc.intention=t;const bvid=$('bv-intention-display');if(bvid)bvid.textContent=t;
+  const mood=$('beat-mood-select')?.value||'as-written';const count=parseInt($('beat-count-slider')?.value||5);
+  const list=$('beat-list');if(!list)return;
+  const bar=$('beat-actions-bar');if(bar)bar.style.display='none';
   list.innerHTML=`<div class="beat-generating"><div class="beat-gen-label"><div class="beat-gen-spinner"></div>Generating ${count} beats…</div>${Array(count).fill('<div class="beat-gen-shimmer"></div>').join('')}</div>`;
-  const btn=$('bv-gen-beats'); btn.disabled=true; btn.textContent='Generating…';
-  try{
-    let beats; if(S.apiKey){beats=await generateBeats(sc,mR,mood,count);}else{await sleep(1400);beats=getDemoBeats(sc).slice(0,count);}
-    sc.beats=beats; sc.status='approved'; renderBeats(sc); renderTree(); persist();
-    if(!S.apiKey)toast('Demo beats — add API key for AI generation','info'); else toast(`${beats.length} beats generated`,'success');
-  }catch(e){if(list)list.innerHTML='';toast('Beat generation failed: '+e.message);}
+  const btn=$('bv-gen-beats');btn.disabled=true;btn.textContent='Generating…';
+  try{let beats;if(S.apiKey){beats=await generateBeats(sc,mR,mood,count);}else{await sleep(1400);beats=getDemoBeats(sc).slice(0,count);}sc.beats=beats;sc.status='approved';renderBeats(sc);renderTree();persist();if(!S.apiKey)toast('Demo beats — add API key for AI','info');else toast(`${beats.length} beats generated`,'success');}
+  catch(e){if(list)list.innerHTML='';toast('Beat generation failed: '+e.message);}
   finally{btn.disabled=false;btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Generate beat outline';}
 });
-
-const bcSlider=$('beat-count-slider');
-if(bcSlider)bcSlider.addEventListener('input',e=>{ const v=$('beat-count-val');if(v)v.textContent=e.target.value; });
-
-// Beat action bar
+const bcSlider=$('beat-count-slider');if(bcSlider)bcSlider.addEventListener('input',e=>{const v=$('beat-count-val');if(v)v.textContent=e.target.value;});
 const babAll=$('bab-approve-all');if(babAll)babAll.addEventListener('click',()=>{const scR=getScene(S.activeSceneId);if(!scR)return;scR.scene.beats.forEach(b=>{if(!b.locked)b.status='approved';});renderBeats(scR.scene);persist();toast('All beats approved','success');});
-const babRegen=$('bab-regenerate');if(babRegen)babRegen.addEventListener('click',async()=>{const scR=getScene(S.activeSceneId);if(!scR)return;const locked=scR.scene.beats.filter(b=>b.locked);if(locked.length)toast(`Keeping ${locked.length} locked beat${locked.length!==1?'s':''}`);scR.scene.beats=locked;renderBeats(scR.scene);await sleep(100);if(bvGenBeats)bvGenBeats.click();});
+const babRegen=$('bab-regenerate');if(babRegen)babRegen.addEventListener('click',async()=>{const scR=getScene(S.activeSceneId);if(!scR)return;const locked=scR.scene.beats.filter(b=>b.locked);scR.scene.beats=locked;renderBeats(scR.scene);await sleep(100);if(bvGenBeats)bvGenBeats.click();});
 const babClear=$('bab-clear');if(babClear)babClear.addEventListener('click',()=>{if(!confirm('Clear all beats?'))return;const scR=getScene(S.activeSceneId);if(!scR)return;scR.scene.beats=[];scR.scene.status='open';renderBeats(scR.scene);renderTree();persist();toast('Beats cleared');});
-const beatAddRow=$('beat-add-row');if(beatAddRow)beatAddRow.addEventListener('click',()=>{const scR=getScene(S.activeSceneId);if(!scR)return;const sc=scR.scene;sc.beats=sc.beats||[];sc.beats.push({id:uid(),fn:'Beat',intention:'',stakes:'',character:'',locked:false,status:'open'});renderBeats(sc);persist();setTimeout(()=>{const cards=$('beat-list').querySelectorAll('.bc-intention');if(cards.length)cards[cards.length-1].focus();},100);});
+const beatAddRow=$('beat-add-row');if(beatAddRow)beatAddRow.addEventListener('click',()=>{const scR=getScene(S.activeSceneId);if(!scR)return;const sc=scR.scene;sc.beats=sc.beats||[];sc.beats.push({id:uid(),fn:'Beat',intention:'',stakes:'',character:'',locked:false,status:'open'});renderBeats(sc);persist();setTimeout(()=>{const cards=$('beat-list')?.querySelectorAll('.bc-intention');if(cards?.length)cards[cards.length-1].focus();},100);});
+const dvBack=$('dv-back');if(dvBack)dvBack.addEventListener('click',()=>{if(S.activeSceneId){const r=getScene(S.activeSceneId);if(r)selectScene(r.scene.id);}});
 
-// Context bar
-const ctxWhat=$('ctx-what-needs');if(ctxWhat)ctxWhat.addEventListener('click',async()=>{const scR=getScene(S.activeSceneId);const mR=getMovement(S.activeMovId);if(!scR||!mR){toast('Select a scene first.');return;}const btn=$('ctx-what-needs');btn.textContent='Thinking…';btn.disabled=true;try{const a=await getWhatNeeds(scR.scene,mR);renderNeedsBox(a);}catch(e){toast('Error: '+e.message);}finally{btn.textContent='What does this need? →';btn.disabled=false;}});
-const ctxInsp=$('ctx-inspire');if(ctxInsp)ctxInsp.addEventListener('click',async()=>{const scR=getScene(S.activeSceneId);const mR=getMovement(S.activeMovId);if(!scR||!mR){toast('Select a scene first.');return;}const btn=$('ctx-inspire');btn.textContent='…';btn.disabled=true;try{const p=await getInspirations(scR.scene,mR);renderInspirations(p);}catch(e){toast('Error: '+e.message);}finally{btn.textContent='Inspiration ✦';btn.disabled=false;}});
-const ctxDx=$('ctx-diagnose');if(ctxDx)ctxDx.addEventListener('click',()=>toast('Scene diagnosis — Chunk 5','info'));
-
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
 // VIEW MANAGEMENT
-// ─────────────────────────────────────────────
-function showView(which) {
-  $('welcome-state').style.display = which==='welcome' ? '' : 'none';
-  $('movement-view').classList.toggle('visible', which==='movement');
-  $('beat-view').classList.toggle('visible', which==='beat');
-  $('draft-view').classList.toggle('visible', which==='draft');
-  $('draft-controls').classList.toggle('visible', which==='draft');
-  if(which!=='draft') $('accept-all-bar').classList.remove('show');
+// ═══════════════════════════════════════════════════════════════
+function showView(which){
+  $('welcome-state').style.display=which==='welcome'?'':'none';
+  $('movement-view').classList.toggle('visible',which==='movement');
+  $('beat-view').classList.toggle('visible',which==='beat');
+  $('draft-view').classList.toggle('visible',which==='draft');
+  $('draft-controls').classList.toggle('visible',which==='draft');
+  if(which!=='draft')$('accept-all-bar').classList.remove('show');
+  // Show/hide craft button
+  const cc=$('ctx-craft');if(cc)cc.style.display=which==='beat'||which==='draft'?'':'none';
 }
 
-// ─────────────────────────────────────────────
-// MODE
-// ─────────────────────────────────────────────
-function setMode(mode) {
-  S.mode=mode; document.body.classList.toggle('screenplay',mode==='screenplay');
-  $('mode-novel').classList.toggle('active',mode==='novel'); $('mode-screenplay').classList.toggle('active',mode==='screenplay');
-  $('mode-badge').textContent=mode==='novel'?'Novel':'Screenplay'; $('sb-mode-pill').textContent=mode==='novel'?'Novel':'Screenplay';
-  $('sb-arc-label').textContent=mode==='novel'?'3-act arc':'4-act screenplay arc';
-  toast(mode==='novel'?'Novel mode':'Screenplay mode','info'); persist();
-}
+// ═══════════════════════════════════════════════════════════════
+// MODE, SIDEBAR, NAVIGATION (all carried forward)
+// ═══════════════════════════════════════════════════════════════
+function setMode(m){S.mode=m;document.body.classList.toggle('screenplay',m==='screenplay');$('mode-novel').classList.toggle('active',m==='novel');$('mode-screenplay').classList.toggle('active',m==='screenplay');$('mode-badge').textContent=m==='novel'?'Novel':'Screenplay';$('sb-mode-pill').textContent=m==='novel'?'Novel':'Screenplay';$('sb-arc-label').textContent=m==='novel'?'3-act arc':'4-act screenplay arc';toast(m==='novel'?'Novel mode':'Screenplay mode','info');persist();}
 $('mode-novel').addEventListener('click',()=>setMode('novel'));
 $('mode-screenplay').addEventListener('click',()=>setMode('screenplay'));
 
-// ─────────────────────────────────────────────
-// SIDEBAR
-// ─────────────────────────────────────────────
-function renderTree() {
-  const tree=$('sb-tree'); tree.innerHTML='';
-  if(!S.acts.length){tree.innerHTML='<div style="padding:14px;font-size:.75rem;color:var(--ink-4);font-style:italic">Import a story to see the structure.</div>';return;}
+function renderTree(){
+  const tree=$('sb-tree');tree.innerHTML='';
+  if(!S.acts.length){tree.innerHTML='<div style="padding:14px;font-size:.75rem;color:var(--ink-4);font-style:italic">Import your story to begin.</div>';return;}
   S.acts.forEach(act=>{
     const ar=make('div');ar.className='act-row';ar.innerHTML=`<div class="act-label">${act.label}</div>`;tree.appendChild(ar);
     act.movements.forEach(mov=>{
-      const isActive=mov.id===S.activeMovId;
-      const mr=make('div');mr.className='mov-row'+(isActive?' active expanded':'');mr.dataset.movId=mov.id;
+      const isActive=mov.id===S.activeMovId;const mr=make('div');mr.className='mov-row'+(isActive?' active expanded':'');mr.dataset.movId=mov.id;
       const dc=mov.scenes.filter(s=>s.status==='draft').length;
       mr.innerHTML=`<div class="mov-status st-${mov.status}"></div><div class="mov-body"><div class="mov-name">${mov.name}</div><div class="mov-fn">${mov.fn}</div>${mov.summary?`<div class="mov-summary">${mov.summary}</div>`:''}</div><div class="mov-scenes-count">${dc}/${mov.scenes.length}</div>`;
       mr.addEventListener('click',()=>selectMovement(mov.id));tree.appendChild(mr);
       if(isActive&&mov.scenes.length>0){
         const sc=make('div');sc.className='scene-rows';sc.style.display='block';
-        mov.scenes.forEach(s=>{
-          const isSA=s.id===S.activeSceneId;
-          const sr=make('div');sr.className='scene-row'+(isSA?' active':'');sr.dataset.sceneId=s.id;
-          const bc=(s.beats||[]).length;
-          sr.innerHTML=`<div class="scene-status st-${s.status}"></div><div class="scene-name">${s.name}</div><div class="scene-beats-count">${bc>0?bc+'b':''}</div>`;
-          sr.addEventListener('click',e=>{e.stopPropagation();selectScene(s.id);});sc.appendChild(sr);
-        });tree.appendChild(sc);
+        mov.scenes.forEach(s=>{const isSA=s.id===S.activeSceneId;const sr=make('div');sr.className='scene-row'+(isSA?' active':'');sr.dataset.sceneId=s.id;const bc=(s.beats||[]).length;sr.innerHTML=`<div class="scene-status st-${s.status}"></div><div class="scene-name">${s.name}</div><div class="scene-beats-count">${bc>0?bc+'b':''}</div>`;sr.addEventListener('click',e=>{e.stopPropagation();selectScene(s.id);});sc.appendChild(sr);});
+        tree.appendChild(sc);
       }
     });
   });
   updateStats();
 }
 
-// ─────────────────────────────────────────────
-// NAVIGATION
-// ─────────────────────────────────────────────
-function selectMovement(movId) {
+function selectMovement(movId){
   const r=getMovement(movId);if(!r)return;const{act,movement:mov}=r;
   S.activeMovId=movId;S.activeSceneId=null;
   $('ctx-level-label').textContent='Movement';$('ctx-name').textContent=mov.name;$('ctx-fn').textContent=mov.fn;
   $('crumb-act').textContent=act.label;$('crumb-mov').textContent=mov.name;$('crumb-scene').textContent='—';
   $('ctx-what-needs').style.display='';$('ctx-diagnose').style.display='none';$('ctx-inspire').style.display='';
-  $('mv-act-label').textContent=act.label;$('mv-title').textContent=mov.name;
-  $('mv-fn').textContent=`${mov.fn} · ${mov.emotional} · ${mov.pacing}`;
-  $('mv-summary-text').textContent=mov.summary||'No summary yet.';
-  $('mv-scenes-label').textContent='Scenes in this movement';
+  $('ctx-craft').style.display='none';
+  $('mv-act-label').textContent=act.label;$('mv-title').textContent=mov.name;$('mv-fn').textContent=`${mov.fn} · ${mov.emotional} · ${mov.pacing}`;
+  $('mv-summary-text').textContent=mov.summary||'No summary yet.';$('mv-scenes-label').textContent='Scenes in this movement';
   renderSceneCards(mov);showView('movement');renderTree();
 }
-
-function renderSceneCards(mov) {
+function renderSceneCards(mov){
   const list=$('scene-cards-list');list.innerHTML='';
-  mov.scenes.forEach((sc,i)=>{
-    const card=make('div');card.className='scene-card'+(sc.id===S.activeSceneId?' active':'');card.dataset.sceneId=sc.id;
-    const bc=(sc.beats||[]).length;
-    card.innerHTML=`<div class="sc-status-dot st-${sc.status}"></div><div class="sc-num">${String(i+1).padStart(2,'0')}</div><div class="sc-body"><div class="sc-name">${sc.name}</div><div class="sc-intention">${sc.intention||'No intention set.'}</div><div class="sc-meta"><span class="sc-tag sc-tag-fn">${sc.fn}</span>${bc>0?`<span class="sc-tag sc-tag-beats">${bc} beats</span>`:''}<span class="sc-tag ${sc.status==='draft'?'sc-tag-done':'sc-tag-open'}">${sc.status==='draft'?'Drafted':sc.status==='approved'?'Approved':'Open'}</span></div></div>`;
-    card.addEventListener('click',()=>selectScene(sc.id));list.appendChild(card);
-  });
-  const add=make('div');add.className='scene-card scene-card-add';
-  add.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add a scene`;
-  add.addEventListener('click',()=>addScene(mov.id));list.appendChild(add);
+  mov.scenes.forEach((sc,i)=>{const card=make('div');card.className='scene-card'+(sc.id===S.activeSceneId?' active':'');const bc=(sc.beats||[]).length;card.innerHTML=`<div class="sc-status-dot st-${sc.status}"></div><div class="sc-num">${String(i+1).padStart(2,'0')}</div><div class="sc-body"><div class="sc-name">${sc.name}</div><div class="sc-intention">${sc.intention||'No intention set.'}</div><div class="sc-meta"><span class="sc-tag sc-tag-fn">${sc.fn}</span>${bc>0?`<span class="sc-tag sc-tag-beats">${bc} beats</span>`:''}<span class="sc-tag ${sc.status==='draft'?'sc-tag-done':'sc-tag-open'}">${sc.status==='draft'?'Drafted':sc.status==='approved'?'Approved':'Open'}</span></div></div>`;card.addEventListener('click',()=>selectScene(sc.id));list.appendChild(card);});
+  const add=make('div');add.className='scene-card scene-card-add';add.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add a scene`;add.addEventListener('click',()=>addScene(mov.id));list.appendChild(add);
 }
-
-function selectScene(sceneId) {
+function selectScene(sceneId){
   const r=getScene(sceneId);if(!r)return;const{act,movement:mov,scene:sc}=r;
   S.activeMovId=mov.id;S.activeSceneId=sceneId;
   $('ctx-level-label').textContent='Scene';$('ctx-name').textContent=sc.name;$('ctx-fn').textContent=sc.fn;
   $('crumb-act').textContent=act.label;$('crumb-mov').textContent=mov.name;$('crumb-scene').textContent=sc.name;
-  $('ctx-what-needs').style.display='';$('ctx-diagnose').style.display='';$('ctx-inspire').style.display='';
-  const bvt=$('bv-title');if(bvt)bvt.textContent=sc.name;
-  const bvid=$('bv-intention-display');if(bvid)bvid.textContent=sc.intention||'No intention set.';
+  $('ctx-what-needs').style.display='';$('ctx-diagnose').style.display='';$('ctx-inspire').style.display='';$('ctx-craft').style.display='';
+  const bvt=$('bv-title');if(bvt)bvt.textContent=sc.name;const bvid=$('bv-intention-display');if(bvid)bvid.textContent=sc.intention||'No intention set.';
   const bvii=$('bv-intention-input');if(bvii)bvii.value=sc.intention||'';
-  const nbc=$('needs-box-container');if(nbc)nbc.innerHTML='';
-  const ic=$('inspiration-container');if(ic)ic.innerHTML='';
+  const nbc=$('needs-box-container');if(nbc)nbc.innerHTML='';const ic=$('inspiration-container');if(ic)ic.innerHTML='';
   renderBeats(sc);showView('beat');renderTree();
 }
+function addScene(movId){const r=getMovement(movId);if(!r)return;const{movement:mov}=r;mov.scenes.push({id:uid(),name:`Scene ${mov.scenes.length+1}`,intention:'',fn:'To be defined',beats:[],status:'open'});persist();renderTree();selectMovement(movId);toast('Scene added');}
 
-function addScene(movId) {
-  const r=getMovement(movId);if(!r)return;const{movement:mov}=r;
-  mov.scenes.push({id:uid(),name:`Scene ${mov.scenes.length+1}`,intention:'',fn:'To be defined',beats:[],status:'open'});
-  persist();renderTree();selectMovement(movId);toast('Scene added');
-}
-
-// Draft back button
-const dvBack=$('dv-back');if(dvBack)dvBack.addEventListener('click',()=>{if(S.activeSceneId){const r=getScene(S.activeSceneId);if(r)selectScene(r.scene.id);}});
-
-// ─────────────────────────────────────────────
-// STATS
-// ─────────────────────────────────────────────
-function updateStats() {
-  const allScenes=S.acts.flatMap(a=>a.movements.flatMap(m=>m.scenes));
-  const allBeats=allScenes.flatMap(s=>s.beats||[]);
-  const drafted=allScenes.filter(s=>s.status==='draft').length;
+function updateStats(){
+  const allScenes=S.acts.flatMap(a=>a.movements.flatMap(m=>m.scenes));const allBeats=allScenes.flatMap(s=>s.beats||[]);const drafted=allScenes.filter(s=>s.status==='draft').length;
   const words=allBeats.filter(b=>b.prose&&b.status==='accepted').reduce((s,b)=>s+countWords(b.prose),0);
-  $('stat-words').textContent=words.toLocaleString();
-  $('stat-scenes').textContent=`${drafted}/${allScenes.length}`;
-  $('stat-beats').textContent=`${allBeats.filter(b=>b.status==='approved'||b.status==='draft').length} approved`;
+  $('stat-words').textContent=words.toLocaleString();$('stat-scenes').textContent=`${drafted}/${allScenes.length}`;$('stat-beats').textContent=`${allBeats.filter(b=>b.status==='approved'||b.status==='draft').length} approved`;
 }
 
-// ─────────────────────────────────────────────
-// DEMO / BLANK
-// ─────────────────────────────────────────────
-function loadDemo() {
+function loadDemo(){
   S.project={...DEMO.project};$('tb-title').textContent=S.project.title;$('sb-project-name').textContent=S.project.title;
   S.acts=JSON.parse(JSON.stringify(ARC_3ACT));
   S.acts.forEach(act=>act.movements.forEach(mov=>{mov.summary=DEMO.summaries[mov.id]||'';mov.scenes=DEMO.scenes[mov.id]||[];mov.status=mov.summary?'approved':'open';}));
-  // Pre-load beats into first scene
-  if(S.acts[0]?.movements[0]?.scenes[0]) { S.acts[0].movements[0].scenes[0].beats=JSON.parse(JSON.stringify(DEMO_BEATS));S.acts[0].movements[0].scenes[0].status='approved'; }
+  if(S.acts[0]?.movements[0]?.scenes[0]){S.acts[0].movements[0].scenes[0].beats=JSON.parse(JSON.stringify(DEMO_BEATS));S.acts[0].movements[0].scenes[0].status='approved';}
   $('welcome-state').style.display='none';renderTree();selectMovement(S.acts[0].movements[0].id);persist();toast('Demo loaded — Ashes of Us','success');
 }
-
-function startBlank() {
-  S.project={title:'Untitled story',genre:'',tone:'',pov:'',premise:'',ending:''};
-  S.acts=JSON.parse(JSON.stringify(S.mode==='screenplay'?ARC_SCREENPLAY:ARC_3ACT));
-  $('welcome-state').style.display='none';renderTree();selectMovement(S.acts[0].movements[0].id);persist();toast('Blank project created');
-}
+function startBlank(){S.project={title:'Untitled story',genre:'',tone:'',pov:'',premise:'',ending:''};S.acts=JSON.parse(JSON.stringify(S.mode==='screenplay'?ARC_SCREENPLAY:ARC_3ACT));$('welcome-state').style.display='none';renderTree();selectMovement(S.acts[0].movements[0].id);persist();toast('Blank project created');}
 
 // ─────────────────────────────────────────────
-// BINDINGS
+// GLOBAL BINDINGS
 // ─────────────────────────────────────────────
 const sbToggle=()=>{$('shell').classList.toggle('sb-closed');$('rail-structure').classList.toggle('active',!$('shell').classList.contains('sb-closed'));};
 $('rail-structure').addEventListener('click',sbToggle);
-['rail-intel','rail-frags','rail-inspire','rail-settings'].forEach(id=>$(id)?.addEventListener('click',()=>toast(`${id.replace('rail-','')} — Chunk 6`,'info')));
+$('rail-intel')?.addEventListener('click',()=>toast('Intelligence panel — Chunk 6','info'));
+$('rail-frags')?.addEventListener('click',()=>toast('Fragments tab — Chunk 6','info'));
+$('rail-inspire')?.addEventListener('click',()=>openCraftPanel('inspiration'));
+$('rail-settings')?.addEventListener('click',()=>$('settings-modal').classList.add('open'));
 $('btn-demo').addEventListener('click',loadDemo);
 $('btn-new-blank').addEventListener('click',startBlank);
 $('btn-analyse').addEventListener('click',()=>{const t=$('outline-input').value.trim();if(!t){toast('Paste your story first.');return;}toast('AI parsing — Chunk 2. Loading blank.','info');startBlank();});
-const bvBack=$('bv-back');if(bvBack)bvBack.addEventListener('click',()=>{if(S.activeMovId)selectMovement(S.activeMovId);});
 $('mv-add-scene-btn').addEventListener('click',()=>{if(S.activeMovId)addScene(S.activeMovId);});
 $('btn-settings').addEventListener('click',()=>$('settings-modal').classList.add('open'));
 $('btn-read').addEventListener('click',()=>toast('Reading mode — Chunk 7','info'));
@@ -2803,36 +3026,30 @@ $('settings-cancel').addEventListener('click',()=>$('settings-modal').classList.
 $('settings-save').addEventListener('click',()=>{const k=$('api-key-input').value.trim();S.apiKey=k||null;if(k)localStorage.setItem('nv4_key',btoa(k));else localStorage.removeItem('nv4_key');$('settings-modal').classList.remove('open');toast(k?'API key saved — AI enabled':'Demo mode',k?'success':'');});
 $('tb-title').addEventListener('blur',()=>{if(S.project){S.project.title=$('tb-title').textContent.trim();$('sb-project-name').textContent=S.project.title;persist();}});
 $('tb-title').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('tb-title').blur();}});
-const bvii=$('bv-intention-input');if(bvii)bvii.addEventListener('blur',()=>{if(!S.activeSceneId)return;const r=getScene(S.activeSceneId);if(!r)return;r.scene.intention=$('bv-intention-input').value.trim();const d=$('bv-intention-display');if(d)d.textContent=r.scene.intention;persist();});
-
-// Close word palette on outside click
-document.addEventListener('mousedown',e=>{if($('word-palette')&&!$('word-palette').contains(e.target))$('word-palette').classList.remove('show');});
+const bvii2=$('bv-intention-input');if(bvii2)bvii2.addEventListener('blur',()=>{if(!S.activeSceneId)return;const r=getScene(S.activeSceneId);if(!r)return;r.scene.intention=bvii2.value.trim();const d=$('bv-intention-display');if(d)d.textContent=r.scene.intention;persist();});
 
 document.addEventListener('keydown',e=>{
   const mod=e.metaKey||e.ctrlKey;
   if(mod&&e.key==='\\'){e.preventDefault();sbToggle();}
   if(mod&&e.key==='i'){e.preventDefault();toast('Intelligence panel — Chunk 6','info');}
+  if(mod&&e.key==='k'){e.preventDefault();if($('craft-panel').classList.contains('open'))closeCraftPanel();else openCraftPanel(S.craftTool||'diagnose');}
   if(mod&&e.shiftKey&&e.key==='D'){e.preventDefault();const scR=getScene(S.activeSceneId);if(scR)renderDraftView(scR.scene.id);else toast('Select a scene first.');}
   if(mod&&e.key==='Enter'){
     e.preventDefault();
-    const dv=$('draft-view');
-    if(dv&&dv.classList.contains('visible'))$('dc-expand-next').click();
-    else if($('beat-view')&&$('beat-view').classList.contains('visible')&&$('bv-gen-beats'))$('bv-gen-beats').click();
-    else if($('welcome-state')&&$('welcome-state').style.display!=='none')$('btn-analyse').click();
+    if($('draft-view')?.classList.contains('visible'))$('dc-expand-next').click();
+    else if($('beat-view')?.classList.contains('visible')&&$('bv-gen-beats'))$('bv-gen-beats').click();
+    else if($('welcome-state')?.style.display!=='none')$('btn-analyse').click();
   }
-  if(e.key==='Escape'){$('settings-modal').classList.remove('open');$('word-palette').classList.remove('show');}
+  if(e.key==='Escape'){$('settings-modal').classList.remove('open');$('word-palette').classList.remove('show');closeCraftPanel();}
 });
 
-// ─────────────────────────────────────────────
-// RESTORE
-// ─────────────────────────────────────────────
-function restoreSession() {
+function restoreSession(){
   try{const stored=localStorage.getItem('nv4_state');if(stored){const sv=JSON.parse(stored);if(sv.project){Object.assign(S,{mode:sv.mode||'novel',project:sv.project,acts:sv.acts||[]});document.body.classList.toggle('screenplay',S.mode==='screenplay');$('mode-novel').classList.toggle('active',S.mode==='novel');$('mode-screenplay').classList.toggle('active',S.mode==='screenplay');$('mode-badge').textContent=S.mode==='novel'?'Novel':'Screenplay';$('sb-mode-pill').textContent=S.mode==='novel'?'Novel':'Screenplay';$('tb-title').textContent=S.project.title;$('sb-project-name').textContent=S.project.title;$('welcome-state').style.display='none';renderTree();if(S.acts.length)selectMovement(S.acts[0].movements[0].id);return true;}}}catch(e){}
-  try{const k=localStorage.getItem('nv4_key');if(k){S.apiKey=atob(k);$('api-key-input').value=S.apiKey;}}catch(e){}
+  try{const k=localStorage.getItem('nv4_key');if(k){S.apiKey=atob(k);const inp=$('api-key-input');if(inp)inp.value=S.apiKey;}}catch(e){}
   return false;
 }
 
-document.addEventListener('DOMContentLoaded',()=>{ if(!restoreSession()) renderTree(); });
+document.addEventListener('DOMContentLoaded',()=>{if(!restoreSession())renderTree();});
 </script>
 </body>
 </html>
