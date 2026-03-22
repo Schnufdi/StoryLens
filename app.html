@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Narrative — Writing workspace</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body class="app-body">
+
+  <!-- ── Topbar ── -->
+  <header class="topbar">
+    <a href="index.html" class="topbar-logo">narr<span>·</span>ative</a>
+    <div class="topbar-divider"></div>
+    <div class="topbar-project" id="topbar-project-name">New project</div>
+    <div class="topbar-breadcrumb" id="topbar-breadcrumb" style="display:none">
+      <span>›</span>
+      <span id="topbar-cluster">—</span>
+      <span>›</span>
+      <span id="topbar-scene">—</span>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-mode">
+        <button class="mode-btn active" id="mode-execution">Execution</button>
+        <button class="mode-btn" id="mode-discovery" title="Coming soon" style="opacity:0.5;cursor:not-allowed">Discovery</button>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="btn-export-menu" style="display:none">Export</button>
+      <button class="btn btn-ghost btn-sm" id="btn-settings">⚙ API key</button>
+      <button class="btn btn-ghost btn-sm" id="btn-new">New story</button>
+    </div>
+  </header>
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">Arc structure</div>
+      <div class="arc-selector" id="arc-selector">
+        <button class="arc-btn active" data-arc="3act">3-act</button>
+        <button class="arc-btn" data-arc="5part">5-part</button>
+        <button class="arc-btn" data-arc="custom">Custom</button>
+      </div>
+    </div>
+    <div class="sidebar-scroll" id="cluster-list">
+      <div class="empty-state">Import your story to begin.</div>
+    </div>
+    <div class="sidebar-footer">
+      <div id="story-stats" style="font-size:0.75rem;color:var(--ink-ghost);display:flex;gap:12px;">
+        <span id="stat-words">0 words</span>
+        <span id="stat-scenes">0 scenes</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Writing workspace ── -->
+  <main class="workspace">
+    <div class="workspace-scroll" id="workspace-scroll">
+
+      <!-- Import / Welcome view -->
+      <div class="import-view" id="import-view">
+        <div class="import-title">Begin with your story</div>
+        <p class="import-sub">Paste your outline, synopsis, or story notes. The platform will extract the structure, characters, and threads — then help you write it scene by scene.</p>
+
+        <div class="import-box">
+          <textarea id="outline-input" rows="8" placeholder="Paste your story, outline, or synopsis here…&#10;&#10;Or describe what you know so far: characters, premise, key events, themes.&#10;&#10;Even a rough paragraph is enough to begin."></textarea>
+          <div class="import-actions">
+            <button class="btn btn-primary" id="btn-parse">Analyse and structure →</button>
+            <button class="btn btn-ghost" id="btn-load-demo">Load demo story</button>
+          </div>
+        </div>
+
+        <div class="import-options">
+          <div class="import-option">
+            <span style="color:var(--teal)">✓</span>
+            Finds your characters
+          </div>
+          <div class="import-option">
+            <span style="color:var(--teal)">✓</span>
+            Maps turning points
+          </div>
+          <div class="import-option">
+            <span style="color:var(--teal)">✓</span>
+            Extracts open threads
+          </div>
+          <div class="import-option">
+            <span style="color:var(--teal)">✓</span>
+            Structures into clusters
+          </div>
+        </div>
+      </div>
+
+      <!-- Writing view -->
+      <div class="writing-view" id="writing-view">
+
+        <!-- Accepted scenes (history) -->
+        <div id="accepted-scenes-list"></div>
+
+        <!-- Active scene header -->
+        <div class="scene-header" id="scene-header" style="display:none">
+          <div class="scene-location" id="scene-location">Act 1 · Scene 1</div>
+          <div class="scene-title-row">
+            <div class="scene-title" id="scene-title">Untitled scene</div>
+            <div class="scene-fn-badge" id="scene-fn-badge"></div>
+          </div>
+        </div>
+
+        <!-- Scene content -->
+        <div class="scene-content" id="scene-content">
+
+          <!-- Ready to generate state -->
+          <div id="generate-prompt" style="padding:40px 0; display:none">
+            <div style="margin-bottom:24px">
+              <div style="font-family:var(--font-display);font-size:1.4rem;color:var(--ink);margin-bottom:8px" id="gen-cluster-title">Ready to write</div>
+              <div style="font-size:0.85rem;color:var(--ink-mute);line-height:1.7;max-width:500px" id="gen-cluster-desc">—</div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
+              <button class="btn btn-primary" id="btn-generate">Generate scene →</button>
+              <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+                <span style="font-size:0.78rem;color:var(--ink-ghost)">Scene hint:</span>
+                <input type="text" id="scene-hint-input" placeholder="optional direction…" style="width:220px;padding:8px 12px;font-size:0.82rem">
+              </div>
+            </div>
+            <div id="gen-cluster-events" style="display:none">
+              <div style="font-size:0.75rem;color:var(--ink-ghost);font-weight:500;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px">Events in this cluster</div>
+              <div id="gen-events-list"></div>
+            </div>
+          </div>
+
+          <!-- Generating overlay -->
+          <div class="generating-overlay" id="generating-overlay">
+            <div class="spinner" style="width:28px;height:28px;border-width:2.5px"></div>
+            <div class="generating-text" id="generating-text">Writing the scene…</div>
+          </div>
+
+          <!-- Generated prose -->
+          <div class="prose-block" id="prose-block" style="display:none">
+            <div id="prose-content"></div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Action bar -->
+    <div class="action-bar" id="action-bar">
+      <!-- Recalibration row -->
+      <div class="action-bar-row">
+        <span class="action-bar-label">Steer:</span>
+        <button class="recal-btn" data-recal="darker">Darker tone</button>
+        <button class="recal-btn" data-recal="tension">More tension</button>
+        <button class="recal-btn" data-recal="subtext">Deeper subtext</button>
+        <button class="recal-btn" data-recal="slower">Slow down</button>
+        <button class="recal-btn" data-recal="cinematic">Cinematic</button>
+        <button class="recal-btn" data-recal="dialogue">More dialogue</button>
+        <button class="recal-btn" data-recal="lyrical">Lyrical prose</button>
+        <button class="recal-btn" data-recal="custom-dir">Custom →</button>
+      </div>
+      <!-- Custom direction input -->
+      <div class="custom-dir" id="custom-dir-row">
+        <input type="text" id="custom-dir-input" placeholder="Describe your direction: preserve the event but change the tone, make Robert more passive, push the subtext harder…">
+        <button class="btn btn-ghost btn-sm" id="btn-apply-custom">Apply</button>
+        <button class="btn btn-ghost btn-sm" id="btn-clear-custom">✕</button>
+      </div>
+      <!-- Action buttons row -->
+      <div class="action-btn-row">
+        <button class="btn btn-primary" id="btn-accept" style="display:none">Accept scene ✓</button>
+        <button class="btn btn-ghost" id="btn-regenerate" style="display:none">Regenerate ↺</button>
+        <button class="btn btn-ghost" id="btn-continue-gen" style="display:none">Continue generating →</button>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+          <div class="next-scene-hint" id="next-scene-hint" style="display:none">
+            <span>Next:</span>
+            <strong id="next-cluster-label">—</strong>
+            <span class="next-arrow">→</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ── Right panel ── -->
+  <aside class="panel">
+    <div class="panel-tabs">
+      <button class="panel-tab active" data-tab="story">Story</button>
+      <button class="panel-tab" data-tab="characters">Characters</button>
+      <button class="panel-tab" data-tab="state">Live state</button>
+    </div>
+    <div class="panel-scroll" id="panel-content">
+      <div class="empty-state">Import your story to see extracted elements.</div>
+    </div>
+  </aside>
+
+  <!-- ── Setup / Parse Modal ── -->
+  <div class="modal-overlay" id="modal-parse">
+    <div class="modal">
+      <h2 class="modal-title">Structure your story</h2>
+      <p class="modal-sub">Review what was extracted and confirm your arc structure before writing begins.</p>
+
+      <!-- Parse loading -->
+      <div id="parse-loading" class="parse-loading">
+        <div class="parse-loading-row" id="pl-reading">
+          <div class="spinner"></div>
+          Reading your story…
+        </div>
+        <div class="parse-loading-row" id="pl-chars">
+          <div class="spinner"></div>
+          Finding characters…
+        </div>
+        <div class="parse-loading-row" id="pl-events">
+          <div class="spinner"></div>
+          Identifying turning points…
+        </div>
+        <div class="parse-loading-row" id="pl-threads">
+          <div class="spinner"></div>
+          Mapping open threads…
+        </div>
+        <div class="parse-loading-row" id="pl-structure">
+          <div class="spinner"></div>
+          Building story structure…
+        </div>
+      </div>
+
+      <!-- Parse results -->
+      <div id="parse-results" style="display:none">
+
+        <!-- Project fields -->
+        <div class="form-group">
+          <label class="form-label">Story title</label>
+          <input type="text" id="field-title" placeholder="Untitled">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group">
+            <label class="form-label">Genre</label>
+            <input type="text" id="field-genre" placeholder="e.g. Literary fiction">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tone</label>
+            <input type="text" id="field-tone" placeholder="e.g. Dark, restrained">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Point of view</label>
+          <input type="text" id="field-pov" placeholder="e.g. Third person limited">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Premise (one sentence)</label>
+          <textarea id="field-premise" rows="2" placeholder="The core story in one sentence"></textarea>
+        </div>
+
+        <!-- Extracted elements preview -->
+        <div class="divider"></div>
+        <div id="parse-chars-section" class="parse-section">
+          <div class="parse-section-title">
+            Characters found
+            <span class="parse-section-count" id="parse-chars-count">0</span>
+          </div>
+          <div id="parse-chars-list"></div>
+        </div>
+        <div id="parse-themes-section" class="parse-section">
+          <div class="parse-section-title">
+            Themes and motifs
+            <span class="parse-section-count" id="parse-themes-count">0</span>
+          </div>
+          <div id="parse-themes-list"></div>
+        </div>
+        <div id="parse-threads-section" class="parse-section">
+          <div class="parse-section-title">
+            Open threads
+            <span class="parse-section-count" id="parse-threads-count">0</span>
+          </div>
+          <div id="parse-threads-list"></div>
+        </div>
+
+        <!-- Arc selection -->
+        <div class="divider"></div>
+        <div class="form-group">
+          <label class="form-label">Arc structure</label>
+          <div class="arc-choice">
+            <div class="arc-option selected" data-arc="3act">
+              <div class="arc-option-label">Three-act</div>
+              <div class="arc-option-desc">Setup · Conflict · Resolution. 7 clusters.</div>
+            </div>
+            <div class="arc-option" data-arc="5part">
+              <div class="arc-option-label">Five-part arc</div>
+              <div class="arc-option-desc">Dramatic arc. Rise, climax, fall. 5 clusters.</div>
+            </div>
+            <div class="arc-option" data-arc="custom">
+              <div class="arc-option-label">Custom</div>
+              <div class="arc-option-desc">Start simple. 3 clusters. Adjust as needed.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-actions" id="modal-parse-actions" style="display:none">
+        <button class="btn btn-ghost" id="btn-modal-cancel">Cancel</button>
+        <button class="btn btn-primary" id="btn-modal-confirm">Begin writing →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Settings Modal ── -->
+  <div class="modal-overlay" id="modal-settings">
+    <div class="modal" style="max-width:480px">
+      <h2 class="modal-title">API key</h2>
+      <p class="modal-sub">Add your Anthropic API key to enable AI-powered scene generation and outline parsing. Without it, the platform runs in demo mode.</p>
+      <div class="form-group">
+        <label class="form-label">Anthropic API key</label>
+        <input type="password" id="api-key-input" placeholder="sk-ant-…">
+        <div class="form-hint">Your key is stored only in your browser's local storage and never sent anywhere except directly to Anthropic's API.</div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="btn-settings-cancel">Cancel</button>
+        <button class="btn btn-primary" id="btn-settings-save">Save key</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Export Modal ── -->
+  <div class="modal-overlay" id="modal-export">
+    <div class="modal" style="max-width:480px">
+      <h2 class="modal-title">Export draft</h2>
+      <p class="modal-sub">Download your accepted scenes as a manuscript.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">
+        <div style="font-size:0.85rem;color:var(--ink-mute)">
+          <span id="export-word-count">—</span> words · <span id="export-scene-count">—</span> scenes accepted
+        </div>
+        <button class="btn btn-ghost" id="btn-export-txt" style="justify-content:flex-start">
+          📄 &nbsp;Plain text (.txt)
+        </button>
+        <button class="btn btn-ghost" id="btn-export-html" style="justify-content:flex-start">
+          🖥 &nbsp;Readable HTML (print-ready)
+        </button>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="btn-export-cancel">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="js/app.js"></script>
+  <script src="js/parser.js"></script>
+  <script src="js/writer.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/ui.js"></script>
+</body>
+</html>

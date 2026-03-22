@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Narrative — Structured storytelling</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ── Landing page styles ── */
+    body { overflow-x: hidden; }
+
+    /* Grain texture overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.4;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 48px;
+      background: rgba(247,244,239,0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 1.5rem; font-weight: 600;
+      letter-spacing: -0.02em; color: var(--ink);
+    }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-links a {
+      font-size: 0.875rem; color: var(--ink-mute);
+      transition: color var(--transition);
+    }
+    .nav-links a:hover { color: var(--ink); }
+
+    /* ── Hero ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; align-items: center;
+      padding: 120px 48px 80px;
+      position: relative;
+    }
+    .hero-inner {
+      max-width: 1200px; margin: 0 auto; width: 100%;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+      align-items: center;
+    }
+    .hero-text { position: relative; z-index: 1; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 0.75rem; font-weight: 500; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 24px;
+    }
+    .hero-eyebrow::before {
+      content: ''; width: 24px; height: 1px; background: var(--accent);
+    }
+    .hero-title {
+      font-size: clamp(3rem, 5.5vw, 5rem);
+      font-weight: 300; line-height: 1.08;
+      letter-spacing: -0.03em;
+      color: var(--ink); margin-bottom: 28px;
+    }
+    .hero-title em { font-style: italic; color: var(--accent); }
+    .hero-sub {
+      font-size: 1.05rem; line-height: 1.8;
+      color: var(--ink-soft); max-width: 440px;
+      margin-bottom: 44px;
+    }
+    .hero-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .hero-note {
+      margin-top: 16px;
+      font-size: 0.8rem; color: var(--ink-ghost);
+      font-style: italic;
+    }
+
+    /* ── Hero visual / demo card ── */
+    .hero-visual {
+      position: relative;
+    }
+    .demo-card {
+      background: var(--paper-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      position: relative;
+    }
+    .demo-topbar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--paper-warm);
+    }
+    .demo-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .demo-dot:nth-child(1) { background: #ff5f56; }
+    .demo-dot:nth-child(2) { background: #ffbd2e; }
+    .demo-dot:nth-child(3) { background: #27c93f; }
+    .demo-title {
+      margin-left: 8px; font-size: 0.8rem;
+      color: var(--ink-mute); font-weight: 500;
+    }
+    .demo-badge { margin-left: auto; }
+    .demo-body { padding: 28px; }
+    .demo-cluster-rail {
+      display: flex; gap: 6px; margin-bottom: 24px;
+      overflow-x: auto; padding-bottom: 2px;
+    }
+    .demo-cluster-rail::-webkit-scrollbar { display: none; }
+    .demo-cluster {
+      flex-shrink: 0; padding: 5px 12px;
+      border-radius: 20px; font-size: 0.75rem; font-weight: 500;
+      border: 1px solid var(--border); background: var(--paper-warm);
+      color: var(--ink-mute); cursor: default;
+      transition: var(--transition);
+    }
+    .demo-cluster.active {
+      background: var(--ink); color: var(--paper); border-color: var(--ink);
+    }
+    .demo-cluster.done {
+      background: var(--teal-pale); color: var(--teal); border-color: rgba(42,107,107,0.2);
+    }
+    .demo-scene-title {
+      font-family: var(--font-display);
+      font-size: 1.3rem; font-weight: 500;
+      margin-bottom: 6px; color: var(--ink);
+    }
+    .demo-fn {
+      font-size: 0.75rem; color: var(--accent);
+      margin-bottom: 20px; font-weight: 500;
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    .demo-prose {
+      font-family: var(--font-display);
+      font-size: 1rem; line-height: 1.9;
+      color: var(--ink-soft);
+    }
+    .demo-prose p { margin-bottom: 12px; }
+    .demo-cursor {
+      display: inline-block; width: 2px; height: 18px;
+      background: var(--accent); vertical-align: middle;
+      animation: pulse-soft 1.2s ease-in-out infinite;
+    }
+    .demo-controls {
+      display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap;
+    }
+    .demo-ctrl {
+      padding: 5px 12px; border-radius: 20px;
+      font-size: 0.75rem; border: 1px solid var(--border);
+      background: var(--paper-warm); color: var(--ink-soft);
+      cursor: default;
+    }
+    .demo-ctrl.primary {
+      background: var(--accent); color: white; border-color: var(--accent);
+    }
+
+    /* floating accent shapes */
+    .hero-visual::before {
+      content: '';
+      position: absolute; top: -40px; right: -40px;
+      width: 200px; height: 200px;
+      border: 1px solid var(--border-strong); border-radius: 50%;
+      opacity: 0.4; z-index: -1;
+    }
+    .hero-visual::after {
+      content: '';
+      position: absolute; bottom: -60px; left: -30px;
+      width: 120px; height: 120px;
+      background: var(--accent-pale);
+      border-radius: 50%; z-index: -1; opacity: 0.5;
+      filter: blur(30px);
+    }
+
+    /* ── How it works ── */
+    .section { padding: 100px 48px; }
+    .section-inner { max-width: 1200px; margin: 0 auto; }
+    .section-eyebrow {
+      font-size: 0.75rem; font-weight: 500; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 16px; display: block;
+    }
+    .section-title {
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 400; letter-spacing: -0.02em;
+      color: var(--ink); margin-bottom: 20px;
+    }
+    .section-sub {
+      font-size: 1.05rem; color: var(--ink-soft);
+      max-width: 540px; line-height: 1.8;
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px; margin-top: 60px;
+    }
+    .step-card {
+      background: var(--paper-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px; position: relative;
+      transition: var(--transition);
+    }
+    .step-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--border-strong);
+    }
+    .step-num {
+      font-family: var(--font-display);
+      font-size: 3rem; font-weight: 300;
+      color: var(--border-strong); line-height: 1;
+      margin-bottom: 16px; user-select: none;
+    }
+    .step-title {
+      font-family: var(--font-display);
+      font-size: 1.3rem; font-weight: 500;
+      color: var(--ink); margin-bottom: 10px;
+    }
+    .step-desc { font-size: 0.9rem; color: var(--ink-mute); line-height: 1.7; }
+
+    /* ── Extracts section ── */
+    .extracts-section { background: var(--paper-warm); }
+    .extracts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px; margin-top: 48px;
+    }
+    .extract-item {
+      background: var(--paper-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+    }
+    .extract-icon {
+      width: 36px; height: 36px; border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; margin-bottom: 12px;
+    }
+    .extract-label {
+      font-weight: 500; font-size: 0.9rem; color: var(--ink);
+      margin-bottom: 4px;
+    }
+    .extract-desc { font-size: 0.8rem; color: var(--ink-mute); line-height: 1.5; }
+
+    /* ── CTA ── */
+    .cta-section {
+      text-align: center; padding: 100px 48px;
+      background: var(--ink); color: var(--paper);
+      position: relative; overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute; top: -100px; left: 50%;
+      transform: translateX(-50%);
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(196,98,45,0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-title {
+      font-size: clamp(2.4rem, 5vw, 4rem);
+      font-weight: 300; letter-spacing: -0.03em;
+      margin-bottom: 20px;
+      color: var(--paper);
+    }
+    .cta-title em { font-style: italic; color: var(--accent-soft); }
+    .cta-sub {
+      font-size: 1rem; color: rgba(247,244,239,0.6);
+      max-width: 480px; margin: 0 auto 44px; line-height: 1.8;
+    }
+    .cta-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn-paper {
+      background: var(--paper); color: var(--ink);
+      border-color: var(--paper);
+    }
+    .btn-paper:hover { background: var(--paper-warm); transform: translateY(-1px); }
+
+    /* ── Footer ── */
+    footer {
+      padding: 40px 48px;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px;
+    }
+    .footer-logo {
+      font-family: var(--font-display);
+      font-size: 1.2rem; color: var(--ink-mute);
+    }
+    .footer-note { font-size: 0.8rem; color: var(--ink-ghost); }
+
+    /* ── Staggered entry animations ── */
+    .hero-eyebrow { animation: fadeUp 0.5s 0.1s both; }
+    .hero-title   { animation: fadeUp 0.5s 0.2s both; }
+    .hero-sub     { animation: fadeUp 0.5s 0.3s both; }
+    .hero-actions { animation: fadeUp 0.5s 0.4s both; }
+    .hero-visual  { animation: fadeUp 0.6s 0.35s both; }
+
+    @media (max-width: 900px) {
+      .hero-inner { grid-template-columns: 1fr; gap: 48px; }
+      nav { padding: 16px 24px; }
+      .hero { padding: 100px 24px 60px; }
+      .section { padding: 64px 24px; }
+      .nav-links { gap: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav>
+    <div class="nav-logo">narr<span>·</span>ative</div>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#extracts">What it extracts</a>
+      <a href="app.html" class="btn btn-primary btn-sm">Start writing</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-text">
+        <div class="hero-eyebrow">Structured narrative execution</div>
+        <h1 class="hero-title">
+          Your story.<br>
+          <em>Finally</em><br>
+          on the page.
+        </h1>
+        <p class="hero-sub">
+          Paste your outline. The platform finds the structure, maps the clusters, and helps you write scene by scene — with AI that always knows where it is in your story.
+        </p>
+        <div class="hero-actions">
+          <a href="app.html" class="btn btn-primary btn-lg">Begin your story</a>
+          <a href="#how" class="btn btn-ghost btn-lg">See how it works</a>
+        </div>
+        <p class="hero-note">This is not AI writing your story. It is AI helping you write it.</p>
+      </div>
+
+      <!-- Demo preview card -->
+      <div class="hero-visual">
+        <div class="demo-card">
+          <div class="demo-topbar">
+            <div class="demo-dot"></div>
+            <div class="demo-dot"></div>
+            <div class="demo-dot"></div>
+            <span class="demo-title">Ashes of Us — Act 2A</span>
+            <span class="demo-badge pill pill-accent">Escalation</span>
+          </div>
+          <div class="demo-body">
+            <div class="demo-cluster-rail">
+              <div class="demo-cluster done">Act 1</div>
+              <div class="demo-cluster active">Act 2A</div>
+              <div class="demo-cluster">Act 2B</div>
+              <div class="demo-cluster">Crisis</div>
+              <div class="demo-cluster">Resolution</div>
+            </div>
+            <div class="demo-scene-title">The confrontation at Aldgate</div>
+            <div class="demo-fn">Rising dread · Robert's POV</div>
+            <div class="demo-prose">
+              <p>Robert arrived twenty minutes early, which was unlike him — or had been unlike him, in the life before.</p>
+              <p>"You look terrible," Marcus said, by way of greeting.</p>
+              <p>"I'm fine."</p>
+              <p>"I know what fine means when you say it."<span class="demo-cursor"></span></p>
+            </div>
+            <div class="demo-controls">
+              <span class="demo-ctrl primary">Accept scene</span>
+              <span class="demo-ctrl">Darker tone</span>
+              <span class="demo-ctrl">More subtext</span>
+              <span class="demo-ctrl">Continue →</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="section" id="how">
+    <div class="section-inner">
+      <span class="section-eyebrow">The method</span>
+      <h2 class="section-title">Structure first. Then write.</h2>
+      <p class="section-sub">Every scene generated knows exactly what it needs to do — dramatically, emotionally, structurally. No more blank page. No more drift.</p>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">01</div>
+          <div class="step-title">Paste what you have</div>
+          <p class="step-desc">A synopsis, a treatment, a messy document. Paste it in. The platform reads it and extracts everything: characters, events, themes, turning points, open threads.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">02</div>
+          <div class="step-title">Choose your arc</div>
+          <p class="step-desc">Three-act, five-part dramatic arc, or a custom structure. Your story gets mapped to clusters — each one annotated with its dramatic and emotional function.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">03</div>
+          <div class="step-title">Write cluster by cluster</div>
+          <p class="step-desc">Move through your story scene by scene. The AI generates prose that knows its structural role. You read, react, steer, accept. Your authorship stays intact.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">04</div>
+          <div class="step-title">Stay on arc. Or change it.</div>
+          <p class="step-desc">The system holds the overarching structure as you write. If you want to edit the clusters, you can — from the back end, with full control. Nothing breaks.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">05</div>
+          <div class="step-title">Export your draft</div>
+          <p class="step-desc">When you're ready, export your accepted scenes as a formatted manuscript. Clean Word document, scene by scene. Yours to take anywhere.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- What it extracts -->
+  <section class="section extracts-section" id="extracts">
+    <div class="section-inner">
+      <span class="section-eyebrow">The intelligence layer</span>
+      <h2 class="section-title">Everything hidden in your outline, surfaced.</h2>
+      <p class="section-sub">Paste your story and watch the platform find what you already know — but haven't yet organised.</p>
+
+      <div class="extracts-grid">
+        <div class="extract-item">
+          <div class="extract-icon" style="background:var(--accent-pale);">👤</div>
+          <div class="extract-label">Characters</div>
+          <div class="extract-desc">Names, roles, relationships, wants, fears, arc trajectory</div>
+        </div>
+        <div class="extract-item">
+          <div class="extract-icon" style="background:var(--gold-pale);">⚡</div>
+          <div class="extract-label">Plot events</div>
+          <div class="extract-desc">Turning points, ruptures, key actions — in structural order</div>
+        </div>
+        <div class="extract-item">
+          <div class="extract-icon" style="background:var(--teal-pale);">💭</div>
+          <div class="extract-label">Emotional beats</div>
+          <div class="extract-desc">Moments of shift, revelation, collapse — distinct from plot</div>
+        </div>
+        <div class="extract-item">
+          <div class="extract-icon" style="background:#ede9f8;">🧵</div>
+          <div class="extract-label">Themes and motifs</div>
+          <div class="extract-desc">Recurring ideas, symbols, tonal anchors</div>
+        </div>
+        <div class="extract-item">
+          <div class="extract-icon" style="background:var(--accent-pale);">🔓</div>
+          <div class="extract-label">Open threads</div>
+          <div class="extract-desc">Questions raised, tensions unresolved — your live story state</div>
+        </div>
+        <div class="extract-item">
+          <div class="extract-icon" style="background:var(--paper-warm);">🗺️</div>
+          <div class="extract-label">Structural signals</div>
+          <div class="extract-desc">Implicit act breaks, gear changes, arc boundaries</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <h2 class="cta-title">The story<br>is <em>already there.</em></h2>
+    <p class="cta-sub">You don't need a blank page. You need a structured way through the story you already know.</p>
+    <div class="cta-actions">
+      <a href="app.html" class="btn btn-accent btn-lg">Start writing now</a>
+      <a href="app.html?demo=true" class="btn btn-paper btn-lg">Load a demo story</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-logo">narrative</div>
+    <div class="footer-note">A structured writing environment. Your story, your authorship.</div>
+  </footer>
+
+  <div id="toast-container"></div>
+
+</body>
+</html>
