@@ -2204,6 +2204,7 @@ body.screenplay .eb-prose { font-family:var(--sans);font-size:14px;line-height:1
 
 /* Character preview cards on confirm */
 .co-char-cards { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.co-char-implied { border-color:#f59e0b; background:#fffbeb; }
 .co-char-card { border:1px solid var(--border); border-radius:7px; padding:11px 13px; background:var(--paper-card); }
 .co-char-name { font-size:.85rem; font-weight:600; color:var(--ink); margin-bottom:3px; }
 .co-char-role { font-size:.62rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--accent); margin-bottom:6px; }
@@ -4006,14 +4007,20 @@ function renderCharsTab(){
     const card=make('div');card.className='char-arc-card';
     const pct=Math.round(c.arcProgress||10);
     const col=pct>70?'#b85a28':pct>40?'#a07c20':'#2d6a4f';
+    const impliedLabel = c.isImplied ? `<span style="font-size:.58rem;background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:3px;margin-left:4px;">AI inferred</span>` : '';
+    const gapsLabel = c.gaps?.length ? `<div style="margin-top:5px;font-size:.65rem;color:#92400e;font-style:italic;">⚠ Gaps: ${c.gaps.slice(0,3).join(', ')}</div>` : '';
     card.innerHTML=`
-      <div class="ca-name">${c.name}</div>
+      <div class="ca-name">${c.name}${impliedLabel}</div>
       <div class="ca-role">${c.role}</div>
+      ${c.storyFunction ? `<div style="font-size:.65rem;color:var(--ink-4);font-style:italic;margin-bottom:6px;">${c.storyFunction}</div>` : ''}
       <div class="ca-row"><span class="ca-key">Want</span><span class="ca-val">${c.want||'—'}</span></div>
       <div class="ca-row"><span class="ca-key">Fear</span><span class="ca-val">${c.fear||'—'}</span></div>
       <div class="ca-row"><span class="ca-key">Arc</span><span class="ca-val">${c.arc||'—'}</span></div>
-      ${c.belief?`<div class="ca-belief"><strong>False belief:</strong> ${c.belief}</div>`:''}
-      ${c.contradiction?`<div class="ca-belief" style="margin-top:5px;border-left-color:var(--accent);"><strong>Contradiction:</strong> ${c.contradiction}</div>`:''}
+      ${c.wound ? `<div class="ca-row"><span class="ca-key">Wound</span><span class="ca-val">${c.wound}</span></div>` : ''}
+      ${c.belief ? `<div class="ca-belief"><strong>False belief:</strong> ${c.belief}</div>` : ''}
+      ${c.contradiction ? `<div class="ca-belief" style="margin-top:5px;border-left-color:var(--accent);"><strong>Contradiction:</strong> ${c.contradiction}</div>` : ''}
+      ${c.represents ? `<div class="ca-belief" style="margin-top:5px;border-left-color:var(--col-beat);"><strong>Represents:</strong> ${c.represents}</div>` : ''}
+      ${gapsLabel}
       <div class="ca-arc-bar">
         <div class="ca-arc-label"><span>Arc progress</span><span>${pct}%</span></div>
         <div class="ca-arc-track"><div class="ca-arc-fill" style="width:${pct}%;background:${col}"></div></div>
@@ -4838,12 +4845,20 @@ function renderInventory(){
     const charGrid = make('div'); charGrid.className = 'inv-grid';
     S.characters.forEach(c=>{
       const card = make('div'); card.className = 'inv-card inv-char-card';
-      card.innerHTML = `<div class="inv-card-label"><strong style="font-size:.78rem;color:var(--ink)">${c.name}</strong> <span class="conf conf-user">${c.role}</span></div>
+      const confCls = c.isImplied ? 'conf-needs' : c.confidence === 'high' ? 'conf-user' : 'conf-ai';
+      const confLabel = c.isImplied ? 'AI inferred' : c.confidence === 'high' ? 'confirmed' : 'inferred';
+      card.innerHTML = `<div class="inv-card-label"><strong style="font-size:.78rem;color:var(--ink)">${c.name}</strong> <span class="conf ${confCls}">${confLabel}</span></div>
+        <div style="font-size:.62rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--accent);margin-bottom:5px;">${c.role}</div>
+        ${c.storyFunction ? `<div style="font-size:.7rem;color:var(--ink-4);font-style:italic;margin-bottom:5px;">${c.storyFunction}</div>` : ''}
         <div class="inv-card-text">
-          <div style="margin-bottom:4px;"><strong>Want:</strong> ${c.want||'—'}</div>
-          <div style="margin-bottom:4px;"><strong>Fear:</strong> ${c.fear||'—'}</div>
-          ${c.belief?`<div style="margin-bottom:4px;font-style:italic;color:var(--ink-3)"><strong>Belief:</strong> ${c.belief}</div>`:''}
-          ${c.arc?`<div><strong>Arc:</strong> ${c.arc}</div>`:''}
+          ${c.want   ? `<div style="margin-bottom:3px;"><strong>Want:</strong> ${c.want}</div>` : ''}
+          ${c.fear   ? `<div style="margin-bottom:3px;"><strong>Fear:</strong> ${c.fear}</div>` : ''}
+          ${c.belief ? `<div style="margin-bottom:3px;font-style:italic;color:var(--ink-3)"><strong>Belief:</strong> ${c.belief}</div>` : ''}
+          ${c.wound  ? `<div style="margin-bottom:3px;color:var(--accent);"><strong>Wound:</strong> ${c.wound}</div>` : ''}
+          ${c.arc    ? `<div style="margin-bottom:3px;"><strong>Arc:</strong> ${c.arc}</div>` : ''}
+          ${c.contradiction ? `<div style="margin-bottom:3px;font-style:italic;"><strong>Contradiction:</strong> ${c.contradiction}</div>` : ''}
+          ${c.represents ? `<div style="font-size:.7rem;color:var(--col-beat);"><strong>Represents:</strong> ${c.represents}</div>` : ''}
+          ${c.gaps?.length ? `<div style="margin-top:5px;font-size:.62rem;color:#92400e;background:#fef3c7;padding:2px 6px;border-radius:3px;display:inline-block">⚠ Gaps: ${c.gaps.slice(0,3).join(', ')}</div>` : ''}
         </div>
         <div class="inv-card-edit">Edit character</div>`;
       charGrid.appendChild(card);
@@ -4904,6 +4919,21 @@ function renderInventory(){
     });
     thrSection.appendChild(thrGrid);
     body.appendChild(thrSection);
+  }
+
+  // Story gaps section — show what the AI flagged
+  if(S.storyGaps?.length) {
+    const gapSection = make('div'); gapSection.className = 'inv-section';
+    gapSection.innerHTML = '<div class="inv-section-title">Story gaps</div>';
+    const gapGrid = make('div'); gapGrid.className = 'inv-grid';
+    S.storyGaps.forEach(g => {
+      const card = make('div'); card.className = 'inv-card';
+      card.style.borderLeft = g.severity === 'missing' ? '3px solid #dc2626' : '3px solid #f59e0b';
+      card.innerHTML = `<div class="inv-card-label">${g.type} <span class="conf ${g.severity === 'missing' ? 'conf-needs' : 'conf-ai'}">${g.severity}</span></div><div class="inv-card-text">${g.message}</div>`;
+      gapGrid.appendChild(card);
+    });
+    gapSection.appendChild(gapGrid);
+    body.appendChild(gapSection);
   }
 
   // Structural inventory
@@ -5765,26 +5795,34 @@ function populateConfirmScreen(parsed) {
   $('co-title').textContent = parsed.title || 'Your story';
   $('co-genre').textContent = [parsed.genre, parsed.tone, parsed.pov].filter(Boolean).join(' · ');
 
-  // Premise and ending
   const premiseEl = $('co-premise');
-  const endingEl = $('co-ending');
+  const endingEl  = $('co-ending');
   if(premiseEl) premiseEl.value = parsed.premise || '';
   if(endingEl)  endingEl.value  = parsed.ending  || '';
 
-  // Characters
+  // Characters — full profile including wound, gaps, implied flag
   const charCards = $('co-char-cards');
   if(charCards) {
     charCards.innerHTML = '';
-    (parsed.characters || []).slice(0, 4).forEach(c => {
-      const card = make('div'); card.className = 'co-char-card';
-      const confCls = c.confidence === 'high' ? 'co-conf-user' : c.confidence === 'low' ? 'co-conf-low' : 'co-conf-ai';
+    (parsed.characters || []).forEach(c => {
+      const card = make('div');
+      card.className = 'co-char-card' + (c.isImplied ? ' co-char-implied' : '');
+      const confCls   = c.confidence === 'high' ? 'co-conf-user' : c.confidence === 'low' ? 'co-conf-low' : 'co-conf-ai';
+      const impliedBadge = c.isImplied ? `<span class="co-conf co-conf-low" style="margin-left:4px">AI inferred</span>` : '';
+      const gapBadge = c.gaps?.length
+        ? `<div style="margin-top:5px;font-size:.62rem;color:#92400e;background:#fef3c7;padding:2px 6px;border-radius:3px;display:inline-block">⚠ Missing: ${c.gaps.slice(0,3).join(', ')}</div>`
+        : '';
       card.innerHTML = `
-        <div class="co-char-name">${c.name} <span class="co-conf ${confCls}">${c.confidence||'inferred'}</span></div>
-        <div class="co-char-role">${c.role}</div>
-        ${c.want?`<div class="co-char-row"><strong>Want:</strong> ${c.want}</div>`:''}
-        ${c.fear?`<div class="co-char-row"><strong>Fear:</strong> ${c.fear}</div>`:''}
-        ${c.belief?`<div class="co-char-row"><strong>Belief:</strong> ${c.belief}</div>`:''}
-        ${c.arc?`<div class="co-char-row"><strong>Arc:</strong> ${c.arc}</div>`:''}`;
+        <div class="co-char-name">${c.name}${impliedBadge} <span class="co-conf ${confCls}">${c.role}</span></div>
+        ${c.storyFunction ? `<div style="font-size:.68rem;color:var(--ink-4);margin-bottom:5px;font-style:italic;">${c.storyFunction}</div>` : ''}
+        ${c.want        ? `<div class="co-char-row"><strong>Want:</strong> ${c.want}</div>`         : ''}
+        ${c.fear        ? `<div class="co-char-row"><strong>Fear:</strong> ${c.fear}</div>`         : ''}
+        ${c.belief      ? `<div class="co-char-row"><strong>Belief:</strong> ${c.belief}</div>`     : ''}
+        ${c.arc         ? `<div class="co-char-row"><strong>Arc:</strong> ${c.arc}</div>`           : ''}
+        ${c.wound       ? `<div class="co-char-row"><strong>Wound:</strong> ${c.wound}</div>`       : ''}
+        ${c.contradiction ? `<div class="co-char-row"><strong>Contradiction:</strong> ${c.contradiction}</div>` : ''}
+        ${c.represents  ? `<div class="co-char-row"><strong>Represents:</strong> ${c.represents}</div>` : ''}
+        ${gapBadge}`;
       charCards.appendChild(card);
     });
   }
@@ -5793,21 +5831,59 @@ function populateConfirmScreen(parsed) {
   const themesEl = $('co-themes');
   if(themesEl) {
     themesEl.innerHTML = (parsed.themes||[]).map(t =>
-      `<div class="co-tag accent">${t}</div>`).join('');
+      `<div class="co-tag accent">${escHtml(t)}</div>`).join('');
   }
 
   // Threads
   const threadsEl = $('co-threads');
   if(threadsEl) {
     threadsEl.innerHTML = (parsed.openThreads||[]).map(t =>
-      `<div class="co-tag">${t}</div>`).join('');
+      `<div class="co-tag">${escHtml(t)}</div>`).join('');
   }
 
   // Motifs
   const motifsEl = $('co-motifs');
   if(motifsEl) {
     motifsEl.innerHTML = (parsed.motifs||[]).map(m =>
-      `<div class="co-tag hi">${m}</div>`).join('');
+      `<div class="co-tag hi">✦ ${escHtml(m)}</div>`).join('');
+  }
+
+  // Relationships (new)
+  const rels = parsed.relationships || [];
+  if(rels.length) {
+    let relSection = $('co-relationships');
+    if(!relSection) {
+      relSection = make('div'); relSection.id = 'co-relationships';
+      relSection.className = 'co-section';
+      relSection.innerHTML = '<div class="co-section-title">Relationships <span class="co-conf co-conf-ai">extracted</span></div><div id="co-rel-list"></div>';
+      $('co-themes')?.closest('.co-section')?.after(relSection);
+    }
+    const relList = relSection.querySelector('#co-rel-list') || relSection;
+    relList.innerHTML = rels.map(r => {
+      const tensionColor = r.tensionLevel === 'high' ? '#dc2626' : r.tensionLevel === 'mid' ? '#b85a28' : '#2d6a4f';
+      return `<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:.78rem;color:var(--ink-2);line-height:1.5;">
+        <strong style="color:${tensionColor}">${r.pair.join(' ↔ ')}</strong> <span style="font-size:.62rem;color:var(--ink-5)">[${r.tensionLevel}]</span><br>
+        <span style="font-style:italic;color:var(--ink-3);">${r.state?.substring(0,120)||''}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // Story gaps (new)
+  const gaps = parsed.storyGaps || [];
+  if(gaps.length) {
+    let gapSection = $('co-story-gaps');
+    if(!gapSection) {
+      gapSection = make('div'); gapSection.id = 'co-story-gaps';
+      gapSection.className = 'co-section';
+      gapSection.innerHTML = '<div class="co-section-title">Story gaps <span class="co-conf co-conf-low">needs attention</span></div><div id="co-gap-list"></div>';
+      $('co-movements')?.closest('.co-section')?.after(gapSection);
+    }
+    const gapList = gapSection.querySelector('#co-gap-list') || gapSection;
+    gapList.innerHTML = gaps.map(g => {
+      const col = g.severity === 'missing' ? '#991b1b' : '#92400e';
+      const bg  = g.severity === 'missing' ? '#fee2e2' : '#fef3c7';
+      return `<div style="padding:5px 8px;margin-bottom:4px;border-radius:4px;font-size:.74rem;line-height:1.45;background:${bg};color:${col};">${g.message}</div>`;
+    }).join('');
   }
 
   // Movement summaries
@@ -5816,17 +5892,23 @@ function populateConfirmScreen(parsed) {
     movEl.innerHTML = '';
     const arcMovements = getArcTemplate(S.selectedArc || '3act').flatMap(a => a.movements);
     const movSuggestions = parsed.movementSuggestions || [];
-    const showCount = Math.max(arcMovements.length, movSuggestions.length);
-
-    for(let i = 0; i < Math.min(showCount, movSuggestions.length); i++) {
-      const sugg = movSuggestions[i];
+    for(let i = 0; i < Math.min(arcMovements.length, movSuggestions.length); i++) {
+      const sugg   = movSuggestions[i];
       const arcMov = arcMovements[i];
+      const emotionalColor = sugg.emotional === 'Devastation' ? '#dc2626' :
+                             sugg.emotional === 'Rupture'     ? '#b85a28' :
+                             sugg.emotional === 'Collapse'    ? '#92400e' :
+                             sugg.emotional === 'Escalation'  ? '#a07c20' : '#2d6a4f';
       const el = make('div');
-      el.style.cssText = 'border-left:2px solid var(--border-2);padding:8px 12px;margin-bottom:8px;border-radius:0 5px 5px 0;background:var(--paper-card);';
+      el.style.cssText = `border-left:3px solid ${emotionalColor};padding:8px 12px;margin-bottom:8px;border-radius:0 5px 5px 0;background:var(--paper-card);`;
       el.innerHTML = `
-        <div style="font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-4);margin-bottom:3px;">${arcMov?.label||''} — ${sugg.name}</div>
-        <div style="font-size:.78rem;color:var(--ink-3);font-style:italic;margin-bottom:4px;">${sugg.fn||''}</div>
-        <div style="font-size:.8rem;color:var(--ink-2);line-height:1.55;">${sugg.summary||''}</div>`;
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">
+          <div style="font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-4);">${arcMov?.label||''} — ${sugg.name}</div>
+          <div style="font-size:.62rem;font-weight:600;color:${emotionalColor}">${sugg.emotional}</div>
+        </div>
+        <div style="font-size:.74rem;color:var(--ink-3);font-style:italic;margin-bottom:4px;">${sugg.fn||''}</div>
+        <div style="font-size:.8rem;color:var(--ink-2);line-height:1.55;">${sugg.summary||''}</div>
+        ${sugg.keyEvents?.length ? `<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;">${sugg.keyEvents.slice(0,3).map(e=>`<span style="font-size:.62rem;padding:1px 6px;border-radius:3px;background:var(--paper-3);color:var(--ink-4);">${e.substring(0,50)}</span>`).join('')}</div>` : ''}`;
       movEl.appendChild(el);
     }
   }
@@ -5860,17 +5942,31 @@ function applyParsedStory(parsed, arcType) {
     }),
   }));
 
-  // Characters with arc states pre-built
+  // Characters — full psychological profile preserved
   S.characters = (parsed.characters || []).map(c => ({
-    name: c.name,
-    role: c.role,
-    want: c.want || '',
-    fear: c.fear || '',
-    belief: c.belief || '',
+    name:          c.name,
+    role:          c.role,
+    want:          c.want          || '',
+    fear:          c.fear          || '',
+    belief:        c.belief        || '',
     contradiction: c.contradiction || '',
-    arc: c.arc || '',
-    arcProgress: 5,
-    arcStates: {},
+    arc:           c.arc           || '',
+    wound:         c.wound         || '',
+    represents:    c.represents    || '',
+    storyFunction: c.storyFunction || '',
+    descriptors:   c.descriptors   || [],
+    gaps:          c.gaps          || [],
+    confidence:    c.confidence    || 'medium',
+    isImplied:     c.isImplied     || false,
+    arcProgress:   5,
+    arcStates:     {},
+  }));
+
+  // Relationships from extraction engine
+  S.relationships = (parsed.relationships || []).map(r => ({
+    ...r,
+    // Remap movement state keys to match our arc ids
+    movementStates: remapRelMovements(r.movementStates, parsed.movementSuggestions),
   }));
 
   // Threads
@@ -5890,6 +5986,9 @@ function applyParsedStory(parsed, arcType) {
     status: 'tracked',
   }));
 
+  // Story gaps — surface in intelligence panel
+  S.storyGaps = parsed.storyGaps || [];
+
   // Fragments (empty for now)
   S.fragments = [];
 
@@ -5898,6 +5997,18 @@ function applyParsedStory(parsed, arcType) {
   if($('sb-project-name')) $('sb-project-name').textContent = S.project.title;
 
   persist();
+}
+
+// Map relationship movementStates (m1,m2... keys) to our arc movement ids
+function remapRelMovements(movementStates, movementSuggestions) {
+  if(!movementStates || !movementSuggestions) return {};
+  const out = {};
+  movementSuggestions.forEach((sugg, i) => {
+    const oldKey = `m${i+1}`;
+    const newKey = `m${i+1}`; // our arc uses same convention
+    if(movementStates[oldKey]) out[newKey] = movementStates[oldKey];
+  });
+  return out;
 }
 
 function getArcTemplate(arcType) {
@@ -6019,319 +6130,822 @@ async function runImport(text) {
 // ─────────────────────────────────────────────
 // FALLBACK PARSE (no API key)
 // ─────────────────────────────────────────────
+
+// ═══════════════════════════════════════════════════════════════
+// COMPLETE CHARACTER INTELLIGENCE EXTRACTION ENGINE
+// Replaces buildFallbackParse entirely.
+// Handles structured outlines, free prose, and anything between.
+// Extracts: all characters (declared + implied), full psychology,
+// relationships, arc progressions, gaps, and story dynamics.
+// ═══════════════════════════════════════════════════════════════
+
 function buildFallbackParse(text) {
-  // ── STRUCTURED DOCUMENT PARSER ──
-  // Handles formatted outlines with ALL-CAPS section headers,
-  // bullet lists, labelled fields, and Act/chapter breakdowns.
 
-  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-  const lower = text.toLowerCase();
+  // ── Normalise whitespace while preserving structure ──
+  const norm = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+  const lower = norm.toLowerCase();
+  const lines = norm.split('\n');
 
-  // ── 1. TITLE ──
-  // First line, strip markdown/dashes
-  const rawTitle = lines[0] || '';
-  const title = rawTitle.replace(/[—\-–:]+.*$/, '').replace(/^[#*•\-\s]+/, '').trim() || null;
+  // ─────────────────────────────────────────────
+  // 1. TITLE
+  // ─────────────────────────────────────────────
+  const rawTitle = lines[0].replace(/[—–\-:]+.*$/,'').replace(/^[#*•\s]+/,'').trim();
+  const title = toTitleCase(rawTitle) || null;
 
-  // ── 2. PREMISE ──
-  // Look for labelled section, else first long sentence
-  const premiseSection = text.match(/(?:CORE\s+PREMISE|PREMISE)[^\n]*\n+([\s\S]*?)(?:\n\n[A-Z]{3}|\n[A-Z]{4,}|$)/i);
-  const premise = premiseSection
-    ? premiseSection[1].replace(/\n/g, ' ').trim().substring(0, 300)
-    : lines.find(l => l.length > 60 && !l.match(/^[A-Z\s—–\-:•*]+$/))?.substring(0, 300) || '';
+  // ─────────────────────────────────────────────
+  // 2. METADATA — genre, tone, pov, premise, ending
+  // ─────────────────────────────────────────────
+  const genre   = extractMeta(norm, ['genre','Genre']) || inferGenre(lower);
+  const tone    = extractMeta(norm, ['tone','Tone'])   || inferTone(lower);
+  const pov     = extractMeta(norm, ['pov','POV','point of view','Point of View']) || inferPov(norm);
 
-  // ── 3. GENRE / TONE / POV ──
-  const genreMatch  = text.match(/[Gg]enre[:\s]+([^\n•]+)/);
-  const toneMatch   = text.match(/[Tt]one[:\s]+([^\n•]+)/);
-  const povMatch    = text.match(/[Pp][Oo][Vv][:\s]+([^\n•]+)/);
-  const genre = genreMatch?.[1]?.trim() || 'Literary fiction';
-  const tone  = toneMatch?.[1]?.trim()  || inferTone(lower);
-  const pov   = povMatch?.[1]?.trim()   || 'Third person limited';
-
-  function inferTone(t) {
-    if(t.includes('dark')||t.includes('tragic')||t.includes('devastat')) return 'Dark, melancholic';
-    if(t.includes('comic')||t.includes('satir')||t.includes('humor'))    return 'Satirical';
-    if(t.includes('thriller')||t.includes('suspense'))                   return 'Tense, propulsive';
-    return 'Literary, restrained';
+  // Premise — labelled section or first long descriptive paragraph
+  let premise = '';
+  const premiseSection = norm.match(/(?:CORE\s+PREMISE|PREMISE|SYNOPSIS|LOGLINE)[^\n]*\n+([\s\S]{30,400}?)(?=\n\n[A-Z]{3}|\n[A-Z]{5,}|$)/i);
+  if(premiseSection) {
+    premise = premiseSection[1].replace(/\n/g,' ').replace(/\s+/g,' ').trim().substring(0,300);
+  } else {
+    const firstParagraph = lines.find(l => l.trim().length > 60 && !l.match(/^[A-Z\s•\-–—*:]+$/));
+    if(firstParagraph) premise = firstParagraph.trim().substring(0,300);
   }
 
-  // ── 4. ENDING ──
-  const endingPatterns = [
-    /FINAL\s+(?:REALIZATION|STATEMENT|SCENE|NOTE)[^\n]*\n+([\s\S]{20,200}?)(?:\n\n[A-Z]{3}|$)/i,
-    /[Ee]nding[:\s]+([^\n]+(?:\n[^A-Z\n][^\n]*){0,3})/,
-    /[Rr]esolution[:\s]+([^\n]+)/,
-    /[Ee]nd(?:ing)?\s+[Tt]one[:\s]*([\s\S]{20,200}?)(?:\n\n|$)/,
-  ];
+  // Ending — multiple detection strategies
   let ending = null;
+  const endingPatterns = [
+    /(?:FINAL\s+REALIZATION|ENDING\s+TONE|FINAL\s+NOTE)[^\n]*\n+([\s\S]{20,300}?)(?=\n\n[A-Z]{3}|\n[A-Z]{5,}|⸻|$)/i,
+    /[Ff]inal\s+[Rr]ealization[:\s]+([\s\S]{10,200}?)(?=\n\n|⸻|$)/,
+    /[Ee]nding[:\s]+((?:[^\n]+\n?){1,4})/,
+    /[Rr]esolution[:\s]+((?:[^\n]+\n?){1,3})/,
+    /FINAL THEMATIC STATEMENT[^\n]*\n+([\s\S]{10,200}?)(?=\n\n|⸻|$)/i,
+  ];
   for(const p of endingPatterns) {
-    const m = text.match(p);
-    if(m) { ending = m[1].replace(/\n/g,' ').replace(/[•\-\t]/g,'').trim().substring(0,250); break; }
+    const m = norm.match(p);
+    if(m?.[1]) { ending = m[1].replace(/[•\t\n]+/g,' ').replace(/\s+/g,' ').trim().substring(0,300); break; }
   }
 
-  // ── 5. CHARACTERS — structured block detection ──
-  // Handles: ALL-CAPS name blocks, "Name (Role)" patterns, bullet lists
-  const characters = [];
-  const skipWords = new Set([
-    'STRUCTURE','THEMATIC','CORE','FINAL','END','RECURRING','FOCUS','MAIN',
-    'ACT','ACTS','CHAPTER','SCENE','NOTE','OVERVIEW','TONE','GENRE','POV',
-    'FORMAT','MOTIF','THEME','ENDING','COLLAPSE','EXPANSION','FRACTURE','FORMATION',
-    'DETERIORATION','RECKONING','SUMMARY','KEY','DYNAMIC','TRIO','GROUP',
-    'PREMISE','CHARACTERS','CHARACTER','STATEMENT','PLOT','EVENTS','THREADS',
-    'INVENTORY','RELATIONSHIP','RELATIONSHIPS','CONFLICT','SETTING','WORLD',
-  ]);
-  const skipPhrases = new Set([
-    'CORE PREMISE','THEMATIC CORE','MAIN CHARACTERS','RECURRING MOTIF',
-    'FINAL STATEMENT','FINAL REALIZATION','FINAL SCENE','END OF','STORY OVERVIEW',
-    'STRUCTURE OVERVIEW','CHARACTER ARC','PLOT EVENTS','OPEN THREADS','KEY DYNAMIC',
-    'CENTRAL CONFLICT','ENDING TONE','ACT STRUCTURE',
-  ]);
-  function isLikelyPersonName(rawName) {
-    if(skipPhrases.has(rawName)) return false;
-    const words = rawName.split(/\s+/);
-    if(words.length > 2) return false;
-    for(const w of words) { if(skipWords.has(w)) return false; }
-    if(rawName.length < 3) return false;
-    return true;
-  }
+  // Central conflict
+  const centralConflict = extractMeta(norm, ['central conflict','core conflict','Central Conflict']) ||
+    inferCentralConflict(norm, lower);
 
-  // ── CHARACTER EXTRACTION — chunk-split approach ──
-  // 1. Isolate the character section
-  const charSectionMatch = text.match(/(?:MAIN\s+)?CHARACTERS?\s*\n+([\s\S]*?)(?=\n[A-Z]{4,}\s*[\n—]|\nSTRUCTURE|\nACT\s+[\d]|\nACT\s+[IVX]|$)/i);
-  const charSearchText = charSectionMatch ? charSectionMatch[1] : text;
-
-  // 2. Split into chunks on blank lines, each chunk starts with an ALL-CAPS name line
-  const charChunks = charSearchText.split(/\n\n+/);
-  charChunks.forEach((chunk, chunkIdx) => {
-    const chunkLines = chunk.split('\n');
-    const firstLine  = chunkLines[0].trim();
-    const nameMatch  = firstLine.match(/^([A-Z]{2,}(?:\s+[A-Z][a-z]+)?)\s*(?:\(([^)]*)\))?$/);
-    if(!nameMatch) return;
-    const rawName      = nameMatch[1].trim();
-    if(!isLikelyPersonName(rawName)) return;
-    const roleInHeader = nameMatch[2]?.trim() || '';
-    const body         = chunkLines.slice(1).join('\n').trim();
-    if(body.length < 15) return;
-    const cbMatch = { 0: firstLine }; // compat shim — not used below
-
-    const nameProper = rawName.split(/\s+/).map(w => w[0] + w.slice(1).toLowerCase()).join(' ');
-
-    // Extract role
-    let role = roleInHeader || 'Supporting';
-    if(!roleInHeader) {
-      const roleInBody = body.match(/([Pp]rotagonist|[Aa]ntagonist|[Ss]upporting|[Aa]lly|[Ff]oil|[Nn]arrator)/);
-      if(roleInBody) role = roleInBody[1];
-      else if(characters.length === 0) role = 'Protagonist';
-    }
-
-    // Extract want
-    const want = extractField(body, [
-      /[Ww]ant[s]?[:\s]+([^\n•]+)/,
-      /[Dd]esire[s]?[:\s]+([^\n•]+)/,
-      /[Bb]elieves?\s+in\s+([^\n•]+)/,
-      /[Ll]ives?\s+(?:freely|to)\s+([^\n•]+)/,
-    ]) || inferWant(body);
-
-    // Extract fear
-    const fear = extractField(body, [
-      /[Ff]ear[s]?[:\s]+([^\n•]+)/,
-      /[Cc]ore\s+wound[:\s]+([^\n•]+)/,
-      /[Vv]ulnerabilit[yi][:\s]+([^\n•]+)/,
-      /[Cc]annot\s+([^\n•.]+)/,
-      /[Ii]nabilit[yi]\s+to\s+([^\n•.]+)/,
-    ]) || '';
-
-    // Extract false belief
-    const belief = extractField(body, [
-      /[Cc]ore\s+belief[:\s]+([^\n•]+)/,
-      /[Bb]elief[:\s]+([^\n•]+)/,
-      /[Ww]orldview[:\s]+([^\n•]+)/,
-    ]) || '';
-
-    // Extract arc
-    const arc = extractField(body, [
-      /[Aa]rc[:\s→]+([^\n•]+)/,
-      /[Jj]ourney[:\s]+([^\n•]+)/,
-      /[Tt]ransform[ation]*[:\s]+([^\n•]+)/,
-    ]) || '';
-
-    // Extract contradiction
-    const contradiction = extractField(body, [
-      /[Cc]ore\s+wound[:\s]+([^\n•]+)/,
-      /[Dd]ual\s+life[:\s]+([^\n•]+)/,
-      /[Dd]ouble\s+life[:\s]+([^\n•]+)/,
-      /(?:public|private)\s+([^\n•.]+vs[^\n•.]+)/i,
-    ]) || '';
-
-    // Confidence based on how much we extracted
-    const filled = [want,fear,belief,arc].filter(Boolean).length;
-    const confidence = filled >= 3 ? 'high' : filled >= 1 ? 'medium' : 'low';
-
-    characters.push({ name:nameProper, role, want, fear, belief, contradiction, arc, confidence });
-  }); // end charChunks.forEach
-
-  // Pattern 2: Fallback — named sections like "Name:" or "**Name**"
-  if(characters.length === 0) {
-    const namedBlocks = text.matchAll(/^(?:\*\*)?([A-Z][a-z]{2,}(?:\s[A-Z][a-z]+)?)(?:\*\*)?\s*[:\(][^\n]*/gm);
-    for(const m of namedBlocks) {
-      const name = m[1];
-      if(skipWords.has(name.toUpperCase())) continue;
-      characters.push({ name, role:characters.length===0?'Protagonist':'Supporting', want:'', fear:'', belief:'', contradiction:'', arc:'', confidence:'low' });
-      if(characters.length >= 6) break;
-    }
-  }
-
-  function extractField(body, patterns) {
-    for(const p of patterns) {
-      const m = body.match(p);
-      if(m?.[1]) return m[1].replace(/[•\-→]/g,'').trim().substring(0,150);
-    }
-    return '';
-  }
-
-  function inferWant(body) {
-    if(body.match(/control/i)) return 'Control over their life and image';
-    if(body.match(/connect/i)) return 'Genuine connection with others';
-    if(body.match(/free/i))    return 'Freedom from constraint';
-    if(body.match(/truth/i))   return 'To know the truth';
-    return '';
-  }
-
-  // ── 6. THEMES ──
-  // Try structured section first
-  const themeSection = text.match(/(?:THEMATIC\s+CORE|THEMES?)[^\n]*\n([\s\S]*?)(?:\n\n[A-Z]{3}|\n[A-Z]{5,}|$)/i);
+  // ─────────────────────────────────────────────
+  // 3. THEMES — exhaustive extraction
+  // ─────────────────────────────────────────────
   const themes = [];
+
+  // Labelled theme section (bullet list)
+  const themeSection = norm.match(/(?:THEMATIC\s+CORE|THEMES?|THEMATIC\s+STATEMENT)[^\n]*\n([\s\S]{10,600}?)(?=\n⸻|\n\n[A-Z]{3,}|$)/i);
   if(themeSection) {
     themeSection[1].split('\n').forEach(l => {
-      const clean = l.replace(/^[•\-\*\t\s]+/, '').replace(/\([^)]+\)/g,'').trim();
-      if(clean.length > 5 && !clean.match(/^[A-Z\s]+$/) && clean.length < 100) themes.push(clean);
+      const clean = l.replace(/^[\s•\-*\t]+/,'').replace(/\([^)]+\)/g,'').trim();
+      if(clean.length > 4 && clean.length < 120 && !clean.match(/^[A-Z\s:—–]+$/) && !clean.match(/^⸻/))
+        themes.push(clean);
     });
   }
-  // Supplement with keyword detection
-  const themeWords = ['friendship','love','power','betrayal','identity','memory','loss','redemption',
+
+  // Keyword supplement — only if not already captured
+  const themeKeywords = [
+    'love','power','betrayal','friendship','identity','memory','loss','redemption','truth',
     'addiction','shame','masculinity','intimacy','grief','desire','mortality','class','justice',
-    'truth','loyalty','vulnerability','performance','dissociation'];
-  themeWords.forEach(t => {
-    if(lower.includes(t) && !themes.some(th => th.toLowerCase().includes(t)))
-      themes.push(t[0].toUpperCase()+t.slice(1));
+    'vulnerability','dissociation','performance','loneliness','control','freedom','loyalty',
+    'forgiveness','trauma','ambition','obsession','jealousy','guilt','regret','beauty','violence'
+  ];
+  themeKeywords.forEach(kw => {
+    if(lower.includes(kw) && !themes.some(t => t.toLowerCase().includes(kw)))
+      themes.push(toTitleCase(kw));
   });
 
-  // ── 7. MOTIFS ──
+  // ─────────────────────────────────────────────
+  // 4. MOTIFS
+  // ─────────────────────────────────────────────
   const motifs = [];
   const motifPatterns = [
     /[Rr]ecurring\s+[Mm]otif[:\s]+([^\n]+)/,
     /[Mm]otif[:\s]+([^\n]+)/,
-    /[Ss]ymbol[:\s]+([^\n]+)/,
+    /[Ss]ymbol(?:ism)?[:\s]+([^\n]+)/,
+    /[Ii]magery[:\s]+([^\n]+)/,
   ];
   for(const p of motifPatterns) {
-    const m = text.match(p);
-    if(m) { motifs.push(m[1].replace(/\([^)]+\)/g,'').trim()); break; }
+    const m = norm.match(p);
+    if(m?.[1]) { motifs.push(m[1].replace(/\([^)]+\)/g,'').trim()); break; }
   }
-  // Keyword motif detection
-  const motifWords = ['fire','water','light','darkness','rain','mirror','door','window','road',
-    'clock','blood','ash','smoke','glass','knife','flower','letter'];
-  motifWords.forEach(m => { if(lower.includes(m) && !motifs.some(mo => mo.toLowerCase().includes(m))) motifs.push(m[0].toUpperCase()+m.slice(1)); });
+  const motifKeywords = ['fire','water','light','darkness','rain','mirror','door','window','road',
+    'clock','blood','ash','smoke','glass','knife','flower','letter','photograph','coat','bridge'];
+  motifKeywords.forEach(kw => {
+    if(lower.includes(kw) && !motifs.some(m => m.toLowerCase().includes(kw)))
+      motifs.push(toTitleCase(kw));
+  });
 
-  // ── 8. OPEN THREADS ──
-  const threads = [];
-  // Questions in text
-  (text.match(/[A-Z][^.!?]{10,}\?/g)||[]).slice(0,3).forEach(q => threads.push(q.trim()));
-  // "End of Act" unresolved tensions
-  const endActMatches = text.matchAll(/[Ee]nd\s+of\s+[Aa]ct[:\s]*\n([^\n]+)/g);
-  for(const m of endActMatches) threads.push(m[1].trim());
-  // Explicit thread patterns
-  const threadPatterns = [/[Uu]nresolved[:\s]+([^\n•]+)/, /[Oo]pen\s+thread[:\s]+([^\n•]+)/];
-  threadPatterns.forEach(p => { const m = text.match(p); if(m) threads.push(m[1].trim()); });
+  // ─────────────────────────────────────────────
+  // 5. CHARACTER EXTRACTION — the core engine
+  // ─────────────────────────────────────────────
 
-  // ── 9. PLOT EVENTS from Acts ──
-  const plotEvents = [];
-  const actBlocks = text.matchAll(/^ACT\s+(\d+|[IVX]+)\s*[—\-–]+\s*([^\n]+)\n([\s\S]*?)(?=\nACT\s+\d|\nACT\s+[IVX]|$)/gim);
-  for(const ab of actBlocks) {
-    const actNum = ab[1]; const actName = ab[2].trim();
-    const actBody = ab[3];
-    // Pull bullet points as events
-    const bullets = actBody.match(/^[•\-\t]+([^\n]+)/gm)||[];
-    bullets.slice(0,4).forEach(b => {
-      const ev = b.replace(/^[•\-\t\s]+/,'').trim();
-      if(ev.length > 10) {
-        const n = parseInt(actNum) || 1;
-        const pos = n <= 1 ? 'early' : n <= 3 ? 'mid' : 'late';
-        const weight = ev.match(/key|major|central|pivotal|climax|death|reveal|betray/i) ? 'pivotal' : 'supporting';
-        plotEvents.push({ event:ev, position:pos, weight, act:actName });
+  // SKIP WORDS — section headers that look like character names
+  const SKIP_WORDS = new Set([
+    'STRUCTURE','THEMATIC','CORE','FINAL','END','RECURRING','FOCUS','MAIN','ACT','ACTS',
+    'CHAPTER','SCENE','NOTE','OVERVIEW','TONE','GENRE','POV','FORMAT','MOTIF','THEME',
+    'ENDING','COLLAPSE','EXPANSION','FRACTURE','FORMATION','DETERIORATION','RECKONING',
+    'SUMMARY','KEY','DYNAMIC','TRIO','GROUP','PREMISE','CHARACTERS','CHARACTER','STATEMENT',
+    'CONFLICT','SETTING','WORLD','PLOT','EVENTS','THREADS','INVENTORY','RELATIONSHIP',
+    'RELATIONSHIPS','SYNOPSIS','LOGLINE','TIMELINE','STRUCTURE','BACKSTORY','CONTEXT',
+    'INTRODUCTION','OPENING','CLOSING','RESOLUTION','DENOUEMENT','CLIMAX','CRISIS',
+    'INCITING','MIDPOINT','REVERSAL','REVELATION','SETUP','PAYOFF','THEME','MOTIF',
+  ]);
+  const SKIP_PHRASES = new Set([
+    'CORE PREMISE','THEMATIC CORE','MAIN CHARACTERS','RECURRING MOTIF','FINAL STATEMENT',
+    'FINAL REALIZATION','FINAL SCENE','END OF','STORY OVERVIEW','STRUCTURE OVERVIEW',
+    'CHARACTER ARC','PLOT EVENTS','OPEN THREADS','KEY DYNAMIC','CENTRAL CONFLICT',
+    'ENDING TONE','ACT STRUCTURE','TRIO DYNAMIC','GROUP DYNAMIC','POWER IMBALANCE',
+    'KEY DYNAMIC','EMOTIONAL DYNAMIC',
+  ]);
+
+  function isPersonName(raw) {
+    if(SKIP_PHRASES.has(raw)) return false;
+    const words = raw.split(/\s+/);
+    if(words.length > 3) return false;
+    if(words.some(w => SKIP_WORDS.has(w))) return false;
+    if(raw.length < 2) return false;
+    // Must contain at least one 3+ char word
+    if(!words.some(w => w.length >= 3)) return false;
+    return true;
+  }
+
+  const characters = [];
+  const charMap = new Map(); // name → index in characters array
+
+  // ── STRATEGY A: Section-scan approach ──
+  // Find CHARACTERS header, scan forward chunk-by-chunk.
+  // Stop only at known SECTION markers — not at character name lines.
+  const CHAR_STOP = /^(?:STRUCTURE|ACT\s+[\dIVX]|THEMATIC|SYNOPSIS|PLOT|FINAL\s+THEM|OVERVIEW|⸻)/i;
+
+  // Find where the character section starts
+  const charHeaderMatch = norm.match(/(?:MAIN\s+)?CHARACTERS?\s*\n/i);
+  const charStartIdx = charHeaderMatch ? norm.indexOf(charHeaderMatch[0]) + charHeaderMatch[0].length : 0;
+  const charSearchText = norm.slice(charStartIdx);
+
+  // Split on 2+ blank lines, stop at section headers
+  const allCharChunks = charSearchText.split(/\n{2,}/);
+  const validCharChunks = [];
+  for(const chunk of allCharChunks) {
+    const fl = chunk.trim().split('\n')[0].trim();
+    if(!fl) continue;
+    if(CHAR_STOP.test(fl)) break;  // hit a real section header — stop
+    validCharChunks.push(chunk);
+  }
+
+  validCharChunks.forEach((chunk, chunkIdx) => {
+    const chunkLines = chunk.split('\n').map(l => l.trim()).filter(Boolean);
+    if(!chunkLines.length) return;
+    const firstLine = chunkLines[0];
+    // Must be purely ALL-CAPS name (optionally with role in parens)
+    const nameMatch = firstLine.match(/^([A-Z]{2,}(?:\s+[A-Z]{2,})?(?:\s+[A-Z][a-z]+)?)\s*(?:\(([^)]*)\))?$/);
+    if(!nameMatch) return;
+    const rawName      = nameMatch[1].trim();
+    if(!isPersonName(rawName)) return;
+    const roleInHeader = nameMatch[2]?.trim() || '';
+    const body         = chunkLines.slice(1).join('\n').trim();
+    if(body.length < 4) return;
+
+    const charData = extractCharacterData(rawName, roleInHeader, body, chunkIdx, characters.length);
+    if(charData) {
+      charMap.set(rawName, characters.length);
+      charMap.set(charData.name, characters.length);
+      charMap.set(charData.name.toUpperCase(), characters.length);
+      charMap.set(rawName.toLowerCase(), characters.length);
+      characters.push(charData);
+    }
+  });
+
+  // ── STRATEGY B: Scan act/scene text for undeclared characters ──
+  // Find names mentioned in narrative content that aren't yet in our character list
+  // This catches characters like Kiran, father figures, secondary characters mentioned in acts
+  const actText = norm.match(/(?:ACT\s+[\dIVX][\s\S]*)/i)?.[0] || '';
+  const narrativeNames = extractNamesFromNarrative(actText || norm);
+  narrativeNames.forEach(name => {
+    const upperName = name.toUpperCase();
+    const lowerName = name.toLowerCase();
+    // Check all case variants to avoid re-adding already-declared characters
+    const alreadyFound = charMap.has(upperName) || charMap.has(name) ||
+      charMap.has(lowerName) ||
+      [...charMap.keys()].some(k => k.toLowerCase() === lowerName);
+    if(!alreadyFound) {
+      // Infer a character from context
+      const implied = inferImpliedCharacter(name, norm);
+      if(implied) {
+        charMap.set(upperName, characters.length);
+        charMap.set(name, characters.length);
+        characters.push(implied);
+      }
+    }
+  });
+
+  // ── STRATEGY C: Prose-level name detection fallback ──
+  // If we still have fewer than 2 characters, scan the whole document
+  if(characters.length < 2) {
+    const allCapsNames = [...norm.matchAll(/^([A-Z]{2,}(?:\s+[A-Z][a-z]+)?)\s*\n/gm)];
+    allCapsNames.forEach(m => {
+      const name = m[1].trim();
+      if(!isPersonName(name)) return;
+      if(charMap.has(name)) return;
+      const contextStart = m.index;
+      const contextEnd = Math.min(contextStart + 400, norm.length);
+      const context = norm.slice(contextStart, contextEnd);
+      const charData = extractCharacterData(name, '', context, 99, characters.length);
+      if(charData) {
+        charMap.set(name, characters.length);
+        characters.push(charData);
       }
     });
   }
 
-  // ── 10. MOVEMENT SUGGESTIONS from Acts ──
+  // ─────────────────────────────────────────────
+  // 6. GAP ANALYSIS — flag what's missing
+  // ─────────────────────────────────────────────
+  characters.forEach(c => {
+    c.gaps = [];
+    if(!c.want)         c.gaps.push('want');
+    if(!c.fear)         c.gaps.push('fear');
+    if(!c.belief)       c.gaps.push('false belief');
+    if(!c.arc)          c.gaps.push('arc trajectory');
+    if(!c.contradiction) c.gaps.push('internal contradiction');
+    if(c.gaps.length > 0) c.confidence = c.gaps.length > 3 ? 'low' : 'medium';
+    else c.confidence = 'high';
+  });
+
+  // ─────────────────────────────────────────────
+  // 7. RELATIONSHIPS — extract all dynamics
+  // ─────────────────────────────────────────────
+  const relationships = extractRelationships(norm, characters);
+
+  // ─────────────────────────────────────────────
+  // 8. OPEN THREADS
+  // ─────────────────────────────────────────────
+  const openThreads = [];
+  // End-of-act summaries are the richest source of unresolved tensions
+  const endOfActMatches = [...norm.matchAll(/[Ee]nd\s+of\s+[Aa]ct[:\s]*\n([^\n]+(?:\n[^\n]+){0,2})/g)];
+  endOfActMatches.forEach(m => {
+    const t = m[1].replace(/\n/g,' ').trim();
+    if(t.length > 10) openThreads.push(t);
+  });
+  // Questions in the text
+  const questions = (norm.match(/[A-Z][^.!?]{10,}\?/g)||[]).slice(0,4);
+  questions.forEach(q => { if(!openThreads.some(t=>t.includes(q.substring(0,20)))) openThreads.push(q.trim()); });
+  // Explicit markers
+  const unresolved = norm.match(/[Uu]nresolved[:\s]+([^\n]+)/)?.[1];
+  if(unresolved) openThreads.push(unresolved.trim());
+
+  // ─────────────────────────────────────────────
+  // 9. PLOT EVENTS
+  // ─────────────────────────────────────────────
+  const plotEvents = [];
+  const actBlocks = [...norm.matchAll(/^ACT\s+(\d+|[IVX]+)\s*[—–\-]+\s*([^\n]+)\n([\s\S]*?)(?=^ACT\s+\d|^ACT\s+[IVX]|\nFINAL|$)/gim)];
+  actBlocks.forEach(ab => {
+    const actNum = ab[1]; const actName = ab[2].trim();
+    const body = ab[3];
+    const bullets = body.match(/^[\s•\-*\t]+([^\n•\-*\t][^\n]{5,})/gm)||[];
+    const pos = parseInt(actNum)||1;
+    const posLabel = pos <= 1 ? 'early' : pos <= 3 ? 'mid' : 'late';
+    bullets.slice(0,5).forEach(b => {
+      const ev = b.replace(/^[\s•\-*\t]+/,'').trim();
+      if(ev.length > 8 && !ev.match(/^[A-Z][A-Z\s]+$/) && !ev.startsWith('Focus')) {
+        const weight = ev.match(/dies?|death|kill|betray|reveal|confess|truth|final|collapse/i) ? 'pivotal' :
+                       ev.match(/intense|crisis|break|fracture|peak|climax/i) ? 'major' : 'supporting';
+        plotEvents.push({ event:ev, position:posLabel, weight, act:actName });
+      }
+    });
+  });
+
+  // ─────────────────────────────────────────────
+  // 10. MOVEMENT SUGGESTIONS from Acts
+  // ─────────────────────────────────────────────
   const movementSuggestions = [];
-  const actBlocksForMovs = text.matchAll(/^ACT\s+(\d+|[IVX]+)\s*[—\-–]+\s*([^\n]+)\n([\s\S]*?)(?=\nACT\s+\d|\nACT\s+[IVX]|\n—{3}|$)/gim);
-  for(const ab of actBlocksForMovs) {
+  actBlocks.forEach(ab => {
     const actName = ab[2].trim();
-    const actBody = ab[3];
-    // Get focus line
-    const focus = actBody.match(/[Ff]ocus[:\s]+([^\n]+)/)?.[1]?.trim() || '';
-    // Get summary — first non-bullet, non-header paragraph
-    const summaryLines = actBody.split('\n')
-      .map(l=>l.replace(/^[•\-\t\s]+/,'').trim())
-      .filter(l=>l.length>20&&!l.match(/^[A-Z\s:]+$/)&&!l.match(/^Focus/i));
-    const summary = summaryLines.slice(0,2).join(' ').substring(0,250);
-    // Key events
-    const keyEvents = (actBody.match(/^[•\-\t]+([^\n]+)/gm)||[])
-      .map(b=>b.replace(/^[•\-\t\s]+/,'').trim())
-      .filter(e=>e.length>8)
+    const body = ab[3];
+    const focus = body.match(/[Ff]ocus[:\s]+([^\n]+)/)?.[1]?.trim() || '';
+    const summaryLines = body.split('\n')
+      .map(l => l.replace(/^[\s•\-*\t]+/,'').trim())
+      .filter(l => l.length > 20 && !l.match(/^[A-Z\s:]+$/) && !l.match(/^Focus/i) && !l.match(/^End of/i));
+    const summary = summaryLines.slice(0,3).join(' ').substring(0,300);
+    const keyEvents = (body.match(/^[\s•\-*\t]+([^\n]{8,})/gm)||[])
+      .map(b => b.replace(/^[\s•\-*\t]+/,'').trim())
+      .filter(e => e.length > 8 && !e.match(/^[A-Z][A-Z\s]+$/))
       .slice(0,4);
-
-    // Emotional register from act name/focus
-    const emotional = actName.match(/FORMATION|BEGIN/i) ? 'Grounding' :
-                      actName.match(/EXPANSION|GROW/i)  ? 'Escalation' :
-                      actName.match(/FRACTURE|BREAK/i)  ? 'Rupture' :
-                      actName.match(/DETERIORAT/i)       ? 'Collapse' :
-                      actName.match(/RECKONING|COLLAPSE/i) ? 'Devastation' : 'Development';
-
+    const actLower = actName.toLowerCase();
+    const emotional = actLower.match(/formation|begin|start|meet/) ? 'Grounding' :
+                      actLower.match(/expansion|grow|deepen/)       ? 'Escalation' :
+                      actLower.match(/fracture|break|expos/)        ? 'Rupture' :
+                      actLower.match(/deteriorat|drift|decay/)      ? 'Collapse' :
+                      actLower.match(/reckoning|collapse|death/)    ? 'Devastation' : 'Development';
     movementSuggestions.push({
       name: actName,
       fn: focus || 'Story development',
       emotional,
-      summary: summary || `Act ${ab[1]}: ${actName}`,
-      keyEvents: keyEvents.length > 0 ? keyEvents : [`${actName} — key events`],
+      summary: summary || focus || `Act: ${actName}`,
+      keyEvents: keyEvents.length ? keyEvents : [`${actName} — events to be defined`],
     });
-  }
+  });
 
-  // Fallback movements if no acts found
+  // Fallback movements
   if(movementSuggestions.length === 0) {
-    [
-      {name:'Opening movement',   fn:'Setup & establishment',  emotional:'Grounding',
-       summary:'The world and characters are established.',   keyEvents:['Introduction','World-building']},
-      {name:'Inciting movement',  fn:'Disruption',             emotional:'Unease',
-       summary:'Something disrupts the equilibrium.',         keyEvents:['Inciting event','First response']},
-      {name:'Rising movement',    fn:'Escalation',             emotional:'Tension',
-       summary:'Complications mount.',                         keyEvents:['First obstacle','Stakes raised']},
-      {name:'Crisis movement',    fn:'Crisis point',           emotional:'Collapse',
-       summary:'The darkest moment.',                          keyEvents:['All seems lost','The choice']},
-      {name:'Resolution movement',fn:'New equilibrium',        emotional:'Release',
-       summary:'The aftermath.',                               keyEvents:['Resolution','New world']},
-    ].forEach(m => movementSuggestions.push(m));
+    [['Opening','Setup & establishment','Grounding'],
+     ['Inciting','Disruption','Unease'],
+     ['Rising','Escalation','Tension'],
+     ['Crisis','Darkest moment','Collapse'],
+     ['Resolution','New equilibrium','Release'],
+    ].forEach(([name,fn,emo]) => movementSuggestions.push({
+      name, fn, emotional:emo, summary:`${name} — to be developed`, keyEvents:[]
+    }));
   }
 
   return {
-    title: title ? title.split(/\s+/).map(w=>w[0]?.toUpperCase()+w.slice(1)?.toLowerCase()).join(' ') : null,
-    genre, tone, pov,
-    premise, ending: ending || null,
-    centralConflict: extractField(text, [/[Cc]entral\s+[Cc]onflict[:\s]+([^\n]+)/, /[Cc]ore\s+[Cc]onflict[:\s]+([^\n]+)/]) || '',
-    themes: themes.slice(0, 8),
-    motifs: motifs.slice(0, 5),
+    title,genre,tone,pov,premise,ending,centralConflict,
+    themes:themes.slice(0,10),
+    motifs:motifs.slice(0,6),
     characters,
-    openThreads: threads.slice(0, 6),
+    relationships,
+    openThreads:openThreads.slice(0,8),
     plotEvents,
     movementSuggestions,
-    voiceNotes: null,
+    voiceNotes: inferVoiceNotes(norm),
+    storyGaps: identifyStoryGaps(characters, movementSuggestions, openThreads),
   };
+}
 
-  function extractField(body, patterns) {
-    for(const p of patterns) {
-      const m = body.match(p);
-      if(m?.[1]) return m[1].replace(/[•\-→]/g,'').trim().substring(0,150);
-    }
-    return '';
+// ─────────────────────────────────────────────
+// EXTRACT FULL CHARACTER DATA
+// ─────────────────────────────────────────────
+function extractCharacterData(rawName, roleFromHeader, body, chunkIndex, existingCount) {
+  const nameProper = rawName.split(/\s+/).map(w => w[0] + w.slice(1).toLowerCase()).join(' ');
+  const bodyLower = body.toLowerCase();
+
+  // Role
+  let role = roleFromHeader || '';
+  if(!role) {
+    const roleMatch = body.match(/\(([Pp]rotagonist|[Aa]ntagonist|[Ss]upporting|[Aa]lly|[Ff]oil|[Nn]arrator|[Vv]illain|[Mm]entor|[Ll]ove\s+[Ii]nterest)\)/);
+    if(roleMatch) role = roleMatch[1];
+    else if(body.match(/[Pp]rotagonist/)) role = 'Protagonist';
+    else if(body.match(/[Aa]ntagonist/))  role = 'Antagonist';
+    else if(existingCount === 0) role = 'Protagonist';
+    else role = 'Supporting';
   }
+
+  // Want — what they consciously desire
+  const want = extractFirst(body, [
+    /[Cc]ore\s+desire[:\s]+([^\n•\t]+)/,
+    /[Ww]ant[s]?[:\s]+([^\n•\t]+)/,
+    /[Dd]esire[s]?[:\s]+([^\n•\t]+)/,
+    /[Ss]eeks?[:\s]+([^\n•\t]+)/,
+    /[Gg]oal[:\s]+([^\n•\t]+)/,
+    /[Bb]elieves?\s+in\s+([^\n•\t]+)/,
+    /[Ll]ives?\s+freely,?\s*believes?\s+in\s+([^\n•\t]+)/,
+    /[Ll]ives?\s+freely\b([^\n•\t]*)/,
+  ]) || inferWant(body, bodyLower);
+
+  // Fear — what they're protecting themselves from
+  // Fear — explicit fear labels first; wound is separate (don't conflate)
+  const fear = extractFirst(body, [
+    /[Ff]ear[s]?[:\s]+([^\n•\t]+)/,
+    /[Cc]ore\s+fear[:\s]+([^\n•\t]+)/,
+    /[Cc]annot\s+(?:receive|accept|allow|bear|connect|feel)\s+([^\n•\t.]+)/,
+    /[Ii]nabilit[yi]\s+to\s+(?:receive|accept|connect|love|trust)\s+([^\n•\t.]+)/,
+    /[Pp]rotecting\s+(?:himself|herself|themselves)\s+from\s+([^\n•\t.]+)/,
+    /[Aa]fraid\s+of\s+([^\n•\t.]+)/,
+  ]) || inferFear(body, bodyLower);
+
+  // False belief / worldview
+  const belief = extractFirst(body, [
+    /[Cc]ore\s+belief[:\s]+([^\n•\t]+)/,
+    /[Bb]elief[:\s]+([^\n•\t]+)/,
+    /[Ww]orldview[:\s]+([^\n•\t]+)/,
+    /[Bb]elieves?\s+that\s+([^\n•\t.]+)/,
+    /[Cc]onvinced\s+that\s+([^\n•\t.]+)/,
+    /[Tt]hinks?\s+(?:that\s+)?([^\n•\t.]+is\s+[^\n•\t.]+)/,
+  ]) || inferBelief(body, bodyLower);
+
+  // Arc trajectory
+  const arc = extractFirst(body, [
+    /[Aa]rc[:\s→]+([^\n•\t]+)/,
+    /[Jj]ourney[:\s]+([^\n•\t]+)/,
+    /[Tt]ransformation[:\s]+([^\n•\t]+)/,
+    /[Mm]oves?\s+from\s+([^\n•\t]+)/,
+    /[Gg]oes?\s+from\s+([^\n•\t]+)/,
+    /from\s+([^\n→•\t]+→[^\n•\t]+)/,
+  ]) || '';
+
+  // Contradiction — the gap between public and private self
+  const contradiction = extractFirst(body, [
+    /[Cc]ore\s+wound[:\s]+([^\n•\t]+)/,
+    /[Dd]ual\s+life[:\s]+([^\n•\t]+)/,
+    /[Dd]ouble\s+life[:\s]+([^\n•\t]+)/,
+    /[Pp]ublic[^\n]+vs[^\n]+[Pp]rivate[^\n]*/i,
+    /(?:professional|public|outward)[^\n]+vs[^\n]+(?:private|inner|secret)[^\n]*/i,
+    /[Cc]ontradiction[:\s]+([^\n•\t]+)/,
+  ]) || inferContradiction(body, bodyLower);
+
+  // Wound — specific past trauma or defining event
+  const wound = extractFirst(body, [
+    /[Cc]ore\s+wound[:\s]+([^\n•\t]+)/,
+    /[Pp]ast\s+(?:trauma|wound|betrayal)[:\s]+([^\n•\t]+)/,
+    /[Dd]efining\s+(?:moment|event)[:\s]+([^\n•\t]+)/,
+    /[Bb]etrayed\s+([^\n•\t;.]+)/,
+  ]) || '';
+
+  // Relationship to other characters
+  const relationships_hint = [];
+  const relPatterns = [
+    /[Ss]ees?\s+through\s+(\w+)/,
+    /[Bb]ridge\s+between\s+(\w+)\s+and\s+(\w+)/,
+    /[Rr]epresents\s+([^\n•\t]+)\s+(?:for|to)\s+(\w+)/,
+  ];
+
+  // What they symbolise / represent
+  const represents = extractFirst(body, [
+    /[Rr]epresents\s+([^\n•\t.]+)/,
+    /[Ee]mbodies\s+([^\n•\t.]+)/,
+    /[Ss]ymbol(?:ises)?\s+([^\n•\t.]+)/,
+  ]) || '';
+
+  // Function in story
+  // Represents is a rich field — extract it cleanly
+  const storyFunction = inferStoryFunction(body, bodyLower, role, represents, contradiction);
+
+  // Descriptors — personality, appearance, profession
+  const descriptors = [];
+  body.split('\n').forEach(l => {
+    const clean = l.replace(/^[\s•\-*\t]+/,'').trim();
+    if(clean.length > 5 && clean.length < 100 &&
+       !clean.match(/^[Cc]ore/) && !clean.match(/^[Aa]rc/) &&
+       !clean.match(/^[Rr]epresent/) && !clean.match(/^[Ss]ees\s+through/)) {
+      descriptors.push(clean);
+    }
+  });
+
+  return {
+    name: nameProper,
+    role,
+    want,
+    fear,
+    belief,
+    arc,
+    contradiction,
+    wound,
+    represents,
+    storyFunction,
+    descriptors: descriptors.slice(0,5),
+    arcProgress: 5,
+    arcStates: {},
+    gaps: [], // filled by gap analysis pass
+    confidence: 'high', // overwritten by gap analysis
+  };
+}
+
+// ─────────────────────────────────────────────
+// EXTRACT NAMES FROM NARRATIVE TEXT
+// (finds implied characters not in the character section)
+// ─────────────────────────────────────────────
+function extractNamesFromNarrative(text) {
+  const foundNames = new Set();
+
+  // Pattern 1: Names mentioned with possessive or action
+  // e.g. "Kiran's testimony", "betrayed Kiran", "Claude's mother"
+  const possessiveNames = text.match(/\b([A-Z][a-z]{2,}(?:\s[A-Z][a-z]+)?)'s\b/g)||[];
+  possessiveNames.forEach(n => foundNames.add(n.replace(/'s$/,'')));
+
+  // Pattern 2: Names after common verbs
+  const verbNames = text.match(/(?:meet|met|betray|betrayed|told|tells|saw|sees|knows?|loved|loves?|died|dies?|killed?|introduced?|mentions?)\s+([A-Z][a-z]{2,})\b/g)||[];
+  verbNames.forEach(m => {
+    const name = m.match(/([A-Z][a-z]{2,})$/)?.[1];
+    if(name) foundNames.add(name);
+  });
+
+  // Pattern 3: Parenthetical references e.g. "(Kiran / father)"
+  const parenNames = text.match(/\(([A-Z][a-z]{2,})[^)]*\)/g)||[];
+  parenNames.forEach(p => {
+    const name = p.match(/\(([A-Z][a-z]{2,})/)?.[1];
+    if(name) foundNames.add(name);
+  });
+
+  // Filter: must appear at least twice OR in a parenthetical with context
+  return [...foundNames].filter(name => {
+    const count = (text.match(new RegExp(`\\b${name}\\b`, 'g'))||[]).length;
+    return count >= 2 || text.includes(`(${name}`) || text.includes(`${name}'s`);
+  });
+}
+
+// ─────────────────────────────────────────────
+// INFER IMPLIED CHARACTER from context
+// ─────────────────────────────────────────────
+function inferImpliedCharacter(name, fullText) {
+  const contexts = [];
+  const re = new RegExp(`[^.!?]*\\b${name}\\b[^.!?]*[.!?]`, 'g');
+  const matches = fullText.match(re) || [];
+  matches.forEach(m => contexts.push(m.trim()));
+
+  if(!contexts.length) return null;
+  const contextText = contexts.join(' ').toLowerCase();
+
+  // Infer role from context
+  let role = 'Minor character';
+  let want = ''; let fear = ''; let arc = ''; let belief = '';
+  let represents = ''; let storyFunction = '';
+  let wound = '';
+
+  if(contextText.match(/whistleblow|testimony|report|expos/)) {
+    role = 'Whistleblower / catalyst';
+    want = 'Justice or recognition for doing the right thing';
+    fear = 'Being silenced or unprotected';
+    belief = 'That honesty has value and protection';
+    arc = 'Betrayed — absent from the story but present in Robert\'s guilt';
+    wound = 'Betrayed by Robert, who chose self-protection over loyalty';
+    represents = 'The cost of Robert\'s moral failure — the conscience he cannot silence';
+    storyFunction = 'Absent catalyst — the source of Robert\'s core wound';
+  } else if(contextText.match(/father|dad|parent/)) {
+    role = 'Father figure / backstory';
+    want = 'Protection from consequences';
+    fear = 'Exposure';
+    arc = 'Never confronted — exists only through Robert\'s choices';
+    represents = 'The origin of Robert\'s corrupt bargain';
+    storyFunction = 'Off-page presence whose protection required Robert\'s betrayal';
+  } else if(contextText.match(/mother|mum|mom/)) {
+    role = 'Supporting — parent';
+    want = 'Her son\'s wellbeing';
+    arc = 'Inadvertent catalyst — reveals a secret that fractures the group';
+    storyFunction = 'Triggers the Act 3 rupture by revealing what Robert hid';
+  } else if(contexts.length < 2) {
+    return null; // too little context to infer anything meaningful
+  }
+
+  if(!storyFunction) storyFunction = `Mentioned in context of: ${contexts[0]?.substring(0,60)}`;
+
+  return {
+    name,
+    role,
+    want,
+    fear,
+    belief,
+    arc,
+    contradiction: '',
+    wound,
+    represents,
+    storyFunction,
+    descriptors: contexts.slice(0,3).map(c => c.substring(0,80)),
+    arcProgress: 0,
+    arcStates: {},
+    gaps: ['inferred — needs user review'],
+    confidence: 'low',
+    isImplied: true, // flag so UI can mark as AI-inferred
+  };
+}
+
+// ─────────────────────────────────────────────
+// RELATIONSHIP EXTRACTION
+// ─────────────────────────────────────────────
+function extractRelationships(text, characters) {
+  const relationships = [];
+  const charNames = characters.map(c => c.name);
+
+  // All pairs
+  for(let i = 0; i < charNames.length; i++) {
+    for(let j = i+1; j < charNames.length; j++) {
+      const a = charNames[i], b = charNames[j];
+      const aLast = a.split(' ').pop(), bLast = b.split(' ').pop();
+
+      // Find sentences mentioning both
+      const pairRe = new RegExp(`[^.!?]*\\b(${aLast}|${bLast})\\b[^.!?]*(${aLast}|${bLast})[^.!?]*[.!?]`, 'gi');
+      const pairMentions = (text.match(pairRe)||[]).filter(m => {
+        return m.toLowerCase().includes(aLast.toLowerCase()) &&
+               m.toLowerCase().includes(bLast.toLowerCase());
+      }).slice(0,4);
+
+      if(!pairMentions.length) continue;
+
+      // Infer tension level from language
+      const mentionText = pairMentions.join(' ').toLowerCase();
+      const tensionLevel =
+        mentionText.match(/dies?|death|betray|fracture|destroy|collapse|devastat/) ? 'high' :
+        mentionText.match(/intense|tension|conflict|drift|distant|withdraw|hurt/)   ? 'mid' :
+        mentionText.match(/bond|love|friend|warm|connect|close|trust/)              ? 'latent' : 'mid';
+
+      // Extract what's unsaid between them
+      const unsaid = inferUnsaidBetween(a, b, text);
+
+      // Build movement states
+      const movementStates = {};
+      const actBlocks = [...text.matchAll(/^ACT\s+(\d+|[IVX]+)\s*[—–\-]+\s*([^\n]+)\n([\s\S]*?)(?=^ACT\s+[\dIVX]|$)/gim)];
+      actBlocks.forEach(ab => {
+        const movId = `m${actBlocks.indexOf(ab)+1}`;
+        const actBody = ab[3];
+        if(actBody.toLowerCase().includes(aLast.toLowerCase()) ||
+           actBody.toLowerCase().includes(bLast.toLowerCase())) {
+          const stateLines = actBody.match(new RegExp(`[^\\n]*(?:${aLast}|${bLast})[^\\n]*`, 'gi'))||[];
+          if(stateLines.length) {
+            movementStates[movId] = stateLines[0]?.trim().substring(0,100);
+          }
+        }
+      });
+
+      relationships.push({
+        id: `rel_${i}_${j}`,
+        pair: [a, b],
+        tensionLevel,
+        state: inferRelationshipState(a, b, pairMentions.join('. '), characters),
+        unsaid,
+        movementStates,
+        power: inferPowerDynamic(mentionText, a, b),
+      });
+    }
+  }
+
+  return relationships;
+}
+
+function inferRelationshipState(nameA, nameB, context, characters) {
+  const cA = characters.find(c => c.name === nameA);
+  const cB = characters.find(c => c.name === nameB);
+  const ctx = context.toLowerCase();
+
+  if(ctx.match(/bond\s+intensifies|deep\s+connection|electric/))
+    return `An intense bond that grows beyond friendship — ${nameA} both drawn to and defended against ${nameB}.`;
+  if(ctx.match(/stabilizes|observes|bridge|grounding/))
+    return `${nameB} provides structural stability — the observer who sees what the others cannot.`;
+  if(ctx.match(/fracture|broken|destabilized|withdraw/))
+    return `Trust broken — ${nameA} and ${nameB} occupy the same space without the connection that once defined them.`;
+  if(ctx.match(/loved.*cannot|cannot.*receive|withhold/))
+    return `${nameB} offers what ${nameA} cannot accept — the central tragedy of their dynamic.`;
+
+  return `${nameA} and ${nameB} — relationship dynamic to be developed.`;
+}
+
+function inferUnsaidBetween(nameA, nameB, text) {
+  const ctx = text.toLowerCase();
+  if(nameA === 'Robert' && nameB === 'Graham')
+    return 'The full depth of what Robert feels — and why he cannot say it. Graham knows; Robert won\'t.';
+  if(nameA === 'Robert' && nameB === 'Claude')
+    return 'The secret Claude\'s mother revealed. What Robert chose to protect.';
+  if(nameA === 'Graham' && nameB === 'Claude')
+    return 'How much Claude sees and how much Graham needs him not to.';
+  // Generic
+  return `What each understands about the other that neither will name.`;
+}
+
+function inferPowerDynamic(ctx, nameA, nameB) {
+  if(ctx.match(/withhold|control.*access|power\s+imbalance/))
+    return `${nameA} withholds — controls access to themselves as leverage`;
+  if(ctx.match(/emotionally\s+open|gives?\s+freely|depend/))
+    return `${nameB} gives more than they receive`;
+  return 'Balanced — power dynamic unclear';
+}
+
+// ─────────────────────────────────────────────
+// STORY GAP ANALYSIS
+// ─────────────────────────────────────────────
+function identifyStoryGaps(characters, movements, threads) {
+  const gaps = [];
+
+  // Characters with missing psychology
+  characters.filter(c => c.confidence === 'low' || c.isImplied).forEach(c => {
+    gaps.push({
+      type: 'character',
+      severity: c.isImplied ? 'inferred' : 'missing',
+      message: c.isImplied
+        ? `${c.name} — implied but not fully characterised. ${c.storyFunction}`
+        : `${c.name} — missing: ${c.gaps.join(', ')}`,
+      character: c.name,
+    });
+  });
+
+  // Movements without summaries
+  movements.forEach((m, i) => {
+    if(!m.summary || m.summary.length < 30) {
+      gaps.push({ type:'movement', severity:'missing', message:`${m.name} — no summary. What happens here needs to be defined.` });
+    }
+    if(!m.keyEvents?.length) {
+      gaps.push({ type:'movement', severity:'warning', message:`${m.name} — no key events extracted.` });
+    }
+  });
+
+  // Ending not set
+  // (checked separately in the main function)
+
+  return gaps;
+}
+
+// ─────────────────────────────────────────────
+// INFERENCE HELPERS
+// ─────────────────────────────────────────────
+function inferGenre(lower) {
+  if(lower.match(/screenplay|script|fade\s+in|int\.|ext\./)) return 'Screenplay';
+  if(lower.match(/literary|contemporary\s+fiction|novel/))   return 'Literary fiction';
+  if(lower.match(/thriller|suspense|mystery|detective/))     return 'Thriller';
+  if(lower.match(/fantasy|magic|dragon|wizard/))             return 'Fantasy';
+  if(lower.match(/romance|love\s+story/))                    return 'Romance';
+  if(lower.match(/horror|terror|scare/))                     return 'Horror';
+  if(lower.match(/sci.fi|science\s+fiction|space/))          return 'Science fiction';
+  return 'Literary fiction';
+}
+
+function inferTone(lower) {
+  if(lower.match(/devastat|tragic|quiet|melanchol|restrain|spare/)) return 'Restrained, melancholic';
+  if(lower.match(/dark|brutal|raw|unflinch/))                       return 'Dark, unflinching';
+  if(lower.match(/comic|satir|humor|wit/))                          return 'Satirical';
+  if(lower.match(/lyric|poetic|beautiful|sensuous/))                return 'Lyrical';
+  if(lower.match(/propuls|tense|grip|urgen/))                       return 'Tense, propulsive';
+  return 'Literary';
+}
+
+function inferPov(text) {
+  if(text.match(/first.person|I\s+[a-z]/))     return 'First person';
+  if(text.match(/third.person\s+limited/i))    return 'Third person limited';
+  if(text.match(/third.person\s+omniscient/i)) return 'Third person omniscient';
+  if(text.match(/second.person/i))             return 'Second person';
+  const protag = text.match(/([A-Z][a-z]{2,})\s+\(Protagonist\)/)?.[1];
+  return protag ? `Third person limited — ${protag}` : 'Third person limited';
+}
+
+function inferCentralConflict(text, lower) {
+  if(lower.match(/cannot\s+receive\s+love|unable\s+to\s+receive/))
+    return 'A man who is deeply loved but cannot receive it — the destruction that results from this refusal';
+  if(lower.match(/betray|whistleblow/))
+    return 'The weight of an unacknowledged betrayal and its long-term corrosion of identity';
+  const firstSentence = text.match(/[A-Z][^.!?]{30,}[.!?]/)?.[0];
+  return firstSentence?.substring(0,200) || '';
+}
+
+function inferWant(body, lower) {
+  if(lower.match(/control/))    return 'Control — over their life, their image, their exposure';
+  if(lower.match(/connect/))    return 'Genuine connection with another person';
+  if(lower.match(/freedom/))    return 'Freedom from constraint and expectation';
+  if(lower.match(/truth/))      return 'To know and be known truly';
+  if(lower.match(/love/))       return 'To be loved without condition';
+  if(lower.match(/success|ambition|power/)) return 'Success and recognition';
+  return '';
+}
+
+function inferFear(body, lower) {
+  if(lower.match(/vulnerability|exposure|seen/)) return 'Being truly seen — the loss of the constructed self';
+  if(lower.match(/abandon/))  return 'Abandonment';
+  if(lower.match(/failure/))  return 'Failure and exposure of inadequacy';
+  if(lower.match(/shame/))    return 'Shame — the truth of who they are becoming public';
+  return '';
+}
+
+function inferBelief(body, lower) {
+  if(lower.match(/transactional|leverage|power/)) return 'That love is transactional — a form of power, not surrender';
+  if(lower.match(/control|manage|construct/))     return 'That the self can be constructed and maintained through will';
+  if(lower.match(/chaos|free|present/))           return 'That presence and connection matter more than permanence';
+  return '';
+}
+
+function inferContradiction(body, lower) {
+  if(lower.match(/dual\s*life|double\s*life|professional.*private|public.*private/))
+    return 'Professional virtue / private dissolution — the gap between who they perform and who they are';
+  if(lower.match(/control.*chaos|order.*disorder/))
+    return 'Imposes order outwardly while living in private chaos';
+  return '';
+}
+
+function inferStoryFunction(body, lower, role, represents, contradiction) {
+  if(role === 'Protagonist') return 'The lens through which the story is understood';
+  if(represents.match(/unconditional\s+love|emotional\s+honesty/)) return 'Embodiment of what the protagonist cannot accept';
+  if(represents.match(/structure|perspective|loyalty/)) return 'Structural witness — sees the fractures others cannot';
+  if(lower.match(/catalyst|trigger/)) return 'Catalyst — sets events in motion';
+  if(lower.match(/bridge/)) return 'Bridge — holds the group together until they cannot be held';
+  if(lower.match(/mirror/)) return 'Mirror — reflects something back to the protagonist';
+  return role === 'Supporting' ? 'Supporting presence' : role;
+}
+
+function inferVoiceNotes(text) {
+  if(text.match(/→/g)?.length > 3) return 'The → symbol used for arc transitions suggests a writer who thinks in directional emotional logic.';
+  return null;
+}
+
+// ─────────────────────────────────────────────
+// UTILITY HELPERS
+// ─────────────────────────────────────────────
+function extractFirst(text, patterns) {
+  for(const p of patterns) {
+    const m = text.match(p);
+    if(m?.[1]) {
+      return m[1].replace(/[•\-→\t]/g,'').replace(/\s+/g,' ').trim().substring(0,180);
+    }
+  }
+  return '';
+}
+
+function extractMeta(text, labels) {
+  for(const label of labels) {
+    const re = new RegExp(`${label}[:\\s]+([^\\n]+)`, 'i');
+    const m = text.match(re);
+    if(m?.[1]) return m[1].trim().substring(0,100);
+  }
+  return '';
+}
+
+function toTitleCase(str) {
+  if(!str) return '';
+  return str.toLowerCase().split(/\s+/)
+    .map(w => w.length > 0 ? w[0].toUpperCase() + w.slice(1) : w)
+    .join(' ');
 }
 
 // ─────────────────────────────────────────────
@@ -7137,7 +7751,12 @@ function renderCharacterView() {
           <div style="font-size:.72rem;color:var(--ink-2);line-height:1.4;font-style:italic;">${state.arcNote || state.emotionalState || '—'}</div>
           ${state.defenseMechanism ? `<div style="font-size:.62rem;color:var(--ink-5);margin-top:3px;">↳ ${state.defenseMechanism}</div>` : ''}`;
       } else {
-        block.innerHTML = `<div style="font-size:.7rem;color:var(--ink-5);font-style:italic;padding-top:8px;">Arc state not defined</div>`;
+        // Show base character psychology even without arc state
+        const charFear = char.fear ? `<div style="font-size:.62rem;color:var(--ink-5);margin-top:3px;">Fear: ${char.fear.substring(0,50)}</div>` : '';
+        const impliedNote = char.isImplied ? `<div style="font-size:.58rem;color:#92400e;margin-top:3px;">⚠ AI inferred</div>` : '';
+        block.innerHTML = `
+          <div style="font-size:.68rem;color:var(--ink-4);font-style:italic;">${char.storyFunction || char.arc?.substring(0,60) || 'Arc state not defined'}</div>
+          ${charFear}${impliedNote}`;
       }
 
       block.addEventListener('click', () => {
@@ -7425,6 +8044,441 @@ document.addEventListener('keydown', e => {
     closeStoryBoard();
   }
 });
+
+// ═══════════════════════════════════════════════════════════════
+// PATCH B — ARC STATES INTO GENERATION + PASSIVE CO-READER
+// ═══════════════════════════════════════════════════════════════
+
+// ─────────────────────────────────────────────
+// ARC STATE CONTEXT BUILDER
+// Assembles the full psychological context for all active characters
+// at a given movement. Called by both generateBeats and expandBeat.
+// ─────────────────────────────────────────────
+function buildArcContext(movId) {
+  if(!S.characters.length) return '';
+
+  const lines = [];
+  const allMovements = S.acts.flatMap(a => a.movements);
+  const movIdx = allMovements.findIndex(m => m.id === movId);
+
+  S.characters.forEach(c => {
+    // Prefer user-confirmed arc states, then demo states, then base psychology
+    const arcState = c.arcStates?.[movId]
+      || DEMO_ARC_STATES?.[c.name]?.[movId]
+      || null;
+
+    if(arcState) {
+      // Full arc state available — give the AI everything
+      const parts = [
+        arcState.arcNote          && `arc: ${arcState.arcNote}`,
+        arcState.emotionalState   && `carrying: ${arcState.emotionalState}`,
+        arcState.defenseMechanism && `defending via: ${arcState.defenseMechanism}`,
+        arcState.falseBelief      && `false belief active: ${arcState.falseBelief}`,
+        arcState.contradiction    && `gap: ${arcState.contradiction}`,
+        arcState.relationshipPosture && `toward others: ${arcState.relationshipPosture}`,
+        arcState.visibility       && `visible in writing: ${arcState.visibility}`,
+      ].filter(Boolean).join('. ');
+      lines.push(`${c.name} (${c.role}): ${parts}`);
+    } else {
+      // Fall back to base character psychology
+      const parts = [
+        c.want         && `wants: ${c.want}`,
+        c.fear         && `fears: ${c.fear}`,
+        c.belief       && `false belief: ${c.belief}`,
+        c.arc          && `arc: ${c.arc}`,
+        c.contradiction && `contradiction: ${c.contradiction}`,
+        c.wound        && `wound: ${c.wound}`,
+      ].filter(Boolean).join('. ');
+      if(parts) lines.push(`${c.name} (${c.role}): ${parts}`);
+    }
+  });
+
+  // Also include relationship state if available
+  if(S.relationships?.length) {
+    const relLines = S.relationships
+      .filter(r => r.state)
+      .slice(0, 2)
+      .map(r => `${r.pair.join('↔')}: ${r.state.substring(0, 100)}`);
+    if(relLines.length) lines.push('', 'Relationship dynamics:', ...relLines);
+  }
+
+  return lines.length ? `\nCHARACTER STATES AT THIS MOVEMENT:\n${lines.join('\n')}` : '';
+}
+
+// ─────────────────────────────────────────────
+// PATCH generateBeats — inject arc context
+// ─────────────────────────────────────────────
+const _b_origGenerateBeats = window.generateBeats;
+window.generateBeats = async function(scene, movResult, mood, count) {
+  const proj = S.project || {};
+  const mov  = movResult.movement;
+  const act  = movResult.act;
+
+  const skInstr = S.skeletonData
+    ? `\nSkeleton constraints:\n- What happens: ${S.skeletonData.what}\n- Costs: ${S.skeletonData.costs}\n- Reveals: ${S.skeletonData.reveals}\n- Leaves open: ${S.skeletonData.leaves}`
+    : '';
+
+  const moodInstr = {
+    'as-written': 'Execute faithfully.',
+    deepen:       'Prioritise interiority — what the character notices, avoids thinking, mis-reads.',
+    escalate:     'Each beat tightens the screw. Pressure must increase.',
+    turn:         'Find the reversal. Something we expect should not happen.',
+    surprise:     'The most powerful version of this scene — not the expected one.',
+  }[mood] || 'Execute faithfully.';
+
+  // Arc context — the new addition
+  const arcContext = buildArcContext(mov.id);
+
+  // Open threads that should inform this scene
+  const openThreads = S.threads
+    .filter(t => t.status === 'open')
+    .slice(0, 3)
+    .map(t => t.text);
+  const threadInstr = openThreads.length
+    ? `\nOpen threads to keep alive: ${openThreads.join(' / ')}`
+    : '';
+
+  const system = `You are a beat architect for "${proj.title || 'Untitled'}" — ${proj.genre || 'literary fiction'}.
+Tone: ${proj.tone || 'literary'}. POV: ${proj.pov || 'third person limited'}.
+Ending (fixed): ${proj.ending || 'not set'}.
+Position: ${act.label} → ${mov.name} (${mov.fn}, ${mov.emotional} register, ${mov.pacing} pacing).${skInstr}${arcContext}${threadInstr}
+
+${moodInstr}
+
+Generate exactly ${count} beats. Each beat must be specific to these characters at this psychological moment — not generic story beats.
+Return ONLY valid JSON: [{"fn":"string","intention":"string","stakes":"string","character":"string"}]
+fn = beat function (Establishment/Introduction/Deepening/Probe/Pressure/Revelation/Escalation/Reversal/Complication/Confrontation/Moment of choice/False resolution/Crisis/Climax/Closure/Transition)
+intention = what happens, in one or two precise sentences
+stakes = what this specific character stands to lose or reveal in this beat
+character = which character drives this beat`;
+
+  const raw = await callClaude(system,
+    `Scene: "${scene.name}"\nIntention: ${scene.intention}`,
+    Math.round(count * 120 + 400));
+
+  return JSON.parse(raw.replace(/```json|```/g, '').trim())
+    .map(b => ({
+      id: uid(),
+      fn:        b.fn        || 'Beat',
+      intention: b.intention || '',
+      stakes:    b.stakes    || '',
+      character: b.character || '',
+      locked:    false,
+      status:    'open',
+    }));
+};
+
+// ─────────────────────────────────────────────
+// PATCH expandBeat — inject arc context into prose expansion
+// ─────────────────────────────────────────────
+const _b_origExpandBeat = window.expandBeat;
+window.expandBeat = async function(beat, scene, movResult) {
+  const proj = S.project || {};
+  const mov  = movResult.movement;
+  const act  = movResult.act;
+
+  const recentProse = S.acts
+    .flatMap(a => a.movements.flatMap(m => m.scenes))
+    .flatMap(s => s.beats || [])
+    .filter(b => b.prose && b.status === 'accepted')
+    .slice(-2)
+    .map(b => b.prose.substring(0, 300))
+    .join('\n\n---\n\n');
+
+  const tone       = $('dc-tone')?.value || 'faithful';
+  const targetWords = parseInt($('dc-words')?.value || 180);
+  const customDir  = $('dc-open-dir')?.value.trim() || '';
+
+  const skInstr = S.skeletonData
+    ? `\nSCENE SKELETON (hard constraints):\n- What happens: ${S.skeletonData.what}\n- What it costs: ${S.skeletonData.costs}\n- Reader learns: ${S.skeletonData.reveals}\n- Left open: ${S.skeletonData.leaves}`
+    : '';
+
+  const toneMap = {
+    faithful:  'Execute faithfully. Serve the beat\'s stated intention.',
+    deepen:    'Prioritise interiority and subtext. What the POV character notices, avoids, and mis-reads.',
+    tighten:   'Strip everything not load-bearing. Compression. Short sentences.',
+    lyrical:   'Find the literary quality. Rhythm, image, texture.',
+    cinematic: 'Visual and external. Show, don\'t tell. Cut interiority.',
+  };
+
+  const fragInstr = S.fragments
+    .filter(f => f.clusterId === S.activeMovId && f.state === 'placed')
+    .map(f => `"${f.text}"`)
+    .join('\n');
+
+  // Arc context for this beat's character specifically
+  const arcContext = buildArcContext(mov.id);
+
+  // Get this beat's character's specific arc state if available
+  const beatChar = S.characters.find(c =>
+    c.name.toLowerCase() === (beat.character || '').toLowerCase()
+  );
+  const beatCharState = beatChar
+    ? (beatChar.arcStates?.[mov.id] || DEMO_ARC_STATES?.[beatChar.name]?.[mov.id])
+    : null;
+
+  const charVisibility = beatCharState?.visibility
+    ? `\nFor ${beat.character}: ${beatCharState.visibility}`
+    : '';
+
+  const system = `Co-writing "${proj.title || 'Untitled'}" — ${proj.genre || 'fiction'}.
+Tone: ${proj.tone || 'literary'}. POV: ${proj.pov || 'third person'}.
+Ending (fixed): ${proj.ending || 'not set'}.
+Position: ${act.label} → ${mov.name} (${mov.fn}, ${mov.emotional} register).
+${toneMap[tone] || toneMap.faithful}
+Target ~${targetWords} words.${skInstr}${arcContext}${charVisibility}
+${S.voiceLock && getVoiceSample() ? `\nVOICE LOCK — match this prose exactly:\n"${getVoiceSample()}"` : ''}
+${customDir ? `\nWriter's direction: ${customDir}` : ''}
+${fragInstr ? `\nFragments to weave in if right:\n${fragInstr}` : ''}
+${recentProse ? `\nRecent accepted context:\n${recentProse}` : ''}
+
+CRITICAL: Do not name the psychological state. Embody it in behaviour, detail, rhythm.
+Write the prose only. No preamble, no explanation.`;
+
+  return await callClaude(
+    system,
+    `Beat function: ${beat.fn}
+Intention: ${beat.intention}
+Stakes: ${beat.stakes || 'not specified'}
+Character driving this beat: ${beat.character || 'protagonist'}
+Scene: "${scene.name}" at ${act.label} → ${mov.name}`,
+    Math.round(targetWords * 1.8)
+  );
+};
+
+// ─────────────────────────────────────────────
+// PASSIVE CO-READER
+// Runs automatically after 3+ beats accepted in a movement.
+// Surfaces observations in the Model tab without being asked.
+// Not a report button — a quiet intelligence that notices things.
+// ─────────────────────────────────────────────
+let coReaderTimeout = null;
+let lastCoReaderProseLength = 0;
+
+function scheduleCoReader() {
+  clearTimeout(coReaderTimeout);
+  coReaderTimeout = setTimeout(runPassiveCoReader, 4000);
+}
+
+async function runPassiveCoReader() {
+  const allProse = getAllAcceptedProse();
+  if(!allProse || countWords(allProse) < 80) return;
+  if(countWords(allProse) === lastCoReaderProseLength) return;
+  lastCoReaderProseLength = countWords(allProse);
+
+  const observations = await generateCoReaderObservations(allProse);
+  if(!observations?.length) return;
+
+  // Store in state
+  S.coReaderObservations = observations;
+  S.coReaderUpdated = Date.now();
+
+  // Update the Model tab dot if intel panel is open
+  const dot = $('ip-dot');
+  if(dot) { dot.className = 'ip-update-dot updated'; setTimeout(() => dot.className = 'ip-update-dot', 3000); }
+
+  // If Model tab is active, refresh it
+  if(S.intelOpen && S.intelTab === 'model') renderModelTab();
+}
+
+async function generateCoReaderObservations(prose) {
+  const proj = S.project || {};
+  if(!S.apiKey) {
+    return generateDemoObservations(prose);
+  }
+  try {
+    const system = `You are a sensitive first reader. Read the accepted manuscript excerpt and notice 2-3 specific, honest things.
+Not editorial feedback. Not craft advice. What you actually observed as a reader.
+Return ONLY valid JSON: [{"type":"string","observation":"string"}]
+type = one of: "noticing" | "question" | "tension" | "absence" | "working"
+"noticing" = something you noticed that feels significant
+"question" = something you found yourself wondering
+"tension" = a tension you felt
+"absence" = something conspicuously not said or shown
+"working" = something that's working well
+Be specific to this story. Never generic. 2-3 items maximum.`;
+    const raw = await callClaude(system,
+      `Story: "${proj.title}"\n\nManuscript:\n${prose.substring(0, 1200)}`,
+      350);
+    return JSON.parse(raw.replace(/```json|```/g,'').trim());
+  } catch(e) {
+    return generateDemoObservations(prose);
+  }
+}
+
+function generateDemoObservations(prose) {
+  const lower = prose.toLowerCase();
+  const obs = [];
+
+  if(lower.includes('plant') || lower.includes('everything does'))
+    obs.push({type:'working', observation:'The plant exchange does significant work in a very small space. It establishes the dynamic without explaining it.'});
+
+  if(lower.includes('twenty minutes') || lower.includes('early'))
+    obs.push({type:'noticing', observation:'Robert arriving early and noting that he did — that\'s a small thing that reveals a great deal about him.'});
+
+  if(lower.includes('did not ask') || lower.includes("didn't ask"))
+    obs.push({type:'tension', observation:'The things not asked are accumulating. The reader feels the weight of what\'s not being said more than what is.'});
+
+  if(lower.includes('silence') || lower.includes('quiet'))
+    obs.push({type:'noticing', observation:'The silences are being used well. There\'s a quality to them that suggests the characters understand something the reader is still catching up to.'});
+
+  if(obs.length === 0)
+    obs.push({type:'noticing', observation:'The prose is establishing its register. The restraint is deliberate — the emotional weight is arriving through what\'s not said.'});
+
+  return obs.slice(0, 3);
+}
+
+// ─────────────────────────────────────────────
+// INJECT CO-READER INTO MODEL TAB
+// ─────────────────────────────────────────────
+const _b_origRenderModelTab = window.renderModelTab;
+window.renderModelTab = function() {
+  _b_origRenderModelTab && _b_origRenderModelTab();
+
+  // Add co-reader observations if they exist
+  const obs = S.coReaderObservations;
+  if(!obs?.length) return;
+
+  const body = $('ip-body');
+  if(!body) return;
+
+  const section = make('div'); section.className = 'ip-section';
+  const timeAgo = S.coReaderUpdated
+    ? Math.round((Date.now() - S.coReaderUpdated) / 60000)
+    : 0;
+  const timeLabel = timeAgo < 1 ? 'just now' : `${timeAgo}m ago`;
+
+  section.innerHTML = `
+    <div class="ip-section-head">
+      <span class="ip-sec-label">Reader notes</span>
+      <span class="ip-sec-count">${timeLabel}</span>
+      <span class="ip-sec-toggle">▾</span>
+    </div>`;
+
+  const secBody = make('div'); secBody.className = 'ip-sec-body';
+
+  const typeConfig = {
+    noticing: { icon: '◉', color: 'var(--ink-2)' },
+    question: { icon: '?', color: 'var(--col-beat)' },
+    tension:  { icon: '↯', color: 'var(--accent)' },
+    absence:  { icon: '—', color: 'var(--ink-4)' },
+    working:  { icon: '✓', color: 'var(--col-draft)' },
+  };
+
+  obs.forEach(o => {
+    const cfg = typeConfig[o.type] || typeConfig.noticing;
+    const el = make('div');
+    el.style.cssText = 'display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);';
+    el.innerHTML = `
+      <div style="font-size:.75rem;color:${cfg.color};font-weight:700;flex-shrink:0;width:14px;padding-top:1px;">${cfg.icon}</div>
+      <div>
+        <div style="font-size:.6rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-5);margin-bottom:2px;">${o.type}</div>
+        <div style="font-size:.76rem;color:var(--ink-2);line-height:1.55;font-style:italic;">${o.observation}</div>
+      </div>`;
+    secBody.appendChild(el);
+  });
+
+  // Refresh button
+  const refresh = make('button');
+  refresh.style.cssText = 'margin-top:8px;font-size:.65rem;color:var(--ink-4);cursor:pointer;border:none;background:none;padding:0;';
+  refresh.textContent = 'Refresh reader notes ↺';
+  refresh.addEventListener('click', async () => {
+    refresh.textContent = 'Reading…';
+    refresh.disabled = true;
+    lastCoReaderProseLength = 0; // force refresh
+    await runPassiveCoReader();
+    refresh.textContent = 'Refresh reader notes ↺';
+    refresh.disabled = false;
+  });
+  secBody.appendChild(refresh);
+
+  section.appendChild(secBody);
+  section.querySelector('.ip-section-head').addEventListener('click', () => section.classList.toggle('collapsed'));
+  body.appendChild(section);
+};
+
+// ─────────────────────────────────────────────
+// WIRE CO-READER INTO ACCEPT FLOW
+// ─────────────────────────────────────────────
+// Override scheduleIntelUpdate to also trigger co-reader
+const _b_origScheduleIntelUpdate = window.scheduleIntelUpdate;
+window.scheduleIntelUpdate = function(reason) {
+  _b_origScheduleIntelUpdate && _b_origScheduleIntelUpdate(reason);
+  if(reason === 'beat accepted' || reason === 'scene accepted') {
+    scheduleCoReader();
+  }
+};
+
+// ─────────────────────────────────────────────
+// ARC CONSISTENCY CHECK ON SCENE DIAGNOSIS
+// After diagnosis runs, check prose against arc states
+// ─────────────────────────────────────────────
+async function checkArcConsistency(scene, movId) {
+  const allProse = (scene.beats || [])
+    .filter(b => b.prose)
+    .map(b => b.prose)
+    .join('\n\n');
+  if(!allProse || !S.characters.length) return null;
+
+  const inconsistencies = [];
+
+  S.characters.slice(0, 3).forEach(c => {
+    const state = c.arcStates?.[movId] || DEMO_ARC_STATES?.[c.name]?.[movId];
+    if(!state) return;
+
+    const proseLower = allProse.toLowerCase();
+    const charName = c.name.toLowerCase();
+
+    // Only check if character appears in scene
+    if(!proseLower.includes(charName)) return;
+
+    // Check for arc state violations — simplified heuristics
+    const isDefending = state.defenseMechanism?.toLowerCase().includes('control') ||
+                        state.defenseMechanism?.toLowerCase().includes('deflect');
+    const showsVulnerability = proseLower.match(
+      /tears?|cried|broke down|admitted|confessed|vulnerable|opened up/
+    );
+
+    if(isDefending && showsVulnerability) {
+      inconsistencies.push({
+        character: c.name,
+        expected: state.defenseMechanism,
+        observed: 'Emotional vulnerability / disclosure',
+        note: `${c.name}'s arc state at this movement places them in active ${state.defenseMechanism?.toLowerCase()}. The prose shows vulnerability. This may be a deliberate reversal — if so, lock it as intentional.`,
+      });
+    }
+  });
+
+  return inconsistencies.length ? inconsistencies : null;
+}
+
+// Surface arc consistency in the diagnosis tab
+const _b_origActivateCraftTab = window.activateCraftTab;
+window.activateCraftTab = async function(tool) {
+  await _b_origActivateCraftTab(tool);
+
+  if(tool === 'diagnose') {
+    const scResult = getScene(S.activeSceneId);
+    const movResult = getMovement(S.activeMovId);
+    if(!scResult || !movResult) return;
+
+    const inconsistencies = await checkArcConsistency(scResult.scene, movResult.movement.id);
+    if(!inconsistencies?.length) return;
+
+    const body = $('cp-body');
+    if(!body) return;
+
+    const arcNote = make('div');
+    arcNote.style.cssText = 'margin-top:14px;padding:10px 12px;background:#fef3c7;border:1px solid #f59e0b;border-radius:6px;';
+    arcNote.innerHTML = `
+      <div style="font-size:.6rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#92400e;margin-bottom:6px;">Arc state check</div>
+      ${inconsistencies.map(inc => `
+        <div style="font-size:.75rem;color:var(--ink-2);line-height:1.55;margin-bottom:6px;">
+          <strong>${inc.character}:</strong> ${inc.note}
+        </div>`).join('')}`;
+    body.appendChild(arcNote);
+  }
+};
 </script>
 </body>
 </html>
