@@ -2259,11 +2259,19 @@ kbd {
 <div id="settings-modal">
   <div class="settings-box">
     <div class="settings-title">Settings</div>
-    <p class="settings-sub">Your Anthropic API key enables AI scene analysis, beat generation, prose expansion, and all craft intelligence features. Stored only in your browser.</p>
+    <p class="settings-sub">Your Anthropic API key enables AI beat generation, prose expansion, scene diagnosis, and all craft intelligence features. Stored only in your browser.</p>
     <input type="password" class="settings-inp" id="api-key-input" placeholder="sk-ant-…">
     <div class="settings-actions">
       <button class="ws-btn-s" id="settings-cancel">Cancel</button>
       <button class="ws-btn-p" id="settings-save">Save key</button>
+    </div>
+    <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);">
+      <div style="font-size:.72rem;font-weight:600;color:var(--ink-2);margin-bottom:5px;">Story</div>
+      <p style="font-size:.75rem;color:var(--ink-4);line-height:1.55;margin-bottom:10px;">Start a new story or re-import your outline. This clears the current session.</p>
+      <div style="display:flex;gap:8px;">
+        <button class="ws-btn-s" id="btn-new-story" style="flex:1;">← New story</button>
+        <button class="ws-btn-s" id="btn-reset-all" style="flex:1;color:#dc2626;border-color:#fca5a5;">Reset everything</button>
+      </div>
     </div>
   </div>
 </div>
@@ -5469,6 +5477,51 @@ document.addEventListener('DOMContentLoaded', () => {
   // Pre-select execution card
   $('mode-card-execution')?.classList.add('selected');
 });
+
+// ─────────────────────────────────────────────
+// RESET / NEW STORY
+// ─────────────────────────────────────────────
+function returnToWelcome() {
+  S.project = null; S.acts = []; S.characters = []; S.threads = [];
+  S.motifs = []; S.fragments = []; S.parsedStory = null;
+  S.activeMovId = null; S.activeSceneId = null;
+
+  localStorage.removeItem('nv4_state');
+
+  if($('tb-title'))        $('tb-title').textContent        = 'Untitled story';
+  if($('sb-project-name')) $('sb-project-name').textContent = 'Untitled story';
+
+  $('settings-modal').classList.remove('open');
+  try { closeIntelPanel(); } catch(e){}
+  try { closeCraftPanel(); } catch(e){}
+  $('arc-state-panel')?.classList.remove('open');
+  $('confirm-overlay')?.classList.remove('on');
+  $('parse-overlay')?.classList.remove('on');
+  $('inventory-page')?.classList.remove('open');
+  $('reading-mode')?.classList.remove('open');
+  $('export-modal')?.classList.remove('open');
+
+  renderTree();
+  showView('welcome');
+
+  const oi = $('outline-input');
+  if(oi) oi.value = '';
+  try { showImportMode(S.importMode || 'execution'); } catch(e){}
+
+  toast('Ready for a new story');
+}
+
+function hardReset() {
+  if(!confirm('This will clear everything — story, beats, prose, and your API key. Continue?')) return;
+  localStorage.clear();
+  location.reload();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  $('btn-new-story')?.addEventListener('click', returnToWelcome);
+  $('btn-reset-all')?.addEventListener('click', hardReset);
+});
+
 </script>
 </body>
 </html>
