@@ -2226,6 +2226,344 @@ body.screenplay .eb-prose { font-family:var(--sans);font-size:14px;line-height:1
 .co-actions .ws-btn-p { flex:1; height:40px; font-size:.88rem; }
 
 /* ═══════════════════════════════════════════════════════════════
+   PATCH C — BLANK SECTION INTELLIGENCE + SCENE SIZING
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Blank scene state ── */
+#blank-scene-state {
+  display: none;
+  padding: 0 0 32px;
+}
+#blank-scene-state.show { display: block; }
+
+.bs-header {
+  margin-bottom: 22px;
+}
+.bs-scene-name {
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.bs-movement {
+  font-size: .72rem;
+  color: var(--ink-4);
+  margin-bottom: 0;
+}
+
+/* Inferred purpose block */
+.bs-inferred {
+  background: var(--paper-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 16px 20px;
+  margin-bottom: 18px;
+  animation: bs-fade-in .4s var(--ease) both;
+}
+@keyframes bs-fade-in {
+  from { opacity:0; transform:translateY(8px); }
+  to   { opacity:1; transform:none; }
+}
+.bs-inferred-kicker {
+  font-size: .6rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.bs-inferred-spinner {
+  width: 10px; height: 10px;
+  border: 1.5px solid var(--accent-2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  flex-shrink: 0;
+}
+.bs-purpose {
+  font-family: var(--serif);
+  font-size: 1rem;
+  color: var(--ink);
+  line-height: 1.65;
+  margin-bottom: 10px;
+}
+.bs-detail {
+  font-size: .8rem;
+  color: var(--ink-3);
+  line-height: 1.6;
+}
+
+/* Directions strip — three possible ways this scene could go */
+.bs-directions {
+  margin-bottom: 20px;
+}
+.bs-directions-title {
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  margin-bottom: 10px;
+}
+.bs-direction-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+@media (max-width: 700px) {
+  .bs-direction-cards { grid-template-columns: 1fr; }
+}
+.bs-direction-card {
+  background: var(--paper-card);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 180ms var(--ease);
+  animation: bs-fade-in .4s var(--ease) both;
+}
+.bs-direction-card:nth-child(2) { animation-delay: 80ms; }
+.bs-direction-card:nth-child(3) { animation-delay: 160ms; }
+.bs-direction-card:hover {
+  border-color: var(--accent);
+  background: var(--accent-3);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 12px rgba(28,25,23,.07);
+}
+.bs-dir-label {
+  font-size: .6rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  margin-bottom: 5px;
+}
+.bs-dir-label.reversal  { color: #5b21b6; }
+.bs-dir-label.quieter   { color: #2d6a4f; }
+.bs-dir-label.dangerous { color: #b85a28; }
+.bs-dir-text {
+  font-size: .8rem;
+  color: var(--ink-2);
+  line-height: 1.5;
+  font-family: var(--serif);
+}
+.bs-dir-use {
+  font-size: .65rem;
+  color: var(--accent);
+  margin-top: 7px;
+  opacity: 0;
+  transition: opacity 150ms;
+}
+.bs-direction-card:hover .bs-dir-use { opacity: 1; }
+
+/* Likely beats preview */
+.bs-beats-preview {
+  margin-bottom: 20px;
+}
+.bs-beats-title {
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  margin-bottom: 8px;
+}
+.bs-beat-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  animation: bs-fade-in .35s var(--ease) both;
+}
+.bs-beat-hint:last-child { border: none; }
+.bs-beat-num {
+  font-size: .62rem;
+  font-weight: 700;
+  color: var(--ink-5);
+  width: 18px;
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+.bs-beat-fn {
+  font-size: .6rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--paper-3);
+  color: var(--ink-4);
+  flex-shrink: 0;
+  margin-top: 1px;
+  white-space: nowrap;
+}
+.bs-beat-text {
+  font-size: .8rem;
+  color: var(--ink-2);
+  line-height: 1.45;
+  flex: 1;
+  font-family: var(--serif);
+}
+
+/* Action row */
+.bs-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding-top: 4px;
+}
+.bs-write-btn {
+  height: 34px;
+  padding: 0 18px;
+  border-radius: 6px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: .8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 150ms;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bs-write-btn:hover { background: var(--ink-2); }
+.bs-dismiss {
+  font-size: .72rem;
+  color: var(--ink-4);
+  cursor: pointer;
+  border-bottom: 1px dashed var(--border-2);
+  transition: color 150ms;
+}
+.bs-dismiss:hover { color: var(--ink); }
+
+/* Loading skeleton for blank state */
+.bs-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 0;
+}
+.bs-shim {
+  height: .9em;
+  border-radius: 4px;
+  background: linear-gradient(90deg,var(--paper-2) 25%,var(--paper-3) 50%,var(--paper-2) 75%);
+  background-size: 200% 100%;
+  animation: beat-shim 1.4s infinite;
+}
+
+/* ── Scene sizing card ── */
+.scene-sizing-card {
+  background: var(--paper-card);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+.ssc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 7px;
+}
+.ssc-title {
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+}
+.ssc-word-count {
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.ssc-bar-wrap {
+  height: 5px;
+  background: var(--paper-3);
+  border-radius: 3px;
+  overflow: visible;
+  position: relative;
+  margin-bottom: 7px;
+}
+.ssc-bar-recommended {
+  position: absolute;
+  top: 0; bottom: 0;
+  background: var(--paper-3);
+  border-radius: 3px;
+  border: 1.5px dashed var(--border-2);
+}
+.ssc-bar-actual {
+  height: 100%;
+  border-radius: 3px;
+  transition: width .5s var(--ease);
+  position: relative;
+  z-index: 1;
+}
+.ssc-bar-actual.under  { background: var(--col-beat); }
+.ssc-bar-actual.good   { background: var(--col-draft); }
+.ssc-bar-actual.over   { background: var(--accent); }
+.ssc-bar-actual.way-over { background: #ef4444; }
+.ssc-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: .65rem;
+  color: var(--ink-4);
+}
+.ssc-verdict {
+  font-size: .72rem;
+  font-weight: 500;
+  margin-top: 5px;
+  line-height: 1.45;
+}
+.ssc-verdict.good   { color: var(--col-draft); }
+.ssc-verdict.under  { color: var(--col-beat); }
+.ssc-verdict.over   { color: var(--accent); }
+.ssc-verdict.way-over { color: #dc2626; }
+.ssc-action {
+  font-size: .68rem;
+  color: var(--accent);
+  cursor: pointer;
+  border-bottom: 1px dashed var(--accent-2);
+  margin-top: 4px;
+  display: inline-block;
+  transition: color 150ms;
+}
+.ssc-action:hover { color: var(--ink); }
+
+/* Sizing in movement view — row of scene cards */
+.mv-sizing-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.mv-size-chip {
+  font-size: .65rem;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 20px;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.mv-size-chip::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
    KEYBOARD HINT
 ═══════════════════════════════════════════════════════════════ */
 #kb-hint {
@@ -2593,6 +2931,47 @@ kbd {
         <div id="needs-box-container"></div>
         <div id="inspiration-container"></div>
 
+        <!-- BLANK SCENE INTELLIGENCE — shown when scene has no intention or beats -->
+        <div id="blank-scene-state">
+
+          <div class="bs-header">
+            <div class="bs-scene-name" id="bs-scene-name">—</div>
+            <div class="bs-movement" id="bs-movement">—</div>
+          </div>
+
+          <!-- Inferred purpose (loading then populated) -->
+          <div class="bs-inferred" id="bs-inferred">
+            <div class="bs-inferred-kicker">
+              <div class="bs-inferred-spinner" id="bs-spinner"></div>
+              <span id="bs-kicker-text">Reading story context…</span>
+            </div>
+            <div class="bs-purpose" id="bs-purpose"></div>
+            <div class="bs-detail" id="bs-detail"></div>
+          </div>
+
+          <!-- Three possible directions -->
+          <div class="bs-directions" id="bs-directions" style="display:none;">
+            <div class="bs-directions-title">Three ways this scene could go</div>
+            <div class="bs-direction-cards" id="bs-direction-cards"></div>
+          </div>
+
+          <!-- Likely beat structure -->
+          <div class="bs-beats-preview" id="bs-beats-preview" style="display:none;">
+            <div class="bs-beats-title">Likely beat structure</div>
+            <div id="bs-beat-hints"></div>
+          </div>
+
+          <!-- Actions -->
+          <div class="bs-actions" id="bs-actions" style="display:none;">
+            <button class="bs-write-btn" id="bs-use-suggestion">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              Use this suggestion →
+            </button>
+            <span class="bs-dismiss" id="bs-dismiss">Write my own instead</span>
+          </div>
+
+        </div>
+
         <!-- Intention input -->
         <textarea class="bv-intention-input" id="bv-intention-input"
           placeholder="Describe what you think happens in this scene…&#10;&#10;e.g. 'Robert and Marcus meet for the first time since the estrangement. Marcus has an agenda he's hiding. It ends in controlled sadness without explosion.'"></textarea>
@@ -2643,7 +3022,9 @@ kbd {
 
           <!-- Context panel column -->
           <div class="bv-context-panel" id="bv-context-panel">
-            <!-- populated by renderContextPanel() -->
+            <!-- sizing card injected here by renderSceneSizing() -->
+            <div id="scene-sizing-container"></div>
+            <!-- rest populated by renderContextPanel() -->
           </div>
 
         </div>
@@ -4860,56 +5241,61 @@ $('po-cancel')?.addEventListener('click', () => {
 // ─────────────────────────────────────────────
 async function deepParseOutline(text) {
   const system = `You are a narrative analysis engine performing deep literary extraction.
-Analyse the story text and return ONLY valid JSON (no markdown, no backticks) with exactly this structure:
+
+The input may be in any format: free-form prose, structured outline with ALL-CAPS headings, bulleted lists, Act/chapter breakdowns, or a mix. Handle all formats.
+
+CRITICAL: Characters are often written as ALL-CAPS NAME blocks (e.g. ROBERT, GRAHAM, CLAUDE) with description lines beneath them. Extract ALL named characters you find, including those written this way.
+
+Return ONLY valid JSON (no markdown, no backticks, no explanation):
 {
-  "title": "string or null",
-  "genre": "string",
-  "tone": "string",
-  "pov": "string",
-  "premise": "string — one or two sentences capturing the essential story",
-  "ending": "string or null — the story's destination, even roughly stated",
+  "title": "string — extract from first line or heading, or null",
+  "genre": "string — detect or infer",
+  "tone": "string — detect or infer",
+  "pov": "string — detect or infer",
+  "premise": "string — 1-2 sentences, the essential story. Extract from CORE PREMISE section if present.",
+  "ending": "string or null — the story destination. Look for FINAL REALIZATION, ending tone sections, or infer.",
   "centralConflict": "string",
-  "themes": ["array of strings — 3-6 specific themes"],
-  "motifs": ["array of strings — recurring images, objects, or phrases detected or implied"],
+  "themes": ["array of 4-8 specific themes — extract from THEMATIC CORE section if present, supplement with inference"],
+  "motifs": ["array — look for RECURRING MOTIF sections and imagery patterns"],
   "characters": [
     {
-      "name": "string",
-      "role": "Protagonist|Antagonist|Ally|Foil|Absent presence|Supporting",
-      "want": "string — conscious desire",
-      "fear": "string — what they are protecting themselves from",
-      "belief": "string — the false belief or misunderstanding they carry",
-      "contradiction": "string — the gap between what they show and what they are",
-      "arc": "string — the arc trajectory in one phrase",
+      "name": "string — use proper case (Robert not ROBERT)",
+      "role": "Protagonist|Antagonist|Ally|Foil|Supporting",
+      "want": "string — conscious desire, extract from character block",
+      "fear": "string — core wound or fear, extract from character block",
+      "belief": "string — false belief or worldview, look for Core belief/worldview lines",
+      "contradiction": "string — the gap between public and private self",
+      "arc": "string — extract from Arc: lines in character blocks",
       "confidence": "high|medium|low"
     }
   ],
-  "openThreads": ["array of strings — unresolved questions or tensions the story will need to address"],
+  "openThreads": ["array — unresolved questions, tensions from End of Act summaries"],
   "plotEvents": [
     {
-      "event": "string — what happens",
+      "event": "string — extract bullet points from Act sections",
       "position": "early|mid|late",
       "weight": "pivotal|major|supporting"
     }
   ],
   "movementSuggestions": [
     {
-      "name": "string — movement name",
-      "fn": "string — dramatic function in one phrase",
-      "emotional": "string — emotional register",
-      "summary": "string — 2-3 sentences describing what happens in this movement",
-      "keyEvents": ["array of 2-4 key events for this movement"]
+      "name": "string — use Act names directly (FORMATION, EXPANSION, etc.)",
+      "fn": "string — from Focus: lines in each Act",
+      "emotional": "string — emotional register of this act",
+      "summary": "string — 2-3 sentences from act content",
+      "keyEvents": ["2-4 key bullet points from this act"]
     }
   ],
-  "voiceNotes": "string or null — observations about the writer's prose style if detectable"
+  "voiceNotes": "string or null"
 }
 
-Be specific. Extract psychology, not just plot facts. Infer what is implied but not stated.
-For movementSuggestions: propose 5-7 movements that naturally fit this story's arc.
-Do not force a rigid formula — let the story's own logic determine the movements.`;
+IMPORTANT: If the document has ACT sections (ACT 1 — FORMATION, etc.) use those directly as movementSuggestions — do not invent a new structure.
+Extract psychology from character blocks, not just surface facts.
+confidence: high = fully described with want/fear/arc, medium = partially described, low = name only.`;
 
   const raw = await callClaude(system,
-    `Analyse this story deeply and extract everything:\n\n${text}`,
-    3000);
+    `Extract everything from this story document:\n\n${text}`,
+    3200);
   return JSON.parse(raw.replace(/```json|```/g, '').trim());
 }
 
@@ -5283,66 +5669,311 @@ async function runImport(text) {
 // FALLBACK PARSE (no API key)
 // ─────────────────────────────────────────────
 function buildFallbackParse(text) {
-  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
+  // ── STRUCTURED DOCUMENT PARSER ──
+  // Handles formatted outlines with ALL-CAPS section headers,
+  // bullet lists, labelled fields, and Act/chapter breakdowns.
+
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
   const lower = text.toLowerCase();
 
-  // Title guess
-  const title = lines[0]?.length < 80 ? lines[0].replace(/^[#*\-]+\s*/,'') : null;
+  // ── 1. TITLE ──
+  // First line, strip markdown/dashes
+  const rawTitle = lines[0] || '';
+  const title = rawTitle.replace(/[—\-–:]+.*$/, '').replace(/^[#*•\-\s]+/, '').trim() || null;
 
-  // Characters (simple heuristic)
-  const charNames = [];
-  const charSection = text.match(/[Cc]haracters?:?([\s\S]*?)(?:\n\n|\n[A-Z][^\n]{5,}:|$)/);
-  if(charSection) {
-    charSection[1].split('\n').forEach(l => {
-      const m = l.match(/^[-*]?\s*([A-Z][a-z]+(?:\s[A-Z][a-z]+)?)/);
-      if(m && m[1].length > 2) charNames.push(m[1]);
+  // ── 2. PREMISE ──
+  // Look for labelled section, else first long sentence
+  const premiseSection = text.match(/(?:CORE\s+PREMISE|PREMISE)[^\n]*\n+([\s\S]*?)(?:\n\n[A-Z]{3}|\n[A-Z]{4,}|$)/i);
+  const premise = premiseSection
+    ? premiseSection[1].replace(/\n/g, ' ').trim().substring(0, 300)
+    : lines.find(l => l.length > 60 && !l.match(/^[A-Z\s—–\-:•*]+$/))?.substring(0, 300) || '';
+
+  // ── 3. GENRE / TONE / POV ──
+  const genreMatch  = text.match(/[Gg]enre[:\s]+([^\n•]+)/);
+  const toneMatch   = text.match(/[Tt]one[:\s]+([^\n•]+)/);
+  const povMatch    = text.match(/[Pp][Oo][Vv][:\s]+([^\n•]+)/);
+  const genre = genreMatch?.[1]?.trim() || 'Literary fiction';
+  const tone  = toneMatch?.[1]?.trim()  || inferTone(lower);
+  const pov   = povMatch?.[1]?.trim()   || 'Third person limited';
+
+  function inferTone(t) {
+    if(t.includes('dark')||t.includes('tragic')||t.includes('devastat')) return 'Dark, melancholic';
+    if(t.includes('comic')||t.includes('satir')||t.includes('humor'))    return 'Satirical';
+    if(t.includes('thriller')||t.includes('suspense'))                   return 'Tense, propulsive';
+    return 'Literary, restrained';
+  }
+
+  // ── 4. ENDING ──
+  const endingPatterns = [
+    /FINAL\s+(?:REALIZATION|STATEMENT|SCENE|NOTE)[^\n]*\n+([\s\S]{20,200}?)(?:\n\n[A-Z]{3}|$)/i,
+    /[Ee]nding[:\s]+([^\n]+(?:\n[^A-Z\n][^\n]*){0,3})/,
+    /[Rr]esolution[:\s]+([^\n]+)/,
+    /[Ee]nd(?:ing)?\s+[Tt]one[:\s]*([\s\S]{20,200}?)(?:\n\n|$)/,
+  ];
+  let ending = null;
+  for(const p of endingPatterns) {
+    const m = text.match(p);
+    if(m) { ending = m[1].replace(/\n/g,' ').replace(/[•\-\t]/g,'').trim().substring(0,250); break; }
+  }
+
+  // ── 5. CHARACTERS — structured block detection ──
+  // Handles: ALL-CAPS name blocks, "Name (Role)" patterns, bullet lists
+  const characters = [];
+  const skipWords = new Set([
+    'STRUCTURE','THEMATIC','CORE','FINAL','END','RECURRING','FOCUS','MAIN',
+    'ACT','ACTS','CHAPTER','SCENE','NOTE','OVERVIEW','TONE','GENRE','POV',
+    'FORMAT','MOTIF','THEME','ENDING','COLLAPSE','EXPANSION','FRACTURE','FORMATION',
+    'DETERIORATION','RECKONING','SUMMARY','KEY','DYNAMIC','TRIO','GROUP',
+    'PREMISE','CHARACTERS','CHARACTER','STATEMENT','PLOT','EVENTS','THREADS',
+    'INVENTORY','RELATIONSHIP','RELATIONSHIPS','CONFLICT','SETTING','WORLD',
+  ]);
+  const skipPhrases = new Set([
+    'CORE PREMISE','THEMATIC CORE','MAIN CHARACTERS','RECURRING MOTIF',
+    'FINAL STATEMENT','FINAL REALIZATION','FINAL SCENE','END OF','STORY OVERVIEW',
+    'STRUCTURE OVERVIEW','CHARACTER ARC','PLOT EVENTS','OPEN THREADS','KEY DYNAMIC',
+    'CENTRAL CONFLICT','ENDING TONE','ACT STRUCTURE',
+  ]);
+  function isLikelyPersonName(rawName) {
+    if(skipPhrases.has(rawName)) return false;
+    const words = rawName.split(/\s+/);
+    if(words.length > 2) return false;
+    for(const w of words) { if(skipWords.has(w)) return false; }
+    if(rawName.length < 3) return false;
+    return true;
+  }
+
+  // Pattern 1: ALL-CAPS NAME (possibly with role in parens) followed by bullet/description lines
+  const charBlockRegex = /^([A-Z]{2,}(?:\s+[A-Z][A-Z]+)?)\s*(?:\([^)]*\))?\s*\n((?:(?!\n[A-Z]{2,}\s*\n|^ACT\s+\d|^STRUCTURE|^THEMATIC|^CORE|^FINAL|^END\s+OF|^—)[\s\S])*)/gm;
+  let cbMatch;
+  while((cbMatch = charBlockRegex.exec(text)) !== null) {
+    const rawName = cbMatch[1].trim();
+    if(!isLikelyPersonName(rawName)) continue;
+    const body = cbMatch[2].trim();
+    if(body.length < 15) continue; // skip if no content follows
+
+    const nameProper = rawName.split(/\s+/).map(w => w[0] + w.slice(1).toLowerCase()).join(' ');
+
+    // Extract role
+    const rolePatterns = [/\(([^)]+)\)/, /[Rr]ole[:\s]+([^\n•]+)/, /([Pp]rotagonist|[Aa]ntagonist|[Ss]upporting|[Aa]lly|[Ff]oil)/];
+    let role = 'Supporting';
+    for(const rp of rolePatterns) {
+      const inHeader = cbMatch[0].match(rp);
+      const inBody   = body.match(rp);
+      const found    = inHeader || inBody;
+      if(found) { role = found[1].trim(); break; }
+    }
+    if(characters.length === 0) role = 'Protagonist';
+
+    // Extract want
+    const want = extractField(body, [
+      /[Ww]ant[s]?[:\s]+([^\n•]+)/,
+      /[Dd]esire[s]?[:\s]+([^\n•]+)/,
+      /[Bb]elieves?\s+in\s+([^\n•]+)/,
+      /[Ll]ives?\s+(?:freely|to)\s+([^\n•]+)/,
+    ]) || inferWant(body);
+
+    // Extract fear
+    const fear = extractField(body, [
+      /[Ff]ear[s]?[:\s]+([^\n•]+)/,
+      /[Cc]ore\s+wound[:\s]+([^\n•]+)/,
+      /[Vv]ulnerabilit[yi][:\s]+([^\n•]+)/,
+      /[Cc]annot\s+([^\n•.]+)/,
+      /[Ii]nabilit[yi]\s+to\s+([^\n•.]+)/,
+    ]) || '';
+
+    // Extract false belief
+    const belief = extractField(body, [
+      /[Cc]ore\s+belief[:\s]+([^\n•]+)/,
+      /[Bb]elief[:\s]+([^\n•]+)/,
+      /[Ww]orldview[:\s]+([^\n•]+)/,
+    ]) || '';
+
+    // Extract arc
+    const arc = extractField(body, [
+      /[Aa]rc[:\s→]+([^\n•]+)/,
+      /[Jj]ourney[:\s]+([^\n•]+)/,
+      /[Tt]ransform[ation]*[:\s]+([^\n•]+)/,
+    ]) || '';
+
+    // Extract contradiction
+    const contradiction = extractField(body, [
+      /[Cc]ore\s+wound[:\s]+([^\n•]+)/,
+      /[Dd]ual\s+life[:\s]+([^\n•]+)/,
+      /[Dd]ouble\s+life[:\s]+([^\n•]+)/,
+      /(?:public|private)\s+([^\n•.]+vs[^\n•.]+)/i,
+    ]) || '';
+
+    // Confidence based on how much we extracted
+    const filled = [want,fear,belief,arc].filter(Boolean).length;
+    const confidence = filled >= 3 ? 'high' : filled >= 1 ? 'medium' : 'low';
+
+    characters.push({ name:nameProper, role, want, fear, belief, contradiction, arc, confidence });
+  }
+
+  // Pattern 2: Fallback — named sections like "Name:" or "**Name**"
+  if(characters.length === 0) {
+    const namedBlocks = text.matchAll(/^(?:\*\*)?([A-Z][a-z]{2,}(?:\s[A-Z][a-z]+)?)(?:\*\*)?\s*[:\(][^\n]*/gm);
+    for(const m of namedBlocks) {
+      const name = m[1];
+      if(skipWords.has(name.toUpperCase())) continue;
+      characters.push({ name, role:characters.length===0?'Protagonist':'Supporting', want:'', fear:'', belief:'', contradiction:'', arc:'', confidence:'low' });
+      if(characters.length >= 6) break;
+    }
+  }
+
+  function extractField(body, patterns) {
+    for(const p of patterns) {
+      const m = body.match(p);
+      if(m?.[1]) return m[1].replace(/[•\-→]/g,'').trim().substring(0,150);
+    }
+    return '';
+  }
+
+  function inferWant(body) {
+    if(body.match(/control/i)) return 'Control over their life and image';
+    if(body.match(/connect/i)) return 'Genuine connection with others';
+    if(body.match(/free/i))    return 'Freedom from constraint';
+    if(body.match(/truth/i))   return 'To know the truth';
+    return '';
+  }
+
+  // ── 6. THEMES ──
+  // Try structured section first
+  const themeSection = text.match(/(?:THEMATIC\s+CORE|THEMES?)[^\n]*\n([\s\S]*?)(?:\n\n[A-Z]{3}|\n[A-Z]{5,}|$)/i);
+  const themes = [];
+  if(themeSection) {
+    themeSection[1].split('\n').forEach(l => {
+      const clean = l.replace(/^[•\-\*\t\s]+/, '').replace(/\([^)]+\)/g,'').trim();
+      if(clean.length > 5 && !clean.match(/^[A-Z\s]+$/) && clean.length < 100) themes.push(clean);
     });
   }
-  // Also look for capitalised names in text
-  const nameMatches = text.match(/\b[A-Z][a-z]{2,}(?:\s[A-Z][a-z]+)?\b/g)||[];
-  nameMatches.forEach(n => { if(!charNames.includes(n)&&n!=='The'&&n!=='This'&&n!=='That') charNames.push(n); });
+  // Supplement with keyword detection
+  const themeWords = ['friendship','love','power','betrayal','identity','memory','loss','redemption',
+    'addiction','shame','masculinity','intimacy','grief','desire','mortality','class','justice',
+    'truth','loyalty','vulnerability','performance','dissociation'];
+  themeWords.forEach(t => {
+    if(lower.includes(t) && !themes.some(th => th.toLowerCase().includes(t)))
+      themes.push(t[0].toUpperCase()+t.slice(1));
+  });
 
-  const uniqueNames = [...new Set(charNames)].slice(0,5);
-  const characters = uniqueNames.map((n,i) => ({
-    name:n, role:i===0?'Protagonist':'Supporting',
-    want:'To be determined', fear:'To be determined',
-    belief:'', contradiction:'', arc:'', confidence:'low',
-  }));
+  // ── 7. MOTIFS ──
+  const motifs = [];
+  const motifPatterns = [
+    /[Rr]ecurring\s+[Mm]otif[:\s]+([^\n]+)/,
+    /[Mm]otif[:\s]+([^\n]+)/,
+    /[Ss]ymbol[:\s]+([^\n]+)/,
+  ];
+  for(const p of motifPatterns) {
+    const m = text.match(p);
+    if(m) { motifs.push(m[1].replace(/\([^)]+\)/g,'').trim()); break; }
+  }
+  // Keyword motif detection
+  const motifWords = ['fire','water','light','darkness','rain','mirror','door','window','road',
+    'clock','blood','ash','smoke','glass','knife','flower','letter'];
+  motifWords.forEach(m => { if(lower.includes(m) && !motifs.some(mo => mo.toLowerCase().includes(m))) motifs.push(m[0].toUpperCase()+m.slice(1)); });
 
-  // Themes
-  const themeWords = ['friendship','love','power','betrayal','identity','memory','loss','redemption','truth','family','ambition','loyalty','grief','desire','mortality','class','justice','violence','freedom'];
-  const themes = themeWords.filter(t=>lower.includes(t)).map(t=>t[0].toUpperCase()+t.slice(1)).slice(0,5);
-  const themeMatch = text.match(/[Tt]hemes?:([^\n]+)/)?.[1];
-  if(themeMatch) themeMatch.split(/[,;]/).map(s=>s.trim()).forEach(t=>{ if(t&&!themes.includes(t))themes.push(t); });
+  // ── 8. OPEN THREADS ──
+  const threads = [];
+  // Questions in text
+  (text.match(/[A-Z][^.!?]{10,}\?/g)||[]).slice(0,3).forEach(q => threads.push(q.trim()));
+  // "End of Act" unresolved tensions
+  const endActMatches = text.matchAll(/[Ee]nd\s+of\s+[Aa]ct[:\s]*\n([^\n]+)/g);
+  for(const m of endActMatches) threads.push(m[1].trim());
+  // Explicit thread patterns
+  const threadPatterns = [/[Uu]nresolved[:\s]+([^\n•]+)/, /[Oo]pen\s+thread[:\s]+([^\n•]+)/];
+  threadPatterns.forEach(p => { const m = text.match(p); if(m) threads.push(m[1].trim()); });
 
-  // Threads — look for questions or unresolved elements
-  const threads = (text.match(/[A-Z][^.!?]*\?/g)||[]).slice(0,4).map(s=>s.trim());
+  // ── 9. PLOT EVENTS from Acts ──
+  const plotEvents = [];
+  const actBlocks = text.matchAll(/^ACT\s+(\d+|[IVX]+)\s*[—\-–]+\s*([^\n]+)\n([\s\S]*?)(?=\nACT\s+\d|\nACT\s+[IVX]|$)/gim);
+  for(const ab of actBlocks) {
+    const actNum = ab[1]; const actName = ab[2].trim();
+    const actBody = ab[3];
+    // Pull bullet points as events
+    const bullets = actBody.match(/^[•\-\t]+([^\n]+)/gm)||[];
+    bullets.slice(0,4).forEach(b => {
+      const ev = b.replace(/^[•\-\t\s]+/,'').trim();
+      if(ev.length > 10) {
+        const n = parseInt(actNum) || 1;
+        const pos = n <= 1 ? 'early' : n <= 3 ? 'mid' : 'late';
+        const weight = ev.match(/key|major|central|pivotal|climax|death|reveal|betray/i) ? 'pivotal' : 'supporting';
+        plotEvents.push({ event:ev, position:pos, weight, act:actName });
+      }
+    });
+  }
 
-  // Motifs
-  const motifWords = ['fire','water','light','darkness','rain','mirror','door','window','road','clock'];
-  const motifs = motifWords.filter(m=>lower.includes(m)).map(m=>m[0].toUpperCase()+m.slice(1)).slice(0,4);
+  // ── 10. MOVEMENT SUGGESTIONS from Acts ──
+  const movementSuggestions = [];
+  const actBlocksForMovs = text.matchAll(/^ACT\s+(\d+|[IVX]+)\s*[—\-–]+\s*([^\n]+)\n([\s\S]*?)(?=\nACT\s+\d|\nACT\s+[IVX]|\n—{3}|$)/gim);
+  for(const ab of actBlocksForMovs) {
+    const actName = ab[2].trim();
+    const actBody = ab[3];
+    // Get focus line
+    const focus = actBody.match(/[Ff]ocus[:\s]+([^\n]+)/)?.[1]?.trim() || '';
+    // Get summary — first non-bullet, non-header paragraph
+    const summaryLines = actBody.split('\n')
+      .map(l=>l.replace(/^[•\-\t\s]+/,'').trim())
+      .filter(l=>l.length>20&&!l.match(/^[A-Z\s:]+$/)&&!l.match(/^Focus/i));
+    const summary = summaryLines.slice(0,2).join(' ').substring(0,250);
+    // Key events
+    const keyEvents = (actBody.match(/^[•\-\t]+([^\n]+)/gm)||[])
+      .map(b=>b.replace(/^[•\-\t\s]+/,'').trim())
+      .filter(e=>e.length>8)
+      .slice(0,4);
 
-  // Ending
-  const endingMatch = text.match(/[Ee]nding:([^\n]+)/)?.[1]?.trim() || text.match(/[Rr]esolution:([^\n]+)/)?.[1]?.trim() || null;
+    // Emotional register from act name/focus
+    const emotional = actName.match(/FORMATION|BEGIN/i) ? 'Grounding' :
+                      actName.match(/EXPANSION|GROW/i)  ? 'Escalation' :
+                      actName.match(/FRACTURE|BREAK/i)  ? 'Rupture' :
+                      actName.match(/DETERIORAT/i)       ? 'Collapse' :
+                      actName.match(/RECKONING|COLLAPSE/i) ? 'Devastation' : 'Development';
 
-  // Premise
-  const premise = lines.find(l=>l.length>60)?.substring(0,200) || text.substring(0,200);
+    movementSuggestions.push({
+      name: actName,
+      fn: focus || 'Story development',
+      emotional,
+      summary: summary || `Act ${ab[1]}: ${actName}`,
+      keyEvents: keyEvents.length > 0 ? keyEvents : [`${actName} — key events`],
+    });
+  }
+
+  // Fallback movements if no acts found
+  if(movementSuggestions.length === 0) {
+    [
+      {name:'Opening movement',   fn:'Setup & establishment',  emotional:'Grounding',
+       summary:'The world and characters are established.',   keyEvents:['Introduction','World-building']},
+      {name:'Inciting movement',  fn:'Disruption',             emotional:'Unease',
+       summary:'Something disrupts the equilibrium.',         keyEvents:['Inciting event','First response']},
+      {name:'Rising movement',    fn:'Escalation',             emotional:'Tension',
+       summary:'Complications mount.',                         keyEvents:['First obstacle','Stakes raised']},
+      {name:'Crisis movement',    fn:'Crisis point',           emotional:'Collapse',
+       summary:'The darkest moment.',                          keyEvents:['All seems lost','The choice']},
+      {name:'Resolution movement',fn:'New equilibrium',        emotional:'Release',
+       summary:'The aftermath.',                               keyEvents:['Resolution','New world']},
+    ].forEach(m => movementSuggestions.push(m));
+  }
 
   return {
-    title, genre:'Fiction', tone:'Literary', pov:'Third person',
-    premise, ending:endingMatch,
-    centralConflict:'', themes, motifs,
-    characters, openThreads:threads,
-    plotEvents: [],
-    movementSuggestions: [
-      {name:'Opening movement',fn:'Setup & establishment',emotional:'Grounding',summary:'The world and characters are established.',keyEvents:['Introduction of protagonist','Establishment of the ordinary world']},
-      {name:'Inciting movement',fn:'Disruption',emotional:'Unease',summary:'Something disrupts the equilibrium.',keyEvents:['The inciting event','First response to disruption']},
-      {name:'Rising movement',fn:'Escalation',emotional:'Tension',summary:'Complications mount.',keyEvents:['First major obstacle','Stakes raised']},
-      {name:'Crisis movement',fn:'Crisis point',emotional:'Collapse',summary:'The darkest moment.',keyEvents:['All seems lost','The protagonist must choose']},
-      {name:'Resolution movement',fn:'New equilibrium',emotional:'Release',summary:'The aftermath.',keyEvents:['Resolution of central conflict','New world established']},
-    ],
-    voiceNotes:null,
+    title: title ? title.split(/\s+/).map(w=>w[0]?.toUpperCase()+w.slice(1)?.toLowerCase()).join(' ') : null,
+    genre, tone, pov,
+    premise, ending: ending || null,
+    centralConflict: extractField(text, [/[Cc]entral\s+[Cc]onflict[:\s]+([^\n]+)/, /[Cc]ore\s+[Cc]onflict[:\s]+([^\n]+)/]) || '',
+    themes: themes.slice(0, 8),
+    motifs: motifs.slice(0, 5),
+    characters,
+    openThreads: threads.slice(0, 6),
+    plotEvents,
+    movementSuggestions,
+    voiceNotes: null,
   };
+
+  function extractField(body, patterns) {
+    for(const p of patterns) {
+      const m = body.match(p);
+      if(m?.[1]) return m[1].replace(/[•\-→]/g,'').trim().substring(0,150);
+    }
+    return '';
+  }
 }
 
 // ─────────────────────────────────────────────
@@ -5522,6 +6153,359 @@ document.addEventListener('DOMContentLoaded', () => {
   $('btn-reset-all')?.addEventListener('click', hardReset);
 });
 
+
+// ═══════════════════════════════════════════════════════════════
+// PATCH C — BLANK SECTION INTELLIGENCE + SCENE SIZING
+// ═══════════════════════════════════════════════════════════════
+
+// ── Sizing ranges ──
+const SIZING = {
+  novel: [
+    {maxT:.25, min:600,  max:1400, label:'light passage'},
+    {maxT:.45, min:900,  max:1800, label:'establishing scene'},
+    {maxT:.65, min:1200, max:2400, label:'development scene'},
+    {maxT:.80, min:1600, max:3000, label:'significant scene'},
+    {maxT:.92, min:2000, max:4000, label:'major scene'},
+    {maxT:1.1, min:2400, max:4800, label:'climactic scene'},
+  ],
+  screenplay: [
+    {maxT:.25, min:100, max:250, label:'brief scene'},
+    {maxT:.50, min:150, max:400, label:'establishing scene'},
+    {maxT:.75, min:250, max:600, label:'development scene'},
+    {maxT:1.1, min:350, max:900, label:'major scene'},
+  ],
+};
+
+function getSizingRange(tension) {
+  const ranges = S.mode==='screenplay' ? SIZING.screenplay : SIZING.novel;
+  return ranges.find(r => tension <= r.maxT) || ranges[ranges.length-1];
+}
+
+function getSceneWordCount(scene) {
+  return (scene.beats||[]).filter(b=>b.prose).reduce((s,b)=>s+countWords(b.prose), 0);
+}
+
+// ─────────────────────────────────────────────
+// SCENE SIZING CARD
+// ─────────────────────────────────────────────
+function renderSceneSizing(scene, mov) {
+  const container = $('scene-sizing-container');
+  if(!container) return;
+
+  const tension = mov.tension || 0.5;
+  const range = getSizingRange(tension);
+  const actual = getSceneWordCount(scene);
+  const mid = (range.min + range.max) / 2;
+
+  // Verdict
+  let verdict, cls, action = null;
+  if(actual === 0) {
+    verdict = `Recommended: ${range.min.toLocaleString()}–${range.max.toLocaleString()} words for a ${range.label}`;
+    cls = 'under';
+  } else if(actual < range.min * 0.6) {
+    verdict = `Underdeveloped — ${actual.toLocaleString()} words. This ${range.label} should carry more weight. Consider expanding.`;
+    cls = 'under'; action = 'Expand beats';
+  } else if(actual < range.min) {
+    verdict = `Slightly lean at ${actual.toLocaleString()} words. Recommended ${range.min.toLocaleString()}–${range.max.toLocaleString()}.`;
+    cls = 'under';
+  } else if(actual > range.max * 1.5) {
+    verdict = `Overextended — ${actual.toLocaleString()} words against a recommended ${range.max.toLocaleString()} max. Consider compressing or splitting.`;
+    cls = 'way-over'; action = 'Compress';
+  } else if(actual > range.max * 1.1) {
+    verdict = `Running long at ${actual.toLocaleString()} words. Consider whether every beat is earning its place.`;
+    cls = 'over'; action = 'Review length';
+  } else {
+    verdict = `Well-sized at ${actual.toLocaleString()} words.`;
+    cls = 'good';
+  }
+
+  // Bar proportions
+  const barMax = range.max * 1.8;
+  const recLeft  = Math.round((range.min / barMax) * 100);
+  const recWidth = Math.round(((range.max - range.min) / barMax) * 100);
+  const actWidth = Math.min(100, Math.round((actual / barMax) * 100));
+
+  container.innerHTML = `
+    <div class="scene-sizing-card">
+      <div class="ssc-header">
+        <span class="ssc-title">Narrative sizing</span>
+        <span class="ssc-word-count">${actual > 0 ? actual.toLocaleString() + ' words' : 'Not yet drafted'}</span>
+      </div>
+      <div class="ssc-bar-wrap">
+        <div class="ssc-bar-recommended" style="left:${recLeft}%;width:${recWidth}%" title="Recommended range"></div>
+        <div class="ssc-bar-actual ${cls}" style="width:${actWidth}%"></div>
+      </div>
+      <div class="ssc-meta">
+        <span>${range.label}</span>
+        <span>Target: ${range.min.toLocaleString()}–${range.max.toLocaleString()}w</span>
+      </div>
+      <div class="ssc-verdict ${cls}">${verdict}</div>
+      ${action ? `<div class="ssc-action" data-action="${action}">${action} →</div>` : ''}
+    </div>`;
+
+  container.querySelector('.ssc-action')?.addEventListener('click', e => {
+    const a = e.target.dataset.action;
+    if(a === 'Expand beats') $('bv-gen-beats')?.click();
+    else toast(a + ' — use the Craft tools panel (⌘K)', 'info');
+  });
+}
+
+// ─────────────────────────────────────────────
+// BLANK SECTION INTELLIGENCE
+// ─────────────────────────────────────────────
+let blankStateAborted = false;
+
+async function showBlankSectionState(scene, mov, act) {
+  const bss = $('blank-scene-state');
+  if(!bss) return;
+
+  blankStateAborted = false;
+  bss.classList.add('show');
+
+  // Hide the intention input and gen controls while blank state shows
+  const intentionInput = $('bv-intention-input');
+  const genRow = intentionInput?.nextElementSibling;
+  if(intentionInput) intentionInput.style.display = 'none';
+  if(genRow) genRow.style.display = 'none';
+  $('beat-actions-bar').style.display = 'none';
+
+  // Set header
+  $('bs-scene-name').textContent = scene.name;
+  $('bs-movement').textContent = `${act.label} → ${mov.name} · ${mov.fn}`;
+
+  // Loading state
+  $('bs-kicker-text').textContent = 'Reading story context…';
+  $('bs-spinner').style.display = '';
+  $('bs-purpose').textContent = '';
+  $('bs-detail').textContent = '';
+  $('bs-directions').style.display = 'none';
+  $('bs-beats-preview').style.display = 'none';
+  $('bs-actions').style.display = 'none';
+
+  try {
+    const intelligence = await inferScenePurpose(scene, mov, act);
+    if(blankStateAborted) return;
+
+    // Update inferred purpose
+    $('bs-spinner').style.display = 'none';
+    $('bs-kicker-text').textContent = 'What this scene is for';
+    $('bs-purpose').textContent = intelligence.purpose;
+    $('bs-detail').textContent = intelligence.detail;
+
+    // Show directions
+    if(intelligence.directions?.length) {
+      const cards = $('bs-direction-cards');
+      cards.innerHTML = '';
+      intelligence.directions.forEach((dir, i) => {
+        const card = make('div');
+        card.className = 'bs-direction-card';
+        card.dataset.direction = i;
+        card.innerHTML = `
+          <div class="bs-dir-label ${dir.type}">${dir.type}</div>
+          <div class="bs-dir-text">${dir.text}</div>
+          <div class="bs-dir-use">Use this direction →</div>`;
+        card.addEventListener('click', () => useDirection(dir, scene, intentionInput, genRow));
+        cards.appendChild(card);
+      });
+      $('bs-directions').style.display = '';
+    }
+
+    // Show likely beats
+    if(intelligence.likelyBeats?.length) {
+      const hintContainer = $('bs-beat-hints');
+      hintContainer.innerHTML = '';
+      intelligence.likelyBeats.forEach((beat, i) => {
+        const el = make('div'); el.className = 'bs-beat-hint';
+        el.style.animationDelay = `${i * 60}ms`;
+        el.innerHTML = `
+          <span class="bs-beat-num">${String(i+1).padStart(2,'0')}</span>
+          <span class="bs-beat-fn">${beat.fn}</span>
+          <span class="bs-beat-text">${beat.text}</span>`;
+        hintContainer.appendChild(el);
+      });
+      $('bs-beats-preview').style.display = '';
+    }
+
+    $('bs-actions').style.display = '';
+
+    // Wire up use suggestion button
+    $('bs-use-suggestion').onclick = () => {
+      useSuggestion(intelligence, scene, intentionInput, genRow);
+    };
+    $('bs-dismiss').onclick = () => {
+      dismissBlankState(intentionInput, genRow);
+    };
+
+  } catch(e) {
+    // On any error, just show the input
+    dismissBlankState(intentionInput, genRow);
+  }
+}
+
+function dismissBlankState(intentionInput, genRow) {
+  blankStateAborted = true;
+  const bss = $('blank-scene-state');
+  if(bss) bss.classList.remove('show');
+  if(intentionInput) intentionInput.style.display = '';
+  if(genRow) genRow.style.display = '';
+}
+
+function useDirection(dir, scene, intentionInput, genRow) {
+  scene.intention = dir.text;
+  dismissBlankState(intentionInput, genRow);
+  if(intentionInput) {
+    intentionInput.value = dir.text;
+    intentionInput.focus();
+  }
+  const bvid = $('bv-intention-display');
+  if(bvid) bvid.textContent = dir.text;
+}
+
+function useSuggestion(intelligence, scene, intentionInput, genRow) {
+  const suggestion = intelligence.suggestedIntention || intelligence.purpose;
+  scene.intention = suggestion;
+  dismissBlankState(intentionInput, genRow);
+  if(intentionInput) {
+    intentionInput.value = suggestion;
+    intentionInput.focus();
+  }
+  const bvid = $('bv-intention-display');
+  if(bvid) bvid.textContent = suggestion;
+  // Auto-trigger beat generation after a beat
+  setTimeout(() => {
+    if(intelligence.likelyBeats?.length) {
+      $('bv-gen-beats')?.click();
+    }
+  }, 300);
+}
+
+// ─────────────────────────────────────────────
+// INFER SCENE PURPOSE
+// ─────────────────────────────────────────────
+async function inferScenePurpose(scene, mov, act) {
+  const proj = S.project || {};
+
+  // Build rich context
+  const allScenes = S.acts.flatMap(a => a.movements.flatMap(m => m.scenes));
+  const sceneIdx = allScenes.findIndex(s => s.id === scene.id);
+  const prevScene = sceneIdx > 0 ? allScenes[sceneIdx - 1] : null;
+  const nextScene = sceneIdx < allScenes.length - 1 ? allScenes[sceneIdx + 1] : null;
+  const prevDraftedScenes = allScenes.filter(s => s.status === 'draft').slice(-2);
+  const openThreads = S.threads.filter(t => t.status === 'open').slice(0, 3).map(t => t.text);
+  const charStates = S.characters.slice(0, 3).map(c => {
+    const arcState = c.arcStates?.[mov.id] || DEMO_ARC_STATES?.[c.name]?.[mov.id];
+    return arcState ? `${c.name}: ${arcState.arcNote || arcState.emotionalState}` : `${c.name}: arc state unknown`;
+  });
+
+  if(!S.apiKey) {
+    return buildDemoInference(scene, mov, act, prevScene, nextScene, openThreads, charStates);
+  }
+
+  const system = `You are a narrative editor helping a writer understand what an empty scene needs to do.
+Return ONLY valid JSON (no backticks):
+{
+  "purpose": "string — 1 sentence: the essential function of this scene in the story",
+  "detail": "string — 2 sentences: what the scene must accomplish structurally and emotionally",
+  "suggestedIntention": "string — a strong 2-3 sentence scene intention the writer can use or adapt",
+  "directions": [
+    {"type": "Expected", "text": "string — the most obvious version of this scene"},
+    {"type": "Reversal", "text": "string — the version where what we expect is inverted"},
+    {"type": "Quieter", "text": "string — the version that achieves the same function with less"}
+  ],
+  "likelyBeats": [
+    {"fn": "string — beat function", "text": "string — one sentence beat intention"}
+  ]
+}
+likelyBeats: propose 4-5 beats that would naturally serve this scene's purpose.
+Be specific to this story, these characters, this moment. Never be generic.`;
+
+  const raw = await callClaude(system, `
+Story: "${proj.title}" — ${proj.genre}, ${proj.tone}
+Position: ${act.label} → ${mov.name} (${mov.fn}, ${mov.emotional} register, ${mov.pacing} pacing)
+Scene: "${scene.name}"
+${prevScene ? `Preceding scene: "${prevScene.name}" — ${prevScene.intention}` : 'Opening scene of this movement'}
+${nextScene ? `Following scene: "${nextScene.name}" — ${nextScene.intention}` : 'Final scene of this movement'}
+Open threads: ${openThreads.join('; ') || 'none yet'}
+Character states at this movement:
+${charStates.join('\n')}
+Ending (fixed): ${proj.ending || 'not yet set'}
+
+What is this empty scene for, and how might it go?`, 700);
+
+  return JSON.parse(raw.replace(/```json|```/g,'').trim());
+}
+
+function buildDemoInference(scene, mov, act, prevScene, nextScene, openThreads, charStates) {
+  const tension = mov.tension || 0.5;
+  const isEarly = tension < 0.4;
+  const isCrisis = tension > 0.8;
+
+  const purpose = isCrisis
+    ? `This scene is the emotional hinge of ${mov.name} — the moment where the accumulated pressure becomes unavoidable.`
+    : isEarly
+    ? `This scene establishes the conditions for everything that follows — the world, the characters, the unspoken tensions.`
+    : `This scene advances the ${mov.fn.toLowerCase()} — something must shift here, however small.`;
+
+  const detail = `Positioned at ${act.label} → ${mov.name}, it needs to serve the movement's function (${mov.fn}) while leaving at least one thread open. The ${mov.emotional.toLowerCase()} register should shape the prose texture.`;
+
+  const suggestedIntention = prevScene
+    ? `Following "${prevScene.name}", this scene continues the ${mov.emotional.toLowerCase()} register. Something is tested here that was established earlier — and the outcome should not be clean.`
+    : `The scene opens ${mov.name}. It needs to announce the emotional register of this movement without over-explaining it.`;
+
+  return {
+    purpose,
+    detail,
+    suggestedIntention,
+    directions: [
+      {type:'Expected', text:`The scene plays out as the structure implies — direct, clear in function, serving ${mov.fn.toLowerCase()}.`},
+      {type:'Reversal', text:`The scene inverts what the reader expects. The character who should act is passive; the character who should be passive acts.`},
+      {type:'Quieter', text:`The same dramatic function achieved through a single exchange, a small action, a silence. Less is more at this structural position.`},
+    ],
+    likelyBeats: [
+      {fn:'Establishment', text:`The scene's setting and register are announced through precise physical detail.`},
+      {fn:'Probe',         text:`One character tests something — a limit, a truth, a relationship — without naming what they're testing.`},
+      {fn:'Escalation',   text:`The pressure increases. A question is raised that cannot be easily put down.`},
+      {fn:'Moment of choice', text:`Someone makes a decision — or conspicuously refuses to.`},
+      {fn:'Closure',      text:`The scene ends without resolution. Something has shifted. The reader knows more than the characters.`},
+    ],
+  };
+}
+
+// ─────────────────────────────────────────────
+// PATCH selectScene to trigger blank state intelligence
+// ─────────────────────────────────────────────
+const _patchC_baseSelectScene = window.selectScene;
+window.selectScene = function(sceneId) {
+  _patchC_baseSelectScene(sceneId);
+
+  const result = getScene(sceneId);
+  if(!result) return;
+  const { act, movement:mov, scene:sc } = result;
+
+  // Show sizing card whenever we enter a scene
+  renderSceneSizing(sc, mov);
+
+  // Show blank state if scene has no intention AND no beats
+  const isEmpty = !sc.intention && !(sc.beats?.length);
+  const bss = $('blank-scene-state');
+  if(isEmpty && bss) {
+    showBlankSectionState(sc, mov, act);
+  } else if(bss) {
+    bss.classList.remove('show');
+    const ii = $('bv-intention-input');
+    const gr = ii?.nextElementSibling;
+    if(ii) ii.style.display = '';
+    if(gr) gr.style.display = '';
+  }
+};
+
+// Also update sizing when beats are accepted
+const _patchC_baseCheckAcceptAll = window.checkAcceptAll;
+window.checkAcceptAll = function(sc) {
+  _patchC_baseCheckAcceptAll && _patchC_baseCheckAcceptAll(sc);
+  const movResult = getMovement(S.activeMovId);
+  if(movResult) renderSceneSizing(sc, movResult.movement);
+};
 </script>
 </body>
 </html>
