@@ -2564,6 +2564,294 @@ body.screenplay .eb-prose { font-family:var(--sans);font-size:14px;line-height:1
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   PATCH D — VISUAL STORY BOARD
+═══════════════════════════════════════════════════════════════ */
+
+/* Full-screen board overlay */
+#story-board {
+  position: fixed; inset: 0; z-index: 280;
+  background: var(--paper); display: none;
+  flex-direction: column; overflow: hidden;
+}
+#story-board.open { display: flex; }
+
+/* Board topbar */
+#board-topbar {
+  height: 48px; flex-shrink: 0;
+  background: var(--paper-card);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 20px; gap: 14px;
+}
+.board-title {
+  font-family: var(--serif); font-size: .95rem;
+  font-weight: 500; color: var(--ink);
+}
+.board-subtitle {
+  font-size: .72rem; color: var(--ink-4);
+}
+#board-close {
+  margin-left: auto; height: 28px; padding: 0 12px;
+  border-radius: 5px; border: 1px solid var(--border-2);
+  font-size: .72rem; color: var(--ink-3); cursor: pointer;
+  transition: all 150ms;
+}
+#board-close:hover { background: var(--paper-2); color: var(--ink); }
+
+/* Board controls bar */
+#board-controls {
+  height: 38px; flex-shrink: 0;
+  background: var(--paper-2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 20px; gap: 12px;
+}
+.bc-group { display: flex; align-items: center; gap: 6px; }
+.bc-label {
+  font-size: .62rem; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--ink-4);
+}
+.bc-sep { width: 1px; height: 18px; background: var(--border-2); }
+.board-view-btn {
+  height: 24px; padding: 0 10px; border-radius: 4px;
+  font-size: .68rem; font-weight: 500;
+  border: 1px solid var(--border-2); color: var(--ink-4);
+  cursor: pointer; transition: all 150ms;
+}
+.board-view-btn.on {
+  background: var(--ink); color: var(--paper); border-color: var(--ink);
+}
+.board-view-btn:not(.on):hover { background: var(--paper-3); color: var(--ink); }
+.heat-toggle {
+  height: 24px; padding: 0 10px; border-radius: 4px;
+  font-size: .68rem; font-weight: 500;
+  border: 1.5px solid var(--border-2); color: var(--ink-4);
+  cursor: pointer; transition: all 150ms; display: flex; align-items: center; gap: 5px;
+}
+.heat-toggle.on { border-color: #f59e0b; color: #92400e; background: #fef3c7; }
+.ht-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+/* Board legend */
+#board-legend {
+  display: flex; gap: 16px; align-items: center; margin-left: auto;
+}
+.bl-item { display: flex; align-items: center; gap: 5px; font-size: .6rem; color: var(--ink-4); }
+.bl-swatch { width: 10px; height: 10px; border-radius: 2px; }
+
+/* Board scroll canvas */
+#board-canvas-wrap {
+  flex: 1; overflow-x: auto; overflow-y: auto;
+  padding: 32px 40px 80px;
+  position: relative;
+}
+
+/* Tension curve canvas (background) */
+#board-tension-canvas {
+  position: absolute; top: 0; left: 0;
+  pointer-events: none; z-index: 0;
+}
+
+/* Act swimlane rows */
+#board-acts { position: relative; z-index: 1; }
+.board-act {
+  margin-bottom: 40px;
+}
+.ba-label {
+  font-size: .62rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--ink-5);
+  margin-bottom: 10px; display: flex; align-items: center; gap: 10px;
+}
+.ba-label::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+/* Movement lane */
+.board-movement {
+  display: flex; gap: 10px; align-items: flex-start;
+  margin-bottom: 16px; position: relative;
+}
+.bm-label-col {
+  width: 120px; flex-shrink: 0;
+  padding-top: 8px;
+}
+.bm-name {
+  font-size: .74rem; font-weight: 600; color: var(--ink-2);
+  margin-bottom: 2px; line-height: 1.3;
+}
+.bm-fn { font-size: .62rem; color: var(--ink-4); line-height: 1.3; }
+.bm-tension-bar {
+  width: 3px; height: 100%; position: absolute;
+  left: 116px; top: 0; border-radius: 2px;
+  opacity: .5;
+}
+
+/* Scene card */
+.board-scene-card {
+  width: 180px; flex-shrink: 0;
+  border-radius: 8px; border: 1.5px solid var(--border);
+  background: var(--paper-card);
+  cursor: pointer; transition: all 180ms var(--ease);
+  position: relative; overflow: hidden;
+}
+.board-scene-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(28,25,23,.1);
+}
+.board-scene-card.active {
+  border-color: var(--accent);
+  background: var(--accent-3);
+}
+.board-scene-card.drafted { border-color: rgba(45,106,79,.4); }
+
+/* Heat overlay on card */
+.bsc-heat-overlay {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px; border-radius: 8px 8px 0 0;
+  transition: opacity .3s;
+}
+.board-scene-card.heat-off .bsc-heat-overlay { opacity: 0; }
+
+/* Card inner */
+.bsc-inner { padding: 10px 12px; }
+.bsc-num {
+  font-size: .58rem; font-weight: 700; color: var(--ink-5);
+  margin-bottom: 4px;
+}
+.bsc-name {
+  font-size: .8rem; font-weight: 600; color: var(--ink);
+  line-height: 1.3; margin-bottom: 4px;
+}
+.bsc-intention {
+  font-size: .7rem; color: var(--ink-3); line-height: 1.45;
+  font-style: italic; display: -webkit-box;
+  -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.bsc-empty {
+  font-size: .7rem; color: var(--ink-5); font-style: italic;
+}
+.bsc-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 8px; padding-top: 6px; border-top: 1px solid var(--border);
+}
+.bsc-fn-tag {
+  font-size: .58rem; font-weight: 600; letter-spacing: .05em;
+  text-transform: uppercase; padding: 1px 5px; border-radius: 3px;
+  background: var(--paper-3); color: var(--ink-4);
+}
+.bsc-beats {
+  font-size: .6rem; color: var(--ink-5);
+  display: flex; align-items: center; gap: 3px;
+}
+.bsc-status-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+}
+/* Empty scene placeholder card */
+.board-empty-slot {
+  width: 180px; flex-shrink: 0;
+  border-radius: 8px; border: 1.5px dashed var(--border);
+  background: transparent; cursor: pointer;
+  transition: all 180ms var(--ease);
+  min-height: 100px; display: flex;
+  align-items: center; justify-content: center;
+  flex-direction: column; gap: 5px;
+}
+.board-empty-slot:hover {
+  border-color: var(--accent); background: var(--accent-3);
+}
+.bes-plus { font-size: 1.2rem; color: var(--ink-5); }
+.bes-label { font-size: .65rem; color: var(--ink-5); }
+
+/* Character thread lines */
+.board-char-row {
+  display: flex; gap: 10px; align-items: center;
+  padding: 3px 0; margin-bottom: 2px;
+}
+.bcr-char { width: 120px; flex-shrink: 0; font-size: .68rem; font-weight: 600; color: var(--ink-3); }
+.bcr-line { flex: 1; height: 28px; position: relative; }
+.bcr-segment {
+  position: absolute; height: 6px; border-radius: 3px;
+  top: 50%; transform: translateY(-50%); transition: opacity .3s;
+}
+.bcr-node {
+  position: absolute; width: 10px; height: 10px;
+  border-radius: 50%; top: 50%; transform: translate(-50%,-50%);
+  border: 2px solid var(--paper-card); cursor: pointer;
+  transition: all 150ms;
+}
+.bcr-node:hover { transform: translate(-50%,-50%) scale(1.4); }
+.bcr-tooltip {
+  position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+  background: var(--ink); color: var(--paper); font-size: .62rem;
+  padding: 4px 8px; border-radius: 4px; white-space: nowrap;
+  pointer-events: none; opacity: 0; transition: opacity 150ms;
+  z-index: 50; margin-bottom: 5px;
+}
+.bcr-node:hover .bcr-tooltip { opacity: 1; }
+
+/* Sections: story cards / characters / themes */
+.board-section-head {
+  font-size: .62rem; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--ink-4);
+  margin: 24px 0 12px; display: flex; align-items: center; gap: 10px;
+}
+.board-section-head::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* Thread indicators */
+.board-thread-strip {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px;
+}
+.bts-thread {
+  font-size: .68rem; padding: 3px 10px; border-radius: 20px;
+  border: 1px solid var(--border-2); color: var(--ink-3);
+  background: var(--paper-card);
+  display: flex; align-items: center; gap: 5px;
+}
+.bts-thread.active { border-color: var(--accent); color: var(--accent); background: var(--accent-3); }
+.bts-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+/* Heat map legend bar */
+.heat-legend-bar {
+  display: flex; align-items: center; gap: 8px;
+  font-size: .62rem; color: var(--ink-4); margin-left: 8px;
+}
+.hlb-swatch {
+  height: 8px; width: 60px; border-radius: 4px;
+  background: linear-gradient(to right, #2d6a4f, #f59e0b, #b85a28, #ef4444);
+}
+
+/* Card detail panel — slides in bottom when card selected */
+#board-detail-panel {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: 200px; background: var(--paper-card);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -4px 20px rgba(28,25,23,.1);
+  z-index: 300; transform: translateY(100%);
+  transition: transform 240ms var(--ease);
+  display: flex; overflow: hidden;
+}
+#board-detail-panel.open { transform: translateY(0); }
+.bdp-scene-info {
+  padding: 18px 24px; flex: 1; min-width: 0;
+  border-right: 1px solid var(--border);
+}
+.bdp-scene-name { font-family: var(--serif); font-size: 1.1rem; color: var(--ink); margin-bottom: 3px; }
+.bdp-scene-pos  { font-size: .7rem; color: var(--ink-4); margin-bottom: 10px; }
+.bdp-intention  { font-size: .82rem; color: var(--ink-2); line-height: 1.6; font-style: italic; max-height: 80px; overflow: hidden; }
+.bdp-actions    { padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; justify-content: center; width: 180px; flex-shrink: 0; }
+.bdp-btn        { height: 30px; border-radius: 5px; font-size: .75rem; font-weight: 500; cursor: pointer; transition: all 150ms; }
+.bdp-btn.primary { background: var(--ink); color: var(--paper); border: none; }
+.bdp-btn.primary:hover { background: var(--ink-2); }
+.bdp-btn.secondary { background: none; border: 1px solid var(--border-2); color: var(--ink-3); }
+.bdp-btn.secondary:hover { background: var(--paper-2); color: var(--ink); }
+.bdp-chars { padding: 18px 20px; width: 220px; flex-shrink: 0; border-left: 1px solid var(--border); overflow-y: auto; }
+.bdp-chars-title { font-size: .6rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 8px; }
+.bdp-char-row { font-size: .72rem; color: var(--ink-3); line-height: 1.5; margin-bottom: 4px; font-style: italic; }
+.bdp-close-btn { position: absolute; top: 12px; right: 14px; font-size: .7rem; color: var(--ink-5); cursor: pointer; }
+.bdp-close-btn:hover { color: var(--ink); }
+
+/* ═══════════════════════════════════════════════════════════════
    KEYBOARD HINT
 ═══════════════════════════════════════════════════════════════ */
 #kb-hint {
@@ -2646,6 +2934,7 @@ kbd {
     <!-- Right -->
     <div id="tb-right">
       <div id="save-dot" title="Saved"></div>
+      <button class="tb-btn" id="btn-board">Story board</button>
       <button class="tb-btn" id="btn-intelligence">Intelligence</button>
       <button class="tb-btn" id="btn-inventory">Story inventory</button>
       <button class="tb-btn" id="btn-read">Read</button>
@@ -3250,6 +3539,68 @@ kbd {
       <div class="sc-row"><span class="sc-desc">This help</span><span class="sc-keys"><kbd>?</kbd></span></div>
     </div>
   </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     VISUAL STORY BOARD
+═══════════════════════════════════════════════════════════════ -->
+<div id="story-board">
+
+  <!-- Board topbar -->
+  <div id="board-topbar">
+    <div>
+      <div class="board-title" id="board-proj-title">Story board</div>
+      <div class="board-subtitle" id="board-proj-sub">—</div>
+    </div>
+    <button id="board-close">Close ✕</button>
+  </div>
+
+  <!-- Controls -->
+  <div id="board-controls">
+    <div class="bc-group">
+      <span class="bc-label">View</span>
+      <button class="board-view-btn on"  data-view="timeline">Timeline</button>
+      <button class="board-view-btn"     data-view="characters">Characters</button>
+      <button class="board-view-btn"     data-view="themes">Threads</button>
+    </div>
+    <div class="bc-sep"></div>
+    <button class="heat-toggle on" id="board-heat-toggle">
+      <div class="ht-dot"></div> Heat map
+    </button>
+    <div id="board-legend">
+      <div class="bl-item"><div class="bl-swatch" style="background:#2d6a4f"></div>Drafted</div>
+      <div class="bl-item"><div class="bl-swatch" style="background:var(--accent)"></div>Planned</div>
+      <div class="bl-item"><div class="bl-swatch" style="border:1.5px dashed var(--border-2)"></div>Empty</div>
+      <div class="bl-item heat-legend-bar"><div class="hlb-swatch"></div><span>Narrative weight</span></div>
+    </div>
+  </div>
+
+  <!-- Main scrollable canvas -->
+  <div id="board-canvas-wrap">
+    <canvas id="board-tension-canvas"></canvas>
+    <div id="board-acts">
+      <!-- populated by renderBoard() -->
+    </div>
+  </div>
+
+  <!-- Detail panel (slides up when card selected) -->
+  <div id="board-detail-panel">
+    <div class="bdp-scene-info">
+      <div class="bdp-scene-name" id="bdp-scene-name">—</div>
+      <div class="bdp-scene-pos"  id="bdp-scene-pos">—</div>
+      <div class="bdp-intention"  id="bdp-intention">—</div>
+    </div>
+    <div class="bdp-chars" id="bdp-chars">
+      <div class="bdp-chars-title">Character states</div>
+      <div id="bdp-char-states"></div>
+    </div>
+    <div class="bdp-actions">
+      <button class="bdp-btn primary" id="bdp-write">Write this scene →</button>
+      <button class="bdp-btn secondary" id="bdp-beats">View beats</button>
+    </div>
+    <div class="bdp-close-btn" id="bdp-close">✕</div>
+  </div>
+
 </div>
 
 <div id="toasts"></div>
@@ -6506,6 +6857,567 @@ window.checkAcceptAll = function(sc) {
   const movResult = getMovement(S.activeMovId);
   if(movResult) renderSceneSizing(sc, movResult.movement);
 };
+
+// ═══════════════════════════════════════════════════════════════
+// VISUAL STORY BOARD
+// ═══════════════════════════════════════════════════════════════
+
+let boardView = 'timeline';
+let boardHeat = true;
+let selectedBoardScene = null;
+
+// ─────────────────────────────────────────────
+// HEAT COLOUR SYSTEM
+// ─────────────────────────────────────────────
+function getHeatColor(tension, drafted) {
+  if(drafted) return '#2d6a4f';                   // drafted — green
+  if(tension >= 0.90) return '#ef4444';           // crisis — red
+  if(tension >= 0.75) return '#b85a28';           // high   — orange
+  if(tension >= 0.55) return '#f59e0b';           // mid    — amber
+  if(tension >= 0.35) return '#a07c20';           // rising — gold
+  return '#2d6a4f';                               // low    — green
+}
+
+function getHeatLabel(tension, drafted, words) {
+  if(drafted && words > 0) return `Drafted — ${words.toLocaleString()}w`;
+  if(tension >= 0.90) return 'Crisis — major narrative weight';
+  if(tension >= 0.75) return 'High tension — lean in here';
+  if(tension >= 0.55) return 'Significant — development scene';
+  if(tension >= 0.35) return 'Building — give it room';
+  return 'Lower weight — keep light';
+}
+
+function getCardHeatBg(tension, drafted) {
+  if(!boardHeat) return 'transparent';
+  if(drafted) return 'rgba(45,106,79,.08)';
+  if(tension >= 0.90) return 'rgba(239,68,68,.06)';
+  if(tension >= 0.75) return 'rgba(184,90,40,.06)';
+  if(tension >= 0.55) return 'rgba(245,158,11,.05)';
+  return 'rgba(45,106,79,.04)';
+}
+
+// ─────────────────────────────────────────────
+// OPEN / CLOSE BOARD
+// ─────────────────────────────────────────────
+function openStoryBoard() {
+  const board = $('story-board');
+  board.classList.add('open');
+  $('btn-board')?.classList.add('active');
+
+  const proj = S.project || {};
+  $('board-proj-title').textContent = proj.title || 'Story board';
+  const totalScenes = S.acts.flatMap(a=>a.movements.flatMap(m=>m.scenes)).length;
+  const drafted = S.acts.flatMap(a=>a.movements.flatMap(m=>m.scenes)).filter(s=>s.status==='draft').length;
+  $('board-proj-sub').textContent = `${proj.genre||''}${proj.genre&&proj.tone?' · ':''}${proj.tone||''} · ${totalScenes} scenes · ${drafted} drafted`;
+
+  renderBoard();
+}
+
+function closeStoryBoard() {
+  $('story-board').classList.remove('open');
+  $('btn-board')?.classList.remove('active');
+  closeBoardDetail();
+}
+
+$('board-close').addEventListener('click', closeStoryBoard);
+
+// ─────────────────────────────────────────────
+// VIEW TABS
+// ─────────────────────────────────────────────
+document.querySelectorAll('.board-view-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.board-view-btn').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    boardView = btn.dataset.view;
+    renderBoard();
+  });
+});
+
+$('board-heat-toggle').addEventListener('click', () => {
+  boardHeat = !boardHeat;
+  $('board-heat-toggle').classList.toggle('on', boardHeat);
+  renderBoard();
+});
+
+// ─────────────────────────────────────────────
+// MAIN RENDER DISPATCHER
+// ─────────────────────────────────────────────
+function renderBoard() {
+  if(boardView === 'timeline')   renderTimelineView();
+  else if(boardView === 'characters') renderCharacterView();
+  else if(boardView === 'themes') renderThreadsView();
+  setTimeout(() => drawTensionCurveOnBoard(), 100);
+}
+
+// ─────────────────────────────────────────────
+// TIMELINE VIEW — scene cards on act/movement lanes
+// ─────────────────────────────────────────────
+function renderTimelineView() {
+  const container = $('board-acts');
+  container.innerHTML = '';
+
+  if(!S.acts.length) {
+    container.innerHTML = '<div style="padding:60px;text-align:center;font-family:var(--serif);font-size:1rem;color:var(--ink-4)">Import a story to see the board.</div>';
+    return;
+  }
+
+  S.acts.forEach(act => {
+    const actEl = make('div'); actEl.className = 'board-act';
+    const actLabel = make('div'); actLabel.className = 'ba-label';
+    actLabel.textContent = act.label;
+    actEl.appendChild(actLabel);
+
+    act.movements.forEach(mov => {
+      const movRow = make('div'); movRow.className = 'board-movement';
+      const tension = mov.tension || 0.5;
+      const heatColor = getHeatColor(tension, false);
+
+      // Label col
+      const labelCol = make('div'); labelCol.className = 'bm-label-col';
+      labelCol.innerHTML = `<div class="bm-name">${mov.name}</div><div class="bm-fn">${mov.fn}</div>`;
+
+      // Tension indicator bar
+      const tensionBar = make('div');
+      tensionBar.className = 'bm-tension-bar';
+      tensionBar.style.background = heatColor;
+      tensionBar.style.height = `${Math.max(40, tension * 120)}px`;
+      tensionBar.title = `Tension: ${Math.round(tension*100)}%`;
+
+      movRow.appendChild(labelCol);
+
+      // Cards container
+      const cardsWrap = make('div');
+      cardsWrap.style.cssText = 'display:flex;gap:10px;flex:1;flex-wrap:nowrap;padding-left:16px;';
+
+      const scenes = mov.scenes || [];
+      if(!scenes.length) {
+        // Empty movement — add a single empty slot
+        const slot = buildEmptySlot(mov);
+        cardsWrap.appendChild(slot);
+      } else {
+        scenes.forEach((sc, idx) => {
+          const card = buildSceneCard(sc, mov, act, idx);
+          cardsWrap.appendChild(card);
+        });
+        // Always add an "add scene" slot at end
+        const addSlot = buildEmptySlot(mov);
+        cardsWrap.appendChild(addSlot);
+      }
+
+      movRow.appendChild(cardsWrap);
+      actEl.appendChild(movRow);
+    });
+
+    container.appendChild(actEl);
+  });
+}
+
+function buildSceneCard(sc, mov, act, idx) {
+  const tension   = mov.tension || 0.5;
+  const drafted   = sc.status === 'draft';
+  const beats     = (sc.beats || []).length;
+  const words     = (sc.beats||[]).filter(b=>b.prose&&b.status==='accepted').reduce((s,b)=>s+countWords(b.prose), 0);
+  const heatColor = getHeatColor(tension, drafted);
+  const heatBg    = getCardHeatBg(tension, drafted);
+  const isActive  = sc.id === S.activeSceneId;
+
+  const card = make('div');
+  card.className = `board-scene-card${drafted?' drafted':''}${isActive?' active':''}${!boardHeat?' heat-off':''}`;
+  card.dataset.sceneId = sc.id;
+  card.style.background = heatBg || '';
+
+  const statusColor = drafted ? '#2d6a4f' : sc.intention ? 'var(--accent)' : 'var(--ink-5)';
+  const heatLabel = getHeatLabel(tension, drafted, words);
+
+  card.innerHTML = `
+    <div class="bsc-heat-overlay" style="background:${heatColor};opacity:${boardHeat?0.7:0};"></div>
+    <div class="bsc-inner">
+      <div class="bsc-num">${String(idx+1).padStart(2,'0')} · ${sc.fn || 'Scene'}</div>
+      <div class="bsc-name">${sc.name}</div>
+      ${sc.intention
+        ? `<div class="bsc-intention">${sc.intention}</div>`
+        : `<div class="bsc-empty">No intention set</div>`}
+      <div class="bsc-meta">
+        <span class="bsc-fn-tag">${sc.fn || '—'}</span>
+        <span class="bsc-beats">
+          <div class="bsc-status-dot" style="background:${statusColor}"></div>
+          ${drafted ? `${words > 0 ? words.toLocaleString()+'w' : 'drafted'}` : beats > 0 ? `${beats}b` : 'open'}
+        </span>
+      </div>
+    </div>`;
+
+  // Hover tooltip showing heat label
+  card.title = heatLabel;
+
+  card.addEventListener('click', () => selectBoardScene(sc, mov, act));
+  return card;
+}
+
+function buildEmptySlot(mov) {
+  const slot = make('div'); slot.className = 'board-empty-slot';
+  slot.innerHTML = `<div class="bes-plus">+</div><div class="bes-label">Add scene</div>`;
+  slot.addEventListener('click', () => {
+    addScene(mov.id);
+    closeStoryBoard();
+    toast('Scene added — click to open', 'success');
+  });
+  return slot;
+}
+
+// ─────────────────────────────────────────────
+// CHARACTER THREAD VIEW
+// ─────────────────────────────────────────────
+function renderCharacterView() {
+  const container = $('board-acts');
+  container.innerHTML = '';
+
+  if(!S.characters.length) {
+    container.innerHTML = '<div style="padding:60px;text-align:center;font-family:var(--serif);font-size:1rem;color:var(--ink-4)">No characters yet — import a story to populate character arcs.</div>';
+    return;
+  }
+
+  const allMovements = S.acts.flatMap(a => a.movements);
+  const totalWidth = allMovements.length * 190 + 140;
+
+  // Header row — movement names
+  const headerRow = make('div');
+  headerRow.style.cssText = `display:flex;gap:0;margin-bottom:16px;padding-left:140px;min-width:${totalWidth}px;`;
+  allMovements.forEach(mov => {
+    const h = make('div');
+    h.style.cssText = 'width:190px;flex-shrink:0;font-size:.62rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-4);padding-right:10px;line-height:1.3;';
+    h.textContent = mov.name;
+    headerRow.appendChild(h);
+  });
+  container.appendChild(headerRow);
+
+  // Character rows
+  S.characters.forEach((char, ci) => {
+    const charColors = ['#b85a28','#2d6a4f','#5b4fcf','#0369a1','#92400e'];
+    const color = charColors[ci % charColors.length];
+
+    const row = make('div');
+    row.className = 'board-char-row';
+    row.style.cssText = `min-width:${totalWidth}px;margin-bottom:20px;`;
+
+    // Char label
+    const label = make('div'); label.className = 'bcr-char';
+    label.style.cssText = `width:140px;flex-shrink:0;font-size:.78rem;font-weight:600;color:${color};`;
+    label.textContent = char.name;
+    row.appendChild(label);
+
+    // Movement cells
+    const cells = make('div');
+    cells.style.cssText = 'flex:1;display:flex;';
+    allMovements.forEach(mov => {
+      const state = char.arcStates?.[mov.id] || DEMO_ARC_STATES?.[char.name]?.[mov.id];
+      const tension = mov.tension || 0.5;
+      const isActive = mov.id === S.activeMovId;
+
+      const cell = make('div');
+      cell.style.cssText = `width:190px;flex-shrink:0;padding-right:10px;`;
+
+      const block = make('div');
+      block.style.cssText = `
+        border-radius:6px;padding:8px 10px;
+        background:${isActive ? `rgba(${hexToRgb(color)},.12)` : `rgba(${hexToRgb(color)},.06)`};
+        border:1px solid ${isActive ? color : 'transparent'};
+        min-height:64px;cursor:pointer;transition:all 150ms;
+        border-left:3px solid ${color};`;
+
+      if(state) {
+        block.innerHTML = `
+          <div style="font-size:.62rem;font-weight:600;color:${color};margin-bottom:3px;opacity:.7;">${mov.emotional || ''}</div>
+          <div style="font-size:.72rem;color:var(--ink-2);line-height:1.4;font-style:italic;">${state.arcNote || state.emotionalState || '—'}</div>
+          ${state.defenseMechanism ? `<div style="font-size:.62rem;color:var(--ink-5);margin-top:3px;">↳ ${state.defenseMechanism}</div>` : ''}`;
+      } else {
+        block.innerHTML = `<div style="font-size:.7rem;color:var(--ink-5);font-style:italic;padding-top:8px;">Arc state not defined</div>`;
+      }
+
+      block.addEventListener('click', () => {
+        openIntelPanel('dynamics');
+        closeStoryBoard();
+      });
+      block.addEventListener('mouseenter', () => block.style.transform = 'translateY(-1px)');
+      block.addEventListener('mouseleave', () => block.style.transform = '');
+
+      cell.appendChild(block);
+      cells.appendChild(cell);
+    });
+    row.appendChild(cells);
+    container.appendChild(row);
+  });
+
+  // Relationship states row
+  if(S.relationships?.length) {
+    const relHead = make('div'); relHead.className = 'board-section-head'; relHead.textContent = 'Relationships';
+    container.appendChild(relHead);
+
+    S.relationships.forEach(rel => {
+      const relRow = make('div');
+      relRow.style.cssText = `min-width:${totalWidth}px;margin-bottom:12px;display:flex;`;
+      const rl = make('div');
+      rl.style.cssText = 'width:140px;flex-shrink:0;font-size:.72rem;font-weight:500;color:var(--ink-3);';
+      rl.textContent = rel.pair.join(' ↔ ');
+      relRow.appendChild(rl);
+
+      const rStates = make('div'); rStates.style.cssText = 'flex:1;display:flex;';
+      allMovements.forEach(mov => {
+        const stateText = rel.movementStates?.[mov.id] || '';
+        const cell = make('div');
+        cell.style.cssText = 'width:190px;flex-shrink:0;padding-right:10px;';
+        if(stateText) {
+          cell.innerHTML = `<div style="font-size:.68rem;color:var(--ink-3);font-style:italic;line-height:1.4;padding:4px 8px;background:var(--paper-2);border-radius:4px;">${stateText}</div>`;
+        }
+        rStates.appendChild(cell);
+      });
+      relRow.appendChild(rStates);
+      container.appendChild(relRow);
+    });
+  }
+}
+
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16)||0;
+  const g = parseInt(hex.slice(3,5),16)||0;
+  const b = parseInt(hex.slice(5,7),16)||0;
+  // Handle named vars
+  if(hex.includes('var')) return '28,25,23';
+  return `${r},${g},${b}`;
+}
+
+// ─────────────────────────────────────────────
+// THREADS VIEW
+// ─────────────────────────────────────────────
+function renderThreadsView() {
+  const container = $('board-acts');
+  container.innerHTML = '';
+
+  const allMovements = S.acts.flatMap(a => a.movements);
+
+  // Open threads
+  const openThreads = S.threads.filter(t => t.status === 'open');
+  if(openThreads.length) {
+    const head = make('div'); head.className = 'board-section-head'; head.textContent = 'Open threads';
+    container.appendChild(head);
+    const strip = make('div'); strip.className = 'board-thread-strip';
+    openThreads.forEach(t => {
+      const chip = make('div'); chip.className = 'bts-thread active';
+      chip.innerHTML = `<div class="bts-dot"></div>${t.text}`;
+      strip.appendChild(chip);
+    });
+    container.appendChild(strip);
+  }
+
+  // Themes across movements
+  const themes = S.project?.themes || [];
+  if(themes.length) {
+    const thHead = make('div'); thHead.className = 'board-section-head'; thHead.textContent = 'Theme development';
+    container.appendChild(thHead);
+
+    const totalWidth = allMovements.length * 190 + 200;
+
+    // Header
+    const headerRow = make('div');
+    headerRow.style.cssText = `display:flex;margin-bottom:10px;padding-left:200px;min-width:${totalWidth}px;`;
+    allMovements.forEach(mov => {
+      const h = make('div');
+      h.style.cssText = 'width:190px;flex-shrink:0;font-size:.6rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-5);';
+      h.textContent = mov.name.split(' ').slice(0,2).join(' ');
+      headerRow.appendChild(h);
+    });
+    container.appendChild(headerRow);
+
+    const themeColors = ['#b85a28','#5b4fcf','#2d6a4f','#0369a1','#92400e','#7c3aed'];
+    themes.slice(0,6).forEach((theme, ti) => {
+      const color = themeColors[ti % themeColors.length];
+      const themeRow = make('div');
+      themeRow.style.cssText = `min-width:${totalWidth}px;display:flex;align-items:center;margin-bottom:12px;`;
+      const tl = make('div');
+      tl.style.cssText = `width:200px;flex-shrink:0;font-size:.75rem;font-weight:500;color:${color};padding-right:14px;line-height:1.3;`;
+      tl.textContent = theme;
+      themeRow.appendChild(tl);
+
+      // Theme intensity across movements (based on plot events mentioning theme keywords)
+      const themeKey = theme.split(/\s+/)[0].toLowerCase();
+      allMovements.forEach(mov => {
+        const eventsText = (mov.extractedEvents || []).concat(
+          mov.scenes.flatMap(s => [s.intention, s.name])
+        ).join(' ').toLowerCase();
+        const intensity = eventsText.includes(themeKey) ? 'active' :
+                         (mov.tension||0) > 0.6 && ti < 3 ? 'building' : 'latent';
+        const cell = make('div');
+        cell.style.cssText = 'width:190px;flex-shrink:0;';
+        const statusMap = {
+          active:  { bg: `rgba(${hexToRgb(color)},.18)`, label: 'Active', border: color },
+          building:{ bg: `rgba(${hexToRgb(color)},.08)`, label: 'Building', border: 'transparent' },
+          latent:  { bg: 'transparent', label: '', border: 'transparent' },
+        };
+        const s = statusMap[intensity];
+        if(s.label) {
+          cell.innerHTML = `<div style="margin-right:8px;padding:3px 8px;border-radius:4px;font-size:.65rem;font-weight:500;color:${color};background:${s.bg};border:1px solid ${s.border};display:inline-block;">${s.label}</div>`;
+        }
+        themeRow.appendChild(cell);
+      });
+      container.appendChild(themeRow);
+    });
+  }
+
+  // Motifs
+  if(S.motifs?.length) {
+    const motHead = make('div'); motHead.className = 'board-section-head'; motHead.textContent = 'Motifs';
+    container.appendChild(motHead);
+    const motStrip = make('div'); motStrip.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
+    S.motifs.forEach(m => {
+      const chip = make('div');
+      chip.style.cssText = `font-size:.74rem;padding:4px 12px;border-radius:20px;border:1px solid var(--border-2);background:var(--paper-card);color:var(--ink-2);`;
+      chip.innerHTML = `✦ ${m.name} <span style="color:var(--ink-5);margin-left:4px;">${m.occurrences.length} appearances</span>`;
+      motStrip.appendChild(chip);
+    });
+    container.appendChild(motStrip);
+  }
+}
+
+// ─────────────────────────────────────────────
+// TENSION CURVE on board background
+// ─────────────────────────────────────────────
+function drawTensionCurveOnBoard() {
+  const canvas = $('board-tension-canvas');
+  if(!canvas || boardView !== 'timeline') { if(canvas) canvas.style.display='none'; return; }
+
+  const wrap = $('board-canvas-wrap');
+  const W = wrap.scrollWidth;
+  const H = wrap.scrollHeight;
+  if(W < 100 || H < 100) return;
+
+  canvas.width  = W * devicePixelRatio;
+  canvas.height = H * devicePixelRatio;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  canvas.style.display = 'block';
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+
+  const allMovements = S.acts.flatMap(a => a.movements);
+  if(allMovements.length < 2) return;
+
+  // Collect x positions of each movement's card group
+  const movRows = wrap.querySelectorAll('.board-movement');
+  const points = [];
+  movRows.forEach((row, i) => {
+    if(i >= allMovements.length) return;
+    const mov = allMovements[i];
+    const rect = row.getBoundingClientRect();
+    const wrapRect = wrap.getBoundingClientRect();
+    const x = rect.left - wrapRect.left + wrap.scrollLeft + rect.width * 0.5;
+    const y = (1 - (mov.tension||0.5)) * (H * 0.3) + H * 0.05;
+    points.push({ x, y, tension: mov.tension||0.5, drafted: mov.scenes.some(s=>s.status==='draft') });
+  });
+
+  if(points.length < 2) return;
+
+  // Draw gradient curve
+  ctx.beginPath();
+  ctx.setLineDash([4,4]);
+  ctx.strokeStyle = 'rgba(184,90,40,.12)';
+  ctx.lineWidth = 1.5;
+  points.forEach((p,i) => { i===0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y); });
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Draw nodes
+  points.forEach(p => {
+    const color = getHeatColor(p.tension, p.drafted);
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 5, 0, Math.PI*2);
+    ctx.fillStyle = color + '88';
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  });
+}
+
+// ─────────────────────────────────────────────
+// SCENE DETAIL PANEL
+// ─────────────────────────────────────────────
+function selectBoardScene(sc, mov, act) {
+  selectedBoardScene = sc.id;
+
+  // Highlight card
+  document.querySelectorAll('.board-scene-card').forEach(c => c.classList.remove('active'));
+  document.querySelector(`.board-scene-card[data-scene-id="${sc.id}"]`)?.classList.add('active');
+
+  // Populate detail panel
+  $('bdp-scene-name').textContent = sc.name;
+  $('bdp-scene-pos').textContent  = `${act.label} → ${mov.name} · ${mov.fn}`;
+  $('bdp-intention').textContent  = sc.intention || 'No intention set yet — click "Write this scene" to begin.';
+
+  // Character states at this movement
+  const charStates = $('bdp-char-states');
+  charStates.innerHTML = '';
+  S.characters.slice(0,3).forEach(c => {
+    const state = c.arcStates?.[mov.id] || DEMO_ARC_STATES?.[c.name]?.[mov.id];
+    const el = make('div'); el.className = 'bdp-char-row';
+    el.innerHTML = `<strong>${c.name}:</strong> ${state?.arcNote || state?.emotionalState || 'Arc state not defined'}`;
+    charStates.appendChild(el);
+  });
+
+  // Wire buttons
+  $('bdp-write').onclick = () => {
+    closeStoryBoard();
+    S.activeMovId = mov.id;
+    selectScene(sc.id);
+  };
+  $('bdp-beats').onclick = () => {
+    closeStoryBoard();
+    S.activeMovId = mov.id;
+    selectScene(sc.id);
+  };
+
+  $('board-detail-panel').classList.add('open');
+}
+
+function closeBoardDetail() {
+  $('board-detail-panel').classList.remove('open');
+  selectedBoardScene = null;
+  document.querySelectorAll('.board-scene-card').forEach(c => c.classList.remove('active'));
+}
+$('bdp-close').addEventListener('click', closeBoardDetail);
+
+// ─────────────────────────────────────────────
+// WIRE TOPBAR BUTTON
+// ─────────────────────────────────────────────
+$('btn-board')?.addEventListener('click', () => {
+  if($('story-board').classList.contains('open')) closeStoryBoard();
+  else openStoryBoard();
+});
+
+// ─────────────────────────────────────────────
+// AUTO-OPEN BOARD AFTER IMPORT
+// ─────────────────────────────────────────────
+// Override beginFromConfirm to auto-open board
+const _boardBase_beginFromConfirm = window.beginFromConfirm;
+window.beginFromConfirm = function() {
+  _boardBase_beginFromConfirm && _boardBase_beginFromConfirm();
+  // Short delay so the app state is set, then open the board
+  setTimeout(() => openStoryBoard(), 400);
+};
+
+// ─────────────────────────────────────────────
+// KEYBOARD SHORTCUT  ⌘⇧B
+// ─────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if((e.metaKey||e.ctrlKey) && e.shiftKey && e.key === 'B') {
+    e.preventDefault();
+    if($('story-board').classList.contains('open')) closeStoryBoard();
+    else openStoryBoard();
+  }
+  if($('story-board').classList.contains('open') && e.key === 'Escape') {
+    e.preventDefault();
+    closeStoryBoard();
+  }
+});
 </script>
 </body>
 </html>
