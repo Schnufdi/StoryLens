@@ -883,9 +883,14 @@ function restore() {
 // ═══════════════════════════════════════════════════════════════
 async function callClaude(system, user, maxTokens=1000) {
   if (!S.apiKey) throw new Error('no-key');
-  const r = await fetch('https://api.anthropic.com/v1/messages', {
+  // Use local proxy (avoids CORS) when running on localhost
+  const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  const url = isLocal ? '/api/claude' : 'https://api.anthropic.com/v1/messages';
+  const headers = {'Content-Type':'application/json','x-api-key':S.apiKey};
+  if (!isLocal) headers['anthropic-version'] = '2023-06-01';
+  const r = await fetch(url, {
     method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':S.apiKey,'anthropic-version':'2023-06-01'},
+    headers,
     body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:maxTokens,system,messages:[{role:'user',content:user}]})
   });
   const d = await r.json();
