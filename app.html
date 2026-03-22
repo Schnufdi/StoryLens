@@ -6093,27 +6093,34 @@ function buildFallbackParse(text) {
     return true;
   }
 
-  // Pattern 1: ALL-CAPS NAME (possibly with role in parens) followed by bullet/description lines
-  const charBlockRegex = /^([A-Z]{2,}(?:\s+[A-Z][A-Z]+)?)\s*(?:\([^)]*\))?\s*\n((?:(?!\n[A-Z]{2,}\s*\n|^ACT\s+\d|^STRUCTURE|^THEMATIC|^CORE|^FINAL|^END\s+OF|^—)[\s\S])*)/gm;
-  let cbMatch;
-  while((cbMatch = charBlockRegex.exec(text)) !== null) {
-    const rawName = cbMatch[1].trim();
-    if(!isLikelyPersonName(rawName)) continue;
-    const body = cbMatch[2].trim();
-    if(body.length < 15) continue; // skip if no content follows
+  // ── CHARACTER EXTRACTION — chunk-split approach ──
+  // 1. Isolate the character section
+  const charSectionMatch = text.match(/(?:MAIN\s+)?CHARACTERS?\s*\n+([\s\S]*?)(?=\n[A-Z]{4,}\s*[\n—]|\nSTRUCTURE|\nACT\s+[\d]|\nACT\s+[IVX]|$)/i);
+  const charSearchText = charSectionMatch ? charSectionMatch[1] : text;
+
+  // 2. Split into chunks on blank lines, each chunk starts with an ALL-CAPS name line
+  const charChunks = charSearchText.split(/\n\n+/);
+  charChunks.forEach((chunk, chunkIdx) => {
+    const chunkLines = chunk.split('\n');
+    const firstLine  = chunkLines[0].trim();
+    const nameMatch  = firstLine.match(/^([A-Z]{2,}(?:\s+[A-Z][a-z]+)?)\s*(?:\(([^)]*)\))?$/);
+    if(!nameMatch) return;
+    const rawName      = nameMatch[1].trim();
+    if(!isLikelyPersonName(rawName)) return;
+    const roleInHeader = nameMatch[2]?.trim() || '';
+    const body         = chunkLines.slice(1).join('\n').trim();
+    if(body.length < 15) return;
+    const cbMatch = { 0: firstLine }; // compat shim — not used below
 
     const nameProper = rawName.split(/\s+/).map(w => w[0] + w.slice(1).toLowerCase()).join(' ');
 
     // Extract role
-    const rolePatterns = [/\(([^)]+)\)/, /[Rr]ole[:\s]+([^\n•]+)/, /([Pp]rotagonist|[Aa]ntagonist|[Ss]upporting|[Aa]lly|[Ff]oil)/];
-    let role = 'Supporting';
-    for(const rp of rolePatterns) {
-      const inHeader = cbMatch[0].match(rp);
-      const inBody   = body.match(rp);
-      const found    = inHeader || inBody;
-      if(found) { role = found[1].trim(); break; }
+    let role = roleInHeader || 'Supporting';
+    if(!roleInHeader) {
+      const roleInBody = body.match(/([Pp]rotagonist|[Aa]ntagonist|[Ss]upporting|[Aa]lly|[Ff]oil|[Nn]arrator)/);
+      if(roleInBody) role = roleInBody[1];
+      else if(characters.length === 0) role = 'Protagonist';
     }
-    if(characters.length === 0) role = 'Protagonist';
 
     // Extract want
     const want = extractField(body, [
@@ -6159,7 +6166,7 @@ function buildFallbackParse(text) {
     const confidence = filled >= 3 ? 'high' : filled >= 1 ? 'medium' : 'low';
 
     characters.push({ name:nameProper, role, want, fear, belief, contradiction, arc, confidence });
-  }
+  }); // end charChunks.forEach
 
   // Pattern 2: Fallback — named sections like "Name:" or "**Name**"
   if(characters.length === 0) {
