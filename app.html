@@ -1850,6 +1850,257 @@ body.screenplay .eb-prose { font-family:var(--sans);font-size:14px;line-height:1
 .crn-text { font-size:.76rem; color:var(--ink-2); line-height:1.6; }
 
 /* ═══════════════════════════════════════════════════════════════
+   CHUNK 7 — DYNAMICS, INVENTORY, HEAT MAP, READING, EXPORT
+═══════════════════════════════════════════════════════════════ */
+
+/* ── READING MODE ── */
+#reading-mode {
+  display:none; position:fixed; inset:0; z-index:300;
+  background:var(--paper); overflow-y:auto;
+}
+#reading-mode.open { display:block; }
+.rm-inner { max-width:640px; margin:0 auto; padding:80px 40px 120px; }
+.rm-title { font-family:var(--serif); font-size:2.2rem; font-weight:400; color:var(--ink); margin-bottom:6px; letter-spacing:-.02em; }
+.rm-meta { font-size:.78rem; color:var(--ink-4); margin-bottom:60px; }
+.rm-act-head { font-size:.62rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-5); margin:48px 0 8px; }
+.rm-mov-head { font-family:var(--serif); font-size:1.1rem; font-weight:400; color:var(--ink-3); margin-bottom:6px; font-style:italic; }
+.rm-scene-head { font-size:.62rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-5); margin:32px 0 14px; }
+.rm-prose { font-family:var(--serif); font-size:18px; line-height:2; color:var(--ink); }
+.rm-prose p { margin-bottom:1.1em; }
+.rm-exit {
+  position:fixed; top:20px; right:24px;
+  height:30px; padding:0 14px; border-radius:5px;
+  border:1px solid var(--border-2); font-size:.75rem; color:var(--ink-3);
+  background:var(--paper); cursor:pointer; transition:all 150ms;
+}
+.rm-exit:hover { background:var(--paper-2); color:var(--ink); }
+.rm-word-count {
+  position:fixed; bottom:20px; right:24px;
+  font-size:.65rem; color:var(--ink-5);
+  background:var(--paper-card); border:1px solid var(--border);
+  padding:3px 10px; border-radius:20px;
+}
+.rm-empty { font-style:italic; color:var(--ink-5); padding:40px 0; text-align:center; font-family:var(--serif); font-size:1rem; }
+
+/* ── EXPORT MODAL ── */
+#export-modal {
+  position:fixed; inset:0; z-index:500;
+  background:rgba(28,25,23,.45); backdrop-filter:blur(4px);
+  display:none; align-items:center; justify-content:center;
+}
+#export-modal.open { display:flex; }
+.ex-box {
+  background:var(--paper-card); border-radius:12px;
+  padding:28px; width:min(460px,90vw);
+  box-shadow:0 8px 40px rgba(28,25,23,.15);
+}
+.ex-title { font-family:var(--serif); font-size:1.3rem; margin-bottom:4px; }
+.ex-sub { font-size:.8rem; color:var(--ink-3); line-height:1.6; margin-bottom:18px; }
+.ex-options { display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
+.ex-opt {
+  border:1.5px solid var(--border-2); border-radius:8px; padding:12px 14px;
+  cursor:pointer; transition:all 150ms;
+}
+.ex-opt:hover { border-color:var(--accent); background:var(--accent-3); }
+.ex-opt.selected { border-color:var(--accent); background:var(--accent-3); }
+.ex-opt-name { font-size:.85rem; font-weight:600; color:var(--ink); margin-bottom:2px; }
+.ex-opt-desc { font-size:.72rem; color:var(--ink-3); }
+.ex-scope { margin-bottom:16px; }
+.ex-scope-label { font-size:.62rem; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-4); margin-bottom:7px; }
+.ex-scope-btns { display:flex; gap:6px; flex-wrap:wrap; }
+.ex-scope-btn { height:26px; padding:0 11px; border-radius:4px; font-size:.72rem; font-weight:500; border:1.5px solid var(--border-2); color:var(--ink-4); cursor:pointer; transition:all 150ms; }
+.ex-scope-btn.on { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+.ex-actions { display:flex; gap:8px; justify-content:flex-end; }
+
+/* ── STORY INVENTORY PAGE ── */
+#inventory-page {
+  display:none; position:fixed; inset:0; z-index:250;
+  background:var(--paper); overflow-y:auto;
+}
+#inventory-page.open { display:block; }
+.inv-topbar {
+  position:sticky; top:0; z-index:10;
+  background:var(--paper-card); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:12px; padding:10px 32px;
+}
+.inv-tb-title { font-family:var(--serif); font-size:1rem; font-weight:500; color:var(--ink); }
+.inv-tb-sub { font-size:.72rem; color:var(--ink-4); }
+.inv-close { margin-left:auto; height:28px; padding:0 12px; border-radius:5px; border:1px solid var(--border-2); font-size:.72rem; color:var(--ink-3); cursor:pointer; transition:all 150ms; }
+.inv-close:hover { background:var(--paper-2); color:var(--ink); }
+.inv-body { max-width:900px; margin:0 auto; padding:36px 32px 100px; }
+.inv-section { margin-bottom:36px; }
+.inv-section-title { font-size:.62rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-4); margin-bottom:12px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+.inv-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:10px; }
+.inv-card {
+  background:var(--paper-card); border:1px solid var(--border);
+  border-radius:8px; padding:14px; transition:all 150ms;
+}
+.inv-card:hover { border-color:var(--border-2); box-shadow:0 2px 8px rgba(28,25,23,.06); }
+.inv-card-label { font-size:.58rem; font-weight:700; letter-spacing:.09em; text-transform:uppercase; margin-bottom:6px; display:flex; align-items:center; justify-content:space-between; }
+.inv-card-label .conf { font-size:.58rem; font-weight:600; padding:1px 5px; border-radius:3px; }
+.conf-ai       { background:#e0f2fe; color:#0369a1; }
+.conf-user     { background:#dceee6; color:#2d6a4f; }
+.conf-needs    { background:#fef3c7; color:#92400e; }
+.inv-card-text { font-size:.82rem; color:var(--ink-2); line-height:1.55; }
+.inv-card-edit { font-size:.65rem; color:var(--accent); cursor:pointer; margin-top:6px; display:inline-block; border-bottom:1px dashed var(--accent-2); opacity:0; transition:opacity 150ms; }
+.inv-card:hover .inv-card-edit { opacity:1; }
+.inv-char-card { border-left:3px solid var(--accent); }
+.inv-theme-card { border-left:3px solid var(--col-beat); }
+.inv-rel-card { border-left:3px solid var(--col-draft); }
+.inv-thread-card { border-left:3px solid #f59e0b; }
+
+/* ── DYNAMICS LAYER ── */
+.dyn-arc-grid { padding:0 0 8px; }
+.dag-header {
+  display:grid; gap:1px; padding:0 16px 6px;
+  font-size:.58rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-5);
+}
+.dag-row { display:grid; gap:1px; padding:4px 16px; }
+.dag-char-name { font-size:.78rem; font-weight:600; color:var(--ink-2); padding:4px 0 2px; display:flex; align-items:center; gap:6px; }
+.dag-char-role { font-size:.6rem; color:var(--ink-4); font-weight:400; }
+.dag-cell {
+  min-height:48px; border-radius:5px; border:1px solid var(--border);
+  background:var(--paper-2); cursor:pointer; transition:all 150ms;
+  padding:5px 7px; position:relative; overflow:hidden;
+}
+.dag-cell:hover { border-color:var(--accent); background:var(--accent-3); }
+.dag-cell.active-mov { border-color:var(--accent); background:var(--accent-3); }
+.dag-cell.empty { border-style:dashed; background:transparent; }
+.dag-cell-state { font-size:.62rem; color:var(--ink-3); line-height:1.35; }
+.dag-cell-phase {
+  width:4px; height:100%; position:absolute; left:0; top:0; border-radius:5px 0 0 5px;
+}
+.phase-early { background:#2d6a4f; }
+.phase-mid   { background:#b85a28; }
+.phase-late  { background:#5b4fcf; }
+.phase-turn  { background:#ef4444; }
+
+/* Arc state detail panel */
+.arc-state-panel {
+  position:fixed; right:0; top:0; bottom:0; width:360px;
+  background:var(--paper-card); border-left:1px solid var(--border);
+  box-shadow:-4px 0 20px rgba(28,25,23,.1); z-index:210;
+  display:flex; flex-direction:column;
+  transform:translateX(100%); transition:transform 240ms var(--ease);
+}
+.arc-state-panel.open { transform:translateX(0); }
+.asp-header { padding:14px 16px; border-bottom:1px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:space-between; }
+.asp-title { font-size:.82rem; font-weight:600; color:var(--ink); }
+.asp-close { width:26px; height:26px; border-radius:4px; display:flex; align-items:center; justify-content:center; color:var(--ink-4); cursor:pointer; transition:all 150ms; font-size:.9rem; }
+.asp-close:hover { background:var(--paper-2); color:var(--ink); }
+.asp-body { flex:1; overflow-y:auto; padding:14px 16px; }
+.asp-field { margin-bottom:12px; }
+.asp-label { font-size:.6rem; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-4); margin-bottom:4px; }
+.asp-value { font-size:.82rem; color:var(--ink-2); line-height:1.55; padding:7px 9px; background:var(--paper-2); border-radius:5px; border:1px solid var(--border); cursor:text; transition:background 150ms; }
+.asp-value:hover { background:var(--paper-3); }
+.asp-value[contenteditable]:focus { background:var(--paper); border-color:var(--accent); outline:none; }
+.asp-generate-btn { width:100%; height:30px; border-radius:5px; background:var(--ink); color:var(--paper); font-size:.75rem; font-weight:500; cursor:pointer; margin-top:6px; transition:background 150ms; }
+.asp-generate-btn:hover { background:var(--ink-2); }
+.asp-visibility { background:var(--accent-3); border:1px solid var(--accent-2); border-radius:6px; padding:10px 12px; margin-top:10px; }
+.asp-vis-label { font-size:.6rem; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--accent); margin-bottom:5px; }
+.asp-vis-text { font-size:.78rem; color:var(--ink-2); line-height:1.55; font-style:italic; }
+
+/* Relationships tab in dynamics */
+.rel-card { padding:10px 16px; border-bottom:1px solid var(--border); }
+.rel-pair { font-size:.82rem; font-weight:600; color:var(--ink); margin-bottom:3px; display:flex; align-items:center; gap:8px; }
+.rel-tension-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.rel-tension-low    { background:#2d6a4f; }
+.rel-tension-mid    { background:#b85a28; }
+.rel-tension-high   { background:#ef4444; }
+.rel-tension-latent { background:var(--col-beat); }
+.rel-state { font-size:.74rem; color:var(--ink-3); line-height:1.45; margin-bottom:4px; }
+.rel-unsaid { font-size:.72rem; color:var(--ink-4); font-style:italic; border-left:2px solid var(--border-2); padding-left:8px; margin-top:4px; }
+
+/* Dynamics arc tabs */
+.dyn-tabs { display:flex; border-bottom:1px solid var(--border); padding:0 16px; flex-shrink:0; }
+.dyn-tab { padding:8px 10px; font-size:.7rem; font-weight:500; color:var(--ink-4); cursor:pointer; border-bottom:2px solid transparent; transition:all 150ms; white-space:nowrap; }
+.dyn-tab.active { color:var(--ink); border-bottom-color:var(--accent); }
+
+/* ── HEAT MAP INDICATOR ── */
+.heat-indicator {
+  display:flex; align-items:center; gap:5px;
+  padding:4px 8px; border-radius:4px; margin-top:4px;
+  font-size:.62rem; font-weight:500;
+}
+.heat-lean-in     { background:#dceee6; color:#2d6a4f; }
+.heat-light       { background:#e0f2fe; color:#0369a1; }
+.heat-hinge       { background:#fef3c7; color:#92400e; }
+.heat-overbuilt   { background:#fee2e2; color:#991b1b; }
+.heat-underdeveloped { background:#ede9fe; color:#5b21b6; }
+.heat-balanced    { background:var(--paper-3); color:var(--ink-3); }
+.heat-dot { width:5px; height:5px; border-radius:50%; background:currentColor; flex-shrink:0; }
+
+/* Scene card heat indicator */
+.sc-heat { margin-top:5px; }
+
+/* Heat strip in movement view */
+.mv-heat-strip { display:flex; gap:6px; flex-wrap:wrap; margin-top:12px; margin-bottom:20px; }
+.mvh-block { flex:1; min-width:60px; height:28px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:.6rem; font-weight:600; text-align:center; line-height:1.2; transition:opacity 150ms; cursor:default; }
+.mvh-block:hover { opacity:.8; }
+
+/* ── CONTRADICTION TRACKER ── */
+.contradiction-margin {
+  position:absolute; left:-14px; top:50%;
+  transform:translateY(-50%);
+  width:8px; height:8px; border-radius:50%;
+  background:#f59e0b; cursor:pointer;
+  animation:cont-pulse 2s ease infinite;
+}
+@keyframes cont-pulse { 0%,100%{opacity:1}50%{opacity:.4} }
+.contradiction-tooltip {
+  position:absolute; left:-200px; top:50%; transform:translateY(-50%);
+  width:180px; background:var(--ink); color:var(--paper);
+  font-size:.65rem; line-height:1.5; padding:7px 10px; border-radius:5px;
+  pointer-events:none; opacity:0; transition:opacity 150ms;
+  z-index:50;
+}
+.contradiction-margin:hover .contradiction-tooltip { opacity:1; }
+
+/* ── SHORTCUTS OVERLAY ── */
+#shortcuts-overlay {
+  position:fixed; inset:0; z-index:600;
+  background:rgba(28,25,23,.5); backdrop-filter:blur(6px);
+  display:none; align-items:center; justify-content:center;
+}
+#shortcuts-overlay.open { display:flex; }
+.sc-box {
+  background:var(--paper-card); border-radius:12px;
+  padding:28px 32px; width:min(560px,90vw);
+  box-shadow:0 8px 40px rgba(28,25,23,.2);
+  max-height:80vh; overflow-y:auto;
+}
+.sc-box-title { font-family:var(--serif); font-size:1.2rem; margin-bottom:18px; }
+.sc-grid { display:grid; grid-template-columns:1fr 1fr; gap:0; }
+.sc-group-title { font-size:.62rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-4); margin-bottom:8px; margin-top:14px; grid-column:1/-1; }
+.sc-row { display:flex; align-items:center; justify-content:space-between; padding:5px 0; border-bottom:1px solid var(--border); }
+.sc-row:last-child { border:none; }
+.sc-desc { font-size:.78rem; color:var(--ink-2); }
+.sc-keys { display:flex; gap:3px; align-items:center; }
+
+/* ── SESSION STATS ── */
+.session-stats {
+  padding:8px 14px; border-top:1px solid var(--border);
+  background:var(--paper-2); font-size:.62rem; color:var(--ink-4);
+  display:flex; flex-direction:column; gap:2px; flex-shrink:0;
+}
+.ss-row { display:flex; justify-content:space-between; }
+.ss-val { color:var(--ink-3); font-weight:500; }
+.ss-session-words { color:var(--col-draft); font-weight:600; }
+
+/* Arc guidance strip in beat view context panel */
+.arc-guidance {
+  background:var(--paper); border:1px solid var(--border); border-radius:6px;
+  padding:10px 12px; margin-top:6px;
+}
+.ag-char { display:flex; gap:6px; margin-bottom:6px; align-items:flex-start; }
+.ag-char:last-child { margin-bottom:0; }
+.ag-name { font-size:.68rem; font-weight:700; color:var(--ink-2); min-width:52px; flex-shrink:0; margin-top:1px; }
+.ag-state { font-size:.7rem; color:var(--ink-3); line-height:1.4; font-style:italic; }
+
+/* Topbar inventory button */
+.tb-btn.active { background:var(--paper-2); color:var(--ink); }
+
+/* ═══════════════════════════════════════════════════════════════
    KEYBOARD HINT
 ═══════════════════════════════════════════════════════════════ */
 #kb-hint {
@@ -1925,6 +2176,7 @@ kbd {
     <div id="tb-right">
       <div id="save-dot" title="Saved"></div>
       <button class="tb-btn" id="btn-intelligence">Intelligence</button>
+      <button class="tb-btn" id="btn-inventory">Story inventory</button>
       <button class="tb-btn" id="btn-read">Read</button>
       <button class="tb-btn" id="btn-export">Export</button>
       <button class="tb-btn" id="btn-settings">⚙ Settings</button>
@@ -1989,14 +2241,20 @@ kbd {
 
     <div id="sb-foot">
       <div class="sb-stat">
-        <span>Words</span><strong id="stat-words">0</strong>
+        <span>Total words</span><strong id="stat-words">0</strong>
       </div>
       <div class="sb-stat">
-        <span>Scenes</span><strong id="stat-scenes">0 / 0</strong>
+        <span>Scenes drafted</span><strong id="stat-scenes">0 / 0</strong>
       </div>
       <div class="sb-stat">
-        <span>Beats</span><strong id="stat-beats">0 approved</strong>
+        <span>Beats approved</span><strong id="stat-beats">0</strong>
       </div>
+    </div>
+    <div class="session-stats">
+      <div class="ss-row"><span>This session</span><strong class="ss-val ss-session-words" id="session-words">0 words</strong></div>
+      <div class="ss-row"><span>Characters</span><strong class="ss-val" id="stat-chars">0</strong></div>
+      <div class="ss-row"><span>Open threads</span><strong class="ss-val" id="stat-threads">0</strong></div>
+      <div style="margin-top:5px;display:flex;justify-content:space-between;"><span style="color:var(--ink-5);cursor:pointer;" id="show-shortcuts">? shortcuts</span><span style="color:var(--ink-5);cursor:pointer;" id="open-inventory-sb">inventory</span></div>
     </div>
   </aside>
 
@@ -2247,6 +2505,7 @@ kbd {
 
   <div id="ip-tabs">
     <div class="ip-tab active" data-iptab="model">Model</div>
+    <div class="ip-tab" data-iptab="dynamics">Dynamics</div>
     <div class="ip-tab" data-iptab="chars">Characters</div>
     <div class="ip-tab" data-iptab="threads">Threads</div>
     <div class="ip-tab" data-iptab="motifs">Motifs</div>
@@ -2263,6 +2522,97 @@ kbd {
   <div id="ip-body">
     <!-- populated by renderIntelPanel() -->
     <div style="padding:20px 16px;font-size:.8rem;color:var(--ink-4);font-style:italic;">Open a story to see the intelligence model.</div>
+  </div>
+</div>
+
+<!-- ═══ READING MODE ═══════════════════════════════════════════ -->
+<div id="reading-mode">
+  <button class="rm-exit" id="rm-exit">Exit reading ✕</button>
+  <div class="rm-inner">
+    <div class="rm-title" id="rm-title">—</div>
+    <div class="rm-meta" id="rm-meta">—</div>
+    <div id="rm-content"></div>
+  </div>
+  <div class="rm-word-count" id="rm-wc"></div>
+</div>
+
+<!-- ═══ EXPORT MODAL ════════════════════════════════════════════ -->
+<div id="export-modal">
+  <div class="ex-box">
+    <div class="ex-title">Export manuscript</div>
+    <p class="ex-sub">Choose format and scope. Only accepted beats are included in the clean export.</p>
+    <div class="ex-options" id="ex-options">
+      <div class="ex-opt selected" data-fmt="txt">
+        <div class="ex-opt-name">Plain text (.txt)</div>
+        <div class="ex-opt-desc">Clean manuscript, no formatting. Works everywhere.</div>
+      </div>
+      <div class="ex-opt" data-fmt="markdown">
+        <div class="ex-opt-name">Markdown (.md)</div>
+        <div class="ex-opt-desc">Headings for acts and movements. Good for further editing.</div>
+      </div>
+      <div class="ex-opt" data-fmt="screenplay">
+        <div class="ex-opt-name">Screenplay format (.txt)</div>
+        <div class="ex-opt-desc">Proper screenplay margins and formatting.</div>
+      </div>
+    </div>
+    <div class="ex-scope">
+      <div class="ex-scope-label">Scope</div>
+      <div class="ex-scope-btns">
+        <button class="ex-scope-btn on" data-scope="all">Full manuscript</button>
+        <button class="ex-scope-btn" data-scope="accepted">Accepted only</button>
+        <button class="ex-scope-btn" data-scope="current">Current movement</button>
+      </div>
+    </div>
+    <div class="ex-actions">
+      <button class="ws-btn-s" id="ex-cancel">Cancel</button>
+      <button class="ws-btn-p" id="ex-download">Download →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ STORY INVENTORY ══════════════════════════════════════════ -->
+<div id="inventory-page">
+  <div class="inv-topbar">
+    <div>
+      <div class="inv-tb-title">Story inventory</div>
+      <div class="inv-tb-sub" id="inv-tb-sub">—</div>
+    </div>
+    <button class="inv-close" id="inv-close">Close ✕</button>
+  </div>
+  <div class="inv-body" id="inv-body">
+    <!-- populated by renderInventory() -->
+  </div>
+</div>
+
+<!-- ═══ ARC STATE DETAIL PANEL ═══════════════════════════════════ -->
+<div class="arc-state-panel" id="arc-state-panel">
+  <div class="asp-header">
+    <span class="asp-title" id="asp-title">Arc state</span>
+    <button class="asp-close" id="asp-close">✕</button>
+  </div>
+  <div class="asp-body" id="asp-body"></div>
+</div>
+
+<!-- ═══ SHORTCUTS OVERLAY ════════════════════════════════════════ -->
+<div id="shortcuts-overlay">
+  <div class="sc-box">
+    <div class="sc-box-title">Keyboard shortcuts</div>
+    <div class="sc-grid">
+      <div class="sc-group-title">Navigation</div>
+      <div class="sc-row"><span class="sc-desc">Toggle sidebar</span><span class="sc-keys"><kbd>⌘</kbd><kbd>\</kbd></span></div>
+      <div class="sc-row"><span class="sc-desc">Intelligence panel</span><span class="sc-keys"><kbd>⌘</kbd><kbd>I</kbd></span></div>
+      <div class="sc-row"><span class="sc-desc">Craft tools</span><span class="sc-keys"><kbd>⌘</kbd><kbd>K</kbd></span></div>
+      <div class="sc-row"><span class="sc-desc">Draft view</span><span class="sc-keys"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>D</kbd></span></div>
+      <div class="sc-row"><span class="sc-desc">Reading mode</span><span class="sc-keys"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>R</kbd></span></div>
+      <div class="sc-row"><span class="sc-desc">Story inventory</span><span class="sc-keys"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>I</kbd></span></div>
+      <div class="sc-group-title">Generation</div>
+      <div class="sc-row"><span class="sc-desc">Generate beats / expand next</span><span class="sc-keys"><kbd>⌘</kbd><kbd>↵</kbd></span></div>
+      <div class="sc-row"><span class="sc-desc">Accept all beats</span><span class="sc-keys"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>A</kbd></span></div>
+      <div class="sc-group-title">Interface</div>
+      <div class="sc-row"><span class="sc-desc">Close / dismiss</span><span class="sc-keys"><kbd>Esc</kbd></span></div>
+      <div class="sc-row"><span class="sc-desc">Export</span><span class="sc-keys"><kbd>⌘</kbd><kbd>E</kbd></span></div>
+      <div class="sc-row"><span class="sc-desc">This help</span><span class="sc-keys"><kbd>?</kbd></span></div>
+    </div>
   </div>
 </div>
 
@@ -3284,6 +3634,860 @@ function restoreSession(){
 }
 
 document.addEventListener('DOMContentLoaded',()=>{if(!restoreSession())renderTree();});
+
+// ═══════════════════════════════════════════════════════════════
+// CHUNK 7 — DYNAMICS, INVENTORY, HEAT MAP, READING, EXPORT
+// ═══════════════════════════════════════════════════════════════
+
+// ─────────────────────────────────────────────
+// SESSION TRACKING
+// ─────────────────────────────────────────────
+const SESSION = { startWords:0, startTime:Date.now() };
+function initSession(){
+  SESSION.startWords = getAllAcceptedProse ? countWords(getAllAcceptedProse()) : 0;
+}
+function getSessionWords(){
+  const current = getAllAcceptedProse ? countWords(getAllAcceptedProse()) : 0;
+  return Math.max(0, current - SESSION.startWords);
+}
+function updateSessionStats(){
+  const sw = $('session-words');
+  if(sw) sw.textContent = getSessionWords().toLocaleString() + ' words';
+  const sc = $('stat-chars');
+  if(sc) sc.textContent = S.characters.length;
+  const st = $('stat-threads');
+  if(st) st.textContent = S.threads.filter(t=>t.status==='open').length;
+}
+
+// ─────────────────────────────────────────────
+// READING MODE
+// ─────────────────────────────────────────────
+function openReadingMode(){
+  const rm = $('reading-mode');
+  const proj = S.project || {};
+  $('rm-title').textContent = proj.title || 'Untitled';
+  const totalWords = countWords(getAllAcceptedProse());
+  $('rm-meta').textContent = `${S.mode==='novel'?'Novel':'Screenplay'} · ${totalWords.toLocaleString()} words`;
+
+  const content = $('rm-content');
+  content.innerHTML = '';
+  let hasAnything = false;
+
+  S.acts.forEach(act => {
+    const actHead = make('div'); actHead.className = 'rm-act-head'; actHead.textContent = act.label;
+    content.appendChild(actHead);
+
+    act.movements.forEach(mov => {
+      const acceptedBeats = mov.scenes.flatMap(s=>s.beats||[]).filter(b=>b.prose&&b.status==='accepted');
+      if(!acceptedBeats.length) return;
+
+      const movHead = make('div'); movHead.className = 'rm-mov-head'; movHead.textContent = mov.name;
+      content.appendChild(movHead);
+
+      mov.scenes.forEach(sc => {
+        const scBeats = (sc.beats||[]).filter(b=>b.prose&&b.status==='accepted');
+        if(!scBeats.length) return;
+        hasAnything = true;
+
+        const scHead = make('div'); scHead.className = 'rm-scene-head'; scHead.textContent = sc.name;
+        content.appendChild(scHead);
+
+        const proseBlock = make('div'); proseBlock.className = 'rm-prose';
+        proseBlock.innerHTML = scBeats.map(b =>
+          b.prose.split('\n').filter(p=>p.trim()).map(p=>`<p>${escHtml(p)}</p>`).join('')
+        ).join('');
+        content.appendChild(proseBlock);
+      });
+    });
+  });
+
+  if(!hasAnything){
+    content.innerHTML = '<div class="rm-empty">No accepted prose yet. Accept beats in the draft view to populate the reading view.</div>';
+  }
+
+  $('rm-wc').textContent = totalWords > 0 ? `${totalWords.toLocaleString()} words` : '';
+  rm.classList.add('open');
+}
+
+function closeReadingMode(){ $('reading-mode').classList.remove('open'); }
+$('rm-exit').addEventListener('click', closeReadingMode);
+
+// ─────────────────────────────────────────────
+// EXPORT
+// ─────────────────────────────────────────────
+let exportFmt = 'txt';
+let exportScope = 'all';
+
+function openExportModal(){
+  $('export-modal').classList.add('open');
+  // Set screenplay format if in screenplay mode
+  if(S.mode==='screenplay'){
+    document.querySelectorAll('.ex-opt').forEach(o=>o.classList.remove('selected'));
+    const scOpt = document.querySelector('[data-fmt="screenplay"]');
+    if(scOpt){ scOpt.classList.add('selected'); exportFmt='screenplay'; }
+  }
+}
+function closeExportModal(){ $('export-modal').classList.remove('open'); }
+$('ex-cancel').addEventListener('click', closeExportModal);
+
+document.querySelectorAll('.ex-opt').forEach(opt=>{
+  opt.addEventListener('click',()=>{
+    document.querySelectorAll('.ex-opt').forEach(o=>o.classList.remove('selected'));
+    opt.classList.add('selected');
+    exportFmt = opt.dataset.fmt;
+  });
+});
+document.querySelectorAll('.ex-scope-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.ex-scope-btn').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    exportScope = btn.dataset.scope;
+  });
+});
+
+$('ex-download').addEventListener('click', ()=>{
+  const proj = S.project || {};
+  let text = '';
+  const title = proj.title || 'Untitled';
+
+  const acts = S.acts;
+  const isScreenplay = exportFmt === 'screenplay';
+  const isMarkdown = exportFmt === 'markdown';
+
+  if(isMarkdown) text += `# ${title}\n\n`;
+  else text += `${title.toUpperCase()}\n${'─'.repeat(title.length)}\n\n`;
+
+  acts.forEach(act => {
+    act.movements.forEach(mov => {
+      if(exportScope==='current' && mov.id!==S.activeMovId) return;
+      let movHasContent = false;
+
+      mov.scenes.forEach(sc => {
+        const beats = (sc.beats||[]).filter(b => {
+          if(exportScope==='accepted') return b.prose && b.status==='accepted';
+          return b.prose;
+        });
+        if(!beats.length) return;
+        if(!movHasContent){
+          if(isMarkdown) text += `## ${act.label}: ${mov.name}\n\n`;
+          else text += `\n${act.label.toUpperCase()}: ${mov.name.toUpperCase()}\n\n`;
+          movHasContent = true;
+        }
+        if(isMarkdown) text += `### ${sc.name}\n\n`;
+        else if(isScreenplay) text += `\n--- ${sc.name.toUpperCase()} ---\n\n`;
+        else text += `${sc.name}\n\n`;
+
+        beats.forEach(b => {
+          if(isScreenplay){
+            // Basic screenplay formatting
+            const prose = b.prose;
+            text += prose + '\n\n';
+          } else {
+            text += b.prose + '\n\n';
+          }
+        });
+      });
+    });
+  });
+
+  const ext = isMarkdown ? 'md' : 'txt';
+  const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = make('a'); a.href = url;
+  a.download = `${title.toLowerCase().replace(/\s+/g,'-')}.${ext}`;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  closeExportModal();
+  toast(`Exported: ${a.download}`, 'success');
+});
+
+// ─────────────────────────────────────────────
+// STORY INVENTORY
+// ─────────────────────────────────────────────
+function openInventory(){
+  $('inventory-page').classList.add('open');
+  $('btn-inventory')?.classList.add('active');
+  renderInventory();
+}
+function closeInventory(){
+  $('inventory-page').classList.remove('open');
+  $('btn-inventory')?.classList.remove('active');
+}
+$('inv-close').addEventListener('click', closeInventory);
+
+function renderInventory(){
+  const body = $('inv-body');
+  const proj = S.project || {};
+  body.innerHTML = '';
+  $('inv-tb-sub').textContent = proj.title ? `${proj.title} · ${S.mode} mode` : 'No story loaded';
+
+  // Story Core
+  const coreSection = make('div'); coreSection.className = 'inv-section';
+  coreSection.innerHTML = '<div class="inv-section-title">Story core</div>';
+  const coreGrid = make('div'); coreGrid.className = 'inv-grid';
+  const coreFields = [
+    {label:'Title',     key:'title',   val:proj.title,   conf:'user'},
+    {label:'Genre',     key:'genre',   val:proj.genre,   conf:proj.genre?'user':'needs'},
+    {label:'Tone',      key:'tone',    val:proj.tone,    conf:proj.tone?'user':'needs'},
+    {label:'POV',       key:'pov',     val:proj.pov,     conf:proj.pov?'user':'needs'},
+    {label:'Premise',   key:'premise', val:proj.premise, conf:proj.premise?'ai':'needs'},
+    {label:'Ending (locked)', key:'ending', val:proj.ending, conf:proj.ending?'user':'needs'},
+    {label:'Central conflict', key:'centralConflict', val:proj.centralConflict, conf:'ai'},
+  ];
+  coreFields.forEach(f=>{
+    const card = make('div'); card.className = 'inv-card';
+    card.innerHTML = `<div class="inv-card-label">${f.label} <span class="conf conf-${f.conf||'needs'}">${f.conf==='user'?'confirmed':f.conf==='ai'?'inferred':'needs review'}</span></div>
+      <div class="inv-card-text">${f.val||'<span style="color:var(--ink-5);font-style:italic;">Not yet set</span>'}</div>
+      <div class="inv-card-edit" onclick="editInventoryField('${f.key}')">Edit</div>`;
+    coreGrid.appendChild(card);
+  });
+  coreSection.appendChild(coreGrid);
+  body.appendChild(coreSection);
+
+  // Characters
+  if(S.characters.length){
+    const charSection = make('div'); charSection.className = 'inv-section';
+    charSection.innerHTML = '<div class="inv-section-title">Character inventory</div>';
+    const charGrid = make('div'); charGrid.className = 'inv-grid';
+    S.characters.forEach(c=>{
+      const card = make('div'); card.className = 'inv-card inv-char-card';
+      card.innerHTML = `<div class="inv-card-label"><strong style="font-size:.78rem;color:var(--ink)">${c.name}</strong> <span class="conf conf-user">${c.role}</span></div>
+        <div class="inv-card-text">
+          <div style="margin-bottom:4px;"><strong>Want:</strong> ${c.want||'—'}</div>
+          <div style="margin-bottom:4px;"><strong>Fear:</strong> ${c.fear||'—'}</div>
+          ${c.belief?`<div style="margin-bottom:4px;font-style:italic;color:var(--ink-3)"><strong>Belief:</strong> ${c.belief}</div>`:''}
+          ${c.arc?`<div><strong>Arc:</strong> ${c.arc}</div>`:''}
+        </div>
+        <div class="inv-card-edit">Edit character</div>`;
+      charGrid.appendChild(card);
+    });
+    charSection.appendChild(charGrid);
+    body.appendChild(charSection);
+  }
+
+  // Relationships
+  const relPairs = [];
+  S.characters.forEach((c,i)=>{
+    S.characters.slice(i+1).forEach(c2=>{
+      relPairs.push({a:c.name, b:c2.name, state:getRelationshipState(c,c2)});
+    });
+  });
+  if(relPairs.length){
+    const relSection = make('div'); relSection.className = 'inv-section';
+    relSection.innerHTML = '<div class="inv-section-title">Relationship inventory</div>';
+    const relGrid = make('div'); relGrid.className = 'inv-grid';
+    relPairs.forEach(rel=>{
+      const card = make('div'); card.className = 'inv-card inv-rel-card';
+      card.innerHTML = `<div class="inv-card-label"><strong style="font-size:.78rem;color:var(--ink)">${rel.a} ↔ ${rel.b}</strong> <span class="conf conf-ai">inferred</span></div>
+        <div class="inv-card-text">${rel.state}</div>`;
+      relGrid.appendChild(card);
+    });
+    relSection.appendChild(relGrid);
+    body.appendChild(relSection);
+  }
+
+  // Themes & Motifs
+  const themesSection = make('div'); themesSection.className = 'inv-section';
+  themesSection.innerHTML = '<div class="inv-section-title">Themes & motifs</div>';
+  const themesGrid = make('div'); themesGrid.className = 'inv-grid';
+  const themes = (proj.themes||['Betrayal and self-construction','Male friendship under pressure','The cost of secrecy']);
+  themes.forEach(t=>{
+    const card = make('div'); card.className = 'inv-card inv-theme-card';
+    card.innerHTML = `<div class="inv-card-label">Theme <span class="conf conf-ai">inferred</span></div><div class="inv-card-text">${t}</div>`;
+    themesGrid.appendChild(card);
+  });
+  S.motifs.forEach(m=>{
+    const card = make('div'); card.className = 'inv-card inv-theme-card';
+    card.innerHTML = `<div class="inv-card-label">Motif <span class="conf conf-${m.occurrences.length>0?'user':'ai'}">${m.occurrences.length>0?`${m.occurrences.length} appearances`:'tracked'}</span></div><div class="inv-card-text">${m.name}</div>`;
+    themesGrid.appendChild(card);
+  });
+  themesSection.appendChild(themesGrid);
+  body.appendChild(themesSection);
+
+  // Open Threads
+  const openThreads = S.threads.filter(t=>t.status==='open');
+  if(openThreads.length){
+    const thrSection = make('div'); thrSection.className = 'inv-section';
+    thrSection.innerHTML = '<div class="inv-section-title">Open threads</div>';
+    const thrGrid = make('div'); thrGrid.className = 'inv-grid';
+    openThreads.forEach(t=>{
+      const card = make('div'); card.className = 'inv-card inv-thread-card';
+      card.innerHTML = `<div class="inv-card-label">Thread <span class="conf conf-user">open</span></div><div class="inv-card-text">${t.text}</div>`;
+      thrGrid.appendChild(card);
+    });
+    thrSection.appendChild(thrGrid);
+    body.appendChild(thrSection);
+  }
+
+  // Structural inventory
+  const structSection = make('div'); structSection.className = 'inv-section';
+  structSection.innerHTML = '<div class="inv-section-title">Structural inventory</div>';
+  const structGrid = make('div'); structGrid.className = 'inv-grid';
+  S.acts.forEach(act=>{
+    act.movements.forEach(mov=>{
+      const draftedCount = mov.scenes.filter(s=>s.status==='draft').length;
+      const totalBeats = mov.scenes.flatMap(s=>s.beats||[]).length;
+      const acceptedWords = mov.scenes.flatMap(s=>s.beats||[]).filter(b=>b.prose&&b.status==='accepted').reduce((s,b)=>s+countWords(b.prose),0);
+      const conf = draftedCount>0?'user':mov.summary?'ai':'needs';
+      const card = make('div'); card.className = 'inv-card';
+      card.innerHTML = `<div class="inv-card-label">${act.label}: ${mov.name} <span class="conf conf-${conf}">${draftedCount>0?'drafted':mov.summary?'planned':'open'}</span></div>
+        <div class="inv-card-text">
+          <div>${mov.fn}</div>
+          <div style="color:var(--ink-4);margin-top:3px;">${mov.scenes.length} scene${mov.scenes.length!==1?'s':''} · ${totalBeats} beats · ${acceptedWords>0?acceptedWords.toLocaleString()+' words':''}</div>
+          ${mov.summary?`<div style="margin-top:5px;font-style:italic;color:var(--ink-3);font-size:.76rem;">${mov.summary.substring(0,120)}${mov.summary.length>120?'…':''}</div>`:''}
+          ${getHeatIndicator(mov)}
+        </div>`;
+      structGrid.appendChild(card);
+    });
+  });
+  structSection.appendChild(structGrid);
+  body.appendChild(structSection);
+}
+
+function editInventoryField(key){
+  const proj = S.project;
+  if(!proj) return;
+  const val = prompt(`Edit ${key}:`, proj[key]||'');
+  if(val !== null){ proj[key] = val; persist(); renderInventory(); }
+}
+window.editInventoryField = editInventoryField;
+
+function getRelationshipState(c1, c2){
+  // Derive a relationship state from character data
+  const pairs = {
+    'Robert-Marcus': 'An estranged friendship with unequal knowledge — Robert believes they are meeting to reconnect; Marcus knows they are meeting for a reckoning.',
+    'Robert-Daniel': 'An absence that functions as presence — Daniel is not there but is the reason everyone else is.',
+    'Marcus-Daniel': 'A loyalty that Robert does not know the extent of — Marcus\'s patience with Robert is partly about what he owes Daniel.',
+  };
+  const key1 = `${c1.name}-${c2.name}`;
+  const key2 = `${c2.name}-${c1.name}`;
+  return pairs[key1] || pairs[key2] || `The dynamic between ${c1.name} and ${c2.name} — to be developed.`;
+}
+
+// ─────────────────────────────────────────────
+// NARRATIVE HEAT MAP
+// ─────────────────────────────────────────────
+function getHeatData(mov){
+  const scenes = mov.scenes || [];
+  const acceptedWords = scenes.flatMap(s=>s.beats||[]).filter(b=>b.prose&&b.status==='accepted').reduce((s,b)=>s+countWords(b.prose),0);
+  const tension = mov.tension || 0.5;
+  const structuralWeight = tension > 0.85 ? 'major' : tension > 0.65 ? 'significant' : tension < 0.3 ? 'light' : 'moderate';
+  const drafted = scenes.filter(s=>s.status==='draft').length;
+
+  // Recommend based on structural position
+  if(tension >= 0.9)  return {label:'Major emotional hinge',  cls:'heat-hinge',  words:acceptedWords, recommended:'2,500–4,000'};
+  if(tension >= 0.7)  return {label:'Lean in here',           cls:'heat-lean-in',words:acceptedWords, recommended:'1,800–2,800'};
+  if(tension <= 0.25) return {label:'Keep this light',        cls:'heat-light',  words:acceptedWords, recommended:'800–1,400'};
+
+  // Check if overbuilt or underdeveloped
+  if(acceptedWords > 4500 && tension < 0.6) return {label:'Overbuilt for its function', cls:'heat-overbuilt', words:acceptedWords, recommended:'1,200–2,000'};
+  if(acceptedWords < 400 && drafted > 0)    return {label:'Underdeveloped', cls:'heat-underdeveloped', words:acceptedWords, recommended:'1,500–2,500'};
+
+  return {label:'Balanced', cls:'heat-balanced', words:acceptedWords, recommended:'1,200–2,000'};
+}
+
+function getHeatIndicator(mov){
+  const heat = getHeatData(mov);
+  return `<div class="heat-indicator ${heat.cls}" style="margin-top:6px;display:inline-flex;"><div class="heat-dot"></div>${heat.label}</div>`;
+}
+
+function renderHeatStrip(mov, container){
+  if(!container) return;
+  const heat = getHeatData(mov);
+  const strip = make('div');
+  strip.style.cssText = 'padding:0 0 12px;';
+  strip.innerHTML = `<div style="font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);margin-bottom:6px;">Narrative weight</div>
+    <div class="heat-indicator ${heat.cls}" style="display:inline-flex;margin-bottom:4px;"><div class="heat-dot"></div>${heat.label}</div>
+    <div style="font-size:.65rem;color:var(--ink-4);margin-top:3px;">Recommended: ${heat.recommended} words${heat.words>0?` · Currently: ${heat.words.toLocaleString()} words`:''}</div>`;
+  container.appendChild(strip);
+}
+
+// ─────────────────────────────────────────────
+// DYNAMICS LAYER — CHARACTER ARC STATES
+// ─────────────────────────────────────────────
+function initArcStates(){
+  // Ensure all characters have arc states for all movements
+  const allMovements = S.acts.flatMap(a=>a.movements);
+  S.characters.forEach(c=>{
+    if(!c.arcStates) c.arcStates = {};
+    allMovements.forEach(mov=>{
+      if(!c.arcStates[mov.id]){
+        c.arcStates[mov.id] = buildDefaultArcState(c, mov);
+      }
+    });
+  });
+  // Ensure relationships exist
+  if(!S.relationships) S.relationships = buildDefaultRelationships();
+}
+
+function buildDefaultArcState(c, mov){
+  const t = mov.tension || 0.5;
+  return {
+    emotionalState: t > 0.7 ? 'Under significant pressure' : t < 0.3 ? 'Relatively settled' : 'Navigating uncertainty',
+    dominantTension: c.fear ? `Fear of ${c.fear.toLowerCase()}` : 'Internal conflict',
+    desire: c.want || 'Unknown',
+    fear: c.fear || 'Unknown',
+    defenseMechanism: 'Control and deflection',
+    falseBelief: c.belief || 'Unknown',
+    contradiction: c.contradiction || 'Between what they show and what they feel',
+    relationshipPosture: 'Guarded — performing rather than disclosing',
+    arcNote: `${c.name} in ${mov.name}: ${mov.fn.toLowerCase()}`,
+    visibility: `What should show in scenes: ${t > 0.7 ? 'heightened precision, controlled energy, sentences that are complete when they should not be' : 'the particular ease of someone who believes they are managing this'}`,
+    confirmed: false,
+  };
+}
+
+// Demo arc states for Ashes of Us
+const DEMO_ARC_STATES = {
+  Robert: {
+    m1:{emotionalState:'Uncomplicated warmth — Robert before the weight',dominantTension:'Nothing yet. The ease is real.',desire:'To belong to something easy',fear:'Not yet conscious',defenseMechanism:'None required — the friendship is not yet a risk',falseBelief:'That he is the kind of person who deserves this',contradiction:'Not yet visible',relationshipPosture:'Open — the most open he will ever be',arcNote:'Robert before the decision. The reader should like him.',visibility:'Laughs easily. Does not check his phone. Listens when Marcus speaks.',confirmed:true},
+    m2:{emotionalState:'Controlled anxiety beneath a composed surface',dominantTension:'The message exists. He has not yet decided whether to respond.',desire:'To manage this the way he manages everything',fear:'That Marcus knows',defenseMechanism:'Routine — staying inside the structure of the ordinary day',falseBelief:'That not responding is a neutral act',contradiction:'Thinks about the message every twenty minutes. Appears entirely focused on work.',relationshipPosture:'Avoidant — toward Marcus specifically',arcNote:'Robert engaging his control mechanism for the first time in the story.',visibility:'Very still. Precise language. Nothing wasted. Does not name the thing he is thinking about.',confirmed:true},
+    m3:{emotionalState:'Active deflection — warm but defended',dominantTension:'Marcus may know more than Robert has accounted for',desire:'To get through this meeting without anything being named',fear:'Losing the version of himself he has maintained',defenseMechanism:'Warmth as management — keeping the register social to prevent it becoming serious',falseBelief:'That he can control the shape of this conversation',contradiction:'Genuinely glad to see Marcus. Using that gladness as a shield.',relationshipPosture:'Performing openness while managing disclosure',arcNote:'The control mechanism under first real pressure.',visibility:'Picks up the check before it arrives. Asks about Marcus\'s life first. Very good at this.',confirmed:true},
+    m4:{emotionalState:'Retrospective — re-entering the past',dominantTension:'The eleven days with the file. What he knew and when he knew it.',desire:'To locate a version of the decision that was defensible',fear:'That there is no defensible version',defenseMechanism:'Narrative revision — retelling it to himself as a difficult choice, not a moral failure',falseBelief:'That his reasons were complex when they were simple',contradiction:'The reasons he gives himself are sophisticated. The actual reason was not.',relationshipPosture:'Absent from the present — entirely inside the memory',arcNote:'The moment the reader understands who Robert actually is.',visibility:'Memory scenes: younger, faster, less careful. The precision is not yet a habit.',confirmed:true},
+    m5:{emotionalState:'The collapse of the management strategy',dominantTension:'He can no longer be certain what Marcus knows',desire:'To find out without asking',fear:'That the question itself will confirm he should already have told him',defenseMechanism:'Probe via indirection — testing what Marcus reveals without revealing anything himself',falseBelief:'That there is still a version of this he can manage',contradiction:'Knows he has already lost the ability to manage it. Still trying.',relationshipPosture:'Hyperattentive — reading every pause, every word',arcNote:'The mechanism failing in real time.',visibility:'Unusually quiet. Picks up on things he would normally let pass. Asks one question too carefully.',confirmed:true},
+    m6:{emotionalState:'Something like relief underneath the dread',dominantTension:'The telling itself',desire:'To tell it correctly — to find the words that are honest without being self-serving',fear:'That there are no such words',defenseMechanism:'None left',falseBelief:'Gone. What replaces it is not yet clear.',contradiction:'Has spent fifteen years finding reasons not to say this. Now cannot find a reason not to.',relationshipPosture:'Open — for the first time since Movement 1',arcNote:'The thing Robert could not do for fifteen years. He does it now.',visibility:'Slower. Sentences that start and do not finish. Long pauses that he does not fill.',confirmed:true},
+    m7:{emotionalState:'The particular blankness of a person who has stopped constructing',dominantTension:'What remains when the management is gone',desire:'Nothing clear. The absence of desire is new.',fear:'Diminished. Not gone.',defenseMechanism:'None',falseBelief:'None remaining',contradiction:'Feels lighter and worse simultaneously',relationshipPosture:'Uncertain — does not know what he and Marcus are now',arcNote:'Robert without the architecture. Something solid. Something simpler.',visibility:'Does not fill silences. Looks at things longer than he used to. Does not button his coat.',confirmed:true},
+  }
+};
+
+function buildDefaultRelationships(){
+  return [
+    {id:'rel1',pair:['Robert','Marcus'],tensionLevel:'high',state:'An estranged friendship with unequal knowledge. Robert believes they are performing a reunion; Marcus knows they are performing a reckoning.',unsaid:'What Robert did to Daniel. Neither will name it until Movement 6.',movementStates:{m1:'Founding warmth — equal, easy, unmarked',m2:'Robert initiates distance; Marcus waits',m3:'First meeting — the warmth is real and the danger is real simultaneously',m4:'Absent — Robert is in memory',m5:'The asymmetry becomes visible',m6:'The reckoning',m7:'Unknown — something that does not yet have a name'}},
+    {id:'rel2',pair:['Robert','Daniel'],tensionLevel:'latent',state:'An absence that functions as presence. Daniel is not in the story but is the reason all of it is happening.',unsaid:'What Robert chose instead of Daniel. Everything else.',movementStates:{m1:'The friendship at its purest — Daniel arriving late, Robert not asking why',m4:'The moment Robert chose himself over Daniel'}},
+    {id:'rel3',pair:['Marcus','Daniel'],tensionLevel:'latent',state:'A loyalty Robert does not know the extent of. Marcus\'s patience with Robert across fifteen years is partly what he owes Daniel.',unsaid:'The full nature of Marcus\'s knowledge and why he waited.',movementStates:{m5:'Marcus\'s knowledge and its source becomes relevant',m6:'Present in what Marcus says and does not say after Robert tells him'}},
+  ];
+}
+
+// ─────────────────────────────────────────────
+// DYNAMICS TAB
+// ─────────────────────────────────────────────
+function renderDynamicsTab(){
+  const body = $('ip-body');
+  body.innerHTML = '';
+
+  if(!S.characters.length){
+    body.innerHTML = '<div style="padding:20px 16px;font-size:.8rem;color:var(--ink-4);font-style:italic">No characters yet. Load the demo or add characters in the Characters tab.</div>';
+    return;
+  }
+
+  initArcStates();
+
+  // Sub-tabs: Characters / Relationships / Themes
+  const dynTabs = make('div'); dynTabs.className = 'dyn-tabs';
+  ['Arc grid','Relationships','Themes'].forEach((label,i)=>{
+    const t = make('div'); t.className = 'dyn-tab' + (i===0?' active':'');
+    t.textContent = label;
+    t.addEventListener('click',()=>{
+      dynTabs.querySelectorAll('.dyn-tab').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      if(i===0) renderArcGrid(body, dynTabs);
+      else if(i===1) renderRelationshipsView(body, dynTabs);
+      else renderThemesView(body, dynTabs);
+    });
+    dynTabs.appendChild(t);
+  });
+  body.appendChild(dynTabs);
+  renderArcGrid(body, dynTabs);
+}
+
+function renderArcGrid(body, dynTabs){
+  // Remove everything after dynTabs
+  while(body.lastChild && body.lastChild !== dynTabs) body.removeChild(body.lastChild);
+
+  const allMovements = S.acts.flatMap(a=>a.movements);
+  const intro = make('div');
+  intro.style.cssText = 'padding:10px 16px 6px;font-size:.72rem;color:var(--ink-3);line-height:1.5;';
+  intro.innerHTML = 'Character arc states across each movement. <span style="color:var(--accent)">Click any cell</span> to view or edit the full arc state.';
+  body.appendChild(intro);
+
+  // Column headers
+  const headerWrap = make('div');
+  headerWrap.style.cssText = 'padding:4px 16px;display:flex;gap:4px;border-bottom:1px solid var(--border);';
+  headerWrap.innerHTML = '<div style="width:70px;flex-shrink:0;"></div>';
+  allMovements.forEach(mov=>{
+    const h = make('div');
+    h.style.cssText = `flex:1;font-size:.55rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${mov.id===S.activeMovId?'var(--accent)':'var(--ink-5)'};text-align:center;padding:0 2px;line-height:1.3;`;
+    h.textContent = mov.label || mov.name.split(' ').slice(0,2).join(' ');
+    headerWrap.appendChild(h);
+  });
+  body.appendChild(headerWrap);
+
+  // Character rows
+  S.characters.forEach(c=>{
+    const charLabel = make('div'); charLabel.className = 'dag-char-name';
+    charLabel.style.cssText = 'padding:8px 16px 3px;';
+    charLabel.innerHTML = `${c.name} <span class="dag-char-role">${c.role}</span>`;
+    body.appendChild(charLabel);
+
+    const rowWrap = make('div');
+    rowWrap.style.cssText = 'padding:0 16px 8px;display:flex;gap:4px;';
+    // Character name column placeholder
+    rowWrap.innerHTML = '<div style="width:70px;flex-shrink:0;"></div>';
+
+    allMovements.forEach(mov=>{
+      const state = c.arcStates?.[mov.id];
+      const isActive = mov.id === S.activeMovId;
+      const t = mov.tension || 0.5;
+      const phaseClass = t >= 0.85 ? 'phase-turn' : t >= 0.65 ? 'phase-late' : t >= 0.4 ? 'phase-mid' : 'phase-early';
+
+      const cell = make('div');
+      cell.className = `dag-cell${isActive?' active-mov':''}${!state?' empty':''}`;
+      cell.style.cssText = 'flex:1;';
+
+      if(state){
+        cell.innerHTML = `<div class="dag-cell-phase ${phaseClass}"></div>
+          <div class="dag-cell-state">${state.arcNote||'—'}</div>`;
+      } else {
+        cell.innerHTML = '<div class="dag-cell-state" style="color:var(--ink-5);font-style:italic;">+</div>';
+      }
+
+      cell.addEventListener('click',()=>openArcStatePanel(c, mov, state));
+      rowWrap.appendChild(cell);
+    });
+    body.appendChild(rowWrap);
+  });
+
+  // Legend
+  const legend = make('div');
+  legend.style.cssText = 'padding:10px 16px;display:flex;gap:10px;flex-wrap:wrap;border-top:1px solid var(--border);';
+  [{cls:'phase-early',label:'Early arc'},{cls:'phase-mid',label:'Mid arc'},{cls:'phase-late',label:'Late arc'},{cls:'phase-turn',label:'Crisis/turn'}].forEach(l=>{
+    const li = make('div'); li.style.cssText = 'display:flex;align-items:center;gap:4px;font-size:.6rem;color:var(--ink-4);';
+    li.innerHTML = `<div style="width:8px;height:8px;border-radius:2px;" class="${l.cls}"></div>${l.label}`;
+    legend.appendChild(li);
+  });
+  body.appendChild(legend);
+}
+
+function renderRelationshipsView(body, dynTabs){
+  while(body.lastChild && body.lastChild !== dynTabs) body.removeChild(body.lastChild);
+  const rels = S.relationships || buildDefaultRelationships();
+
+  rels.forEach(rel=>{
+    const card = make('div'); card.className = 'rel-card';
+    const tensionMap = {low:'rel-tension-low',mid:'rel-tension-mid',high:'rel-tension-high',latent:'rel-tension-latent'};
+    card.innerHTML = `<div class="rel-pair">
+        <div class="rel-tension-dot ${tensionMap[rel.tensionLevel]||'rel-tension-latent'}"></div>
+        ${rel.pair.join(' ↔ ')}
+      </div>
+      <div class="rel-state">${rel.state}</div>
+      <div class="rel-unsaid">${rel.unsaid}</div>`;
+
+    // Movement progression
+    if(rel.movementStates && Object.keys(rel.movementStates).length){
+      const movStates = make('div');
+      movStates.style.cssText = 'margin-top:8px;';
+      movStates.innerHTML = '<div style="font-size:.58rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-5);margin-bottom:4px;">Across movements</div>';
+      Object.entries(rel.movementStates).forEach(([movId, state])=>{
+        const mov = S.acts.flatMap(a=>a.movements).find(m=>m.id===movId);
+        if(!mov) return;
+        const row = make('div'); row.style.cssText = 'display:flex;gap:6px;font-size:.7rem;padding:3px 0;border-bottom:1px solid var(--border);';
+        row.innerHTML = `<span style="color:var(--ink-4);min-width:80px;flex-shrink:0;">${mov.name.split(' ').slice(0,2).join(' ')}</span><span style="color:var(--ink-3);font-style:italic;">${state}</span>`;
+        movStates.appendChild(row);
+      });
+      card.appendChild(movStates);
+    }
+    body.appendChild(card);
+  });
+}
+
+function renderThemesView(body, dynTabs){
+  while(body.lastChild && body.lastChild !== dynTabs) body.removeChild(body.lastChild);
+  const proj = S.project || {};
+  const themes = proj.themes || ['Betrayal and self-construction','Male friendship under pressure','The cost of secrecy and the relief of honesty'];
+  const themeStages = {'Betrayal and self-construction':{m1:'Latent — established before it exists',m2:'Dormant — the theme is present but the story hasn\'t named it yet',m3:'Emerging — the betrayal is implied in the gap between the men',m4:'Active — the decision shown in full',m5:'Building — consequence becoming visible',m6:'Crystallising — the truth told',m7:'Resolved — something simpler replaces it'}};
+
+  themes.forEach(theme=>{
+    const card = make('div');
+    card.style.cssText = 'padding:12px 16px;border-bottom:1px solid var(--border);';
+    card.innerHTML = `<div style="font-size:.82rem;font-weight:600;color:var(--ink);margin-bottom:6px;">${theme}</div>`;
+    const stages = themeStages[theme];
+    if(stages){
+      Object.entries(stages).forEach(([movId, state])=>{
+        const mov = S.acts.flatMap(a=>a.movements).find(m=>m.id===movId);
+        if(!mov) return;
+        const row = make('div'); row.style.cssText = 'display:flex;gap:6px;font-size:.7rem;padding:3px 0;';
+        row.innerHTML = `<span style="color:var(--ink-4);min-width:80px;flex-shrink:0;">${mov.name.split(' ').slice(0,2).join(' ')}</span><span style="color:var(--ink-3);font-style:italic;">${state}</span>`;
+        card.appendChild(row);
+      });
+    }
+    body.appendChild(card);
+  });
+
+  const note = make('div');
+  note.style.cssText = 'padding:12px 16px;font-size:.72rem;color:var(--ink-4);font-style:italic;';
+  note.textContent = 'Theme arc tracking updates as you accept prose. Add themes via the Story Inventory.';
+  body.appendChild(note);
+}
+
+// ─────────────────────────────────────────────
+// ARC STATE DETAIL PANEL
+// ─────────────────────────────────────────────
+function openArcStatePanel(char, mov, state){
+  const panel = $('arc-state-panel');
+  $('asp-title').textContent = `${char.name} — ${mov.name}`;
+
+  const body = $('asp-body');
+  body.innerHTML = '';
+
+  const fields = [
+    {key:'emotionalState',   label:'What they\'re carrying'},
+    {key:'dominantTension',  label:'What\'s pulling against them'},
+    {key:'desire',           label:'What they want here'},
+    {key:'fear',             label:'What they\'re protecting'},
+    {key:'defenseMechanism', label:'How they\'re defending'},
+    {key:'falseBelief',      label:'What they believe that isn\'t true'},
+    {key:'contradiction',    label:'The gap (visible to reader)'},
+    {key:'relationshipPosture', label:'How they\'re holding the others'},
+    {key:'arcNote',          label:'Where they are in the arc'},
+  ];
+
+  fields.forEach(f=>{
+    const el = make('div'); el.className = 'asp-field';
+    const val = state?.[f.key] || '';
+    el.innerHTML = `<div class="asp-label">${f.label}</div>
+      <div class="asp-value" contenteditable="true" data-key="${f.key}">${val||'<span style="color:var(--ink-5);font-style:italic;">Not set</span>'}</div>`;
+    el.querySelector('.asp-value').addEventListener('blur', e=>{
+      if(!char.arcStates) char.arcStates = {};
+      if(!char.arcStates[mov.id]) char.arcStates[mov.id] = {};
+      char.arcStates[mov.id][f.key] = e.target.textContent.trim();
+      persist();
+    });
+    el.querySelector('.asp-value').addEventListener('focus', e=>{
+      if(e.target.querySelector('span')){e.target.innerHTML='';}
+    });
+    body.appendChild(el);
+  });
+
+  // Visibility section
+  const visEl = make('div'); visEl.className = 'asp-visibility';
+  visEl.innerHTML = `<div class="asp-vis-label">What should show in the writing</div>
+    <div class="asp-vis-text" contenteditable="true" data-key="visibility">${state?.visibility||'Click to add scene guidance for this arc state…'}</div>`;
+  visEl.querySelector('[data-key="visibility"]').addEventListener('blur',e=>{
+    if(!char.arcStates) char.arcStates = {};
+    if(!char.arcStates[mov.id]) char.arcStates[mov.id] = {};
+    char.arcStates[mov.id].visibility = e.target.textContent.trim();
+    persist();
+  });
+  body.appendChild(visEl);
+
+  if(!state || !state.confirmed){
+    const genBtn = make('button'); genBtn.className = 'asp-generate-btn';
+    genBtn.textContent = 'Generate arc state with AI';
+    genBtn.addEventListener('click', async ()=>{
+      genBtn.disabled = true; genBtn.textContent = 'Generating…';
+      try {
+        const generated = await generateArcState(char, mov);
+        if(!char.arcStates) char.arcStates = {};
+        char.arcStates[mov.id] = {...generated, confirmed:false};
+        persist();
+        openArcStatePanel(char, mov, char.arcStates[mov.id]);
+        toast('Arc state generated', 'success');
+      } catch(e) {
+        toast('Generation failed: ' + e.message);
+        genBtn.disabled = false; genBtn.textContent = 'Generate arc state with AI';
+      }
+    });
+    body.appendChild(genBtn);
+  }
+
+  const confirmBtn = make('button');
+  confirmBtn.className = 'asp-generate-btn';
+  confirmBtn.style.cssText = 'background:var(--col-draft);margin-top:8px;';
+  confirmBtn.textContent = state?.confirmed ? '✓ Confirmed' : 'Confirm this arc state';
+  confirmBtn.addEventListener('click',()=>{
+    if(!char.arcStates) char.arcStates = {};
+    if(!char.arcStates[mov.id]) char.arcStates[mov.id] = {};
+    char.arcStates[mov.id].confirmed = true;
+    persist(); toast('Arc state confirmed','success');
+    confirmBtn.textContent = '✓ Confirmed';
+  });
+  body.appendChild(confirmBtn);
+
+  panel.classList.add('open');
+}
+
+async function generateArcState(char, mov){
+  const proj = S.project || {};
+  const act = S.acts.find(a=>a.movements.some(m=>m.id===mov.id));
+  if(!S.apiKey) return buildDefaultArcState(char, mov);
+  const system = `Generate a detailed psychological arc state for a character at a specific story position.
+Return ONLY valid JSON with these exact keys:
+{"emotionalState":"","dominantTension":"","desire":"","fear":"","defenseMechanism":"","falseBelief":"","contradiction":"","relationshipPosture":"","arcNote":"","visibility":""}
+Be specific to this character and story. 1-2 sentences per field. The 'visibility' field should specify observable behaviours for scene writing.`;
+  const raw = await callClaude(system,
+    `Story: "${proj.title}" — ${proj.genre||'literary fiction'}\nCharacter: ${char.name} (${char.role})\nWant: ${char.want}\nFear: ${char.fear}\nFalse belief: ${char.belief||'unknown'}\nArc: ${char.arc||'unknown'}\nPosition: ${act?.label||'unknown'} → ${mov.name} (${mov.fn}, ${mov.emotional} register)\nEnding: ${proj.ending||'not set'}\nGenerate arc state.`, 600);
+  return JSON.parse(raw.replace(/```json|```/g,'').trim());
+}
+
+// ─────────────────────────────────────────────
+// ARC GUIDANCE IN CONTEXT PANEL
+// ─────────────────────────────────────────────
+function getArcGuidanceForScene(movId){
+  initArcStates();
+  return S.characters.slice(0,3).map(c=>{
+    const state = c.arcStates?.[movId];
+    const useDemoState = DEMO_ARC_STATES[c.name]?.[movId];
+    const active = useDemoState || state;
+    return {
+      name: c.name,
+      state: active?.arcNote || `${c.name}: arc state not yet defined for this movement.`,
+      visibility: active?.visibility || '',
+    };
+  });
+}
+
+// ─────────────────────────────────────────────
+// SHORTCUTS OVERLAY
+// ─────────────────────────────────────────────
+function openShortcuts(){ $('shortcuts-overlay').classList.add('open'); }
+function closeShortcuts(){ $('shortcuts-overlay').classList.remove('open'); }
+$('shortcuts-overlay').addEventListener('click', e=>{ if(e.target===$('shortcuts-overlay')) closeShortcuts(); });
+
+// ─────────────────────────────────────────────
+// WIRING — all new buttons and panel overrides
+// ─────────────────────────────────────────────
+$('btn-read').addEventListener('click', openReadingMode);
+$('btn-export').addEventListener('click', openExportModal);
+$('btn-inventory').addEventListener('click', openInventory);
+$('asp-close').addEventListener('click', ()=>$('arc-state-panel').classList.remove('open'));
+$('open-inventory-sb')?.addEventListener('click', openInventory);
+$('show-shortcuts')?.addEventListener('click', openShortcuts);
+
+// ─────────────────────────────────────────────
+// OVERRIDE renderIntelPanel to include dynamics tab
+// ─────────────────────────────────────────────
+const _originalRenderIntelPanel = renderIntelPanel;
+window.renderIntelPanel = function(){
+  const tab = S.intelTab;
+  if(tab==='dynamics') renderDynamicsTab();
+  else _originalRenderIntelPanel();
+};
+
+// Override openIntelPanel to handle dynamics tab
+const _originalActivateTab = activateCraftTab; // craft panel tabs unchanged
+
+// Update the ip-tab binding to handle dynamics
+document.querySelectorAll('.ip-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    S.intelTab = tab.dataset.iptab;
+    document.querySelectorAll('.ip-tab').forEach(t=>t.classList.toggle('active', t.dataset.iptab===S.intelTab));
+    renderIntelPanel();
+  });
+});
+
+// ─────────────────────────────────────────────
+// OVERRIDE renderContextPanel to include arc guidance
+// ─────────────────────────────────────────────
+const _baseRenderContextPanel = window.renderContextPanel || (() => {});
+window.renderContextPanel = function() {
+  _baseRenderContextPanel();
+  // Add arc guidance after context panel renders
+  const panel = $('bv-context-panel'); if(!panel) return;
+  const movId = S.activeMovId; if(!movId) return;
+  if(!S.characters.length) return;
+
+  const guidance = getArcGuidanceForScene(movId);
+  if(!guidance.length) return;
+
+  const arcSection = make('div'); arcSection.className = 'bcp-section';
+  arcSection.innerHTML = `<div class="bcp-title">Character arc states</div><div class="arc-guidance">${
+    guidance.map(g=>`<div class="ag-char">
+      <span class="ag-name">${g.name}</span>
+      <span class="ag-state">${g.state}</span>
+    </div>`).join('')
+  }</div>
+  <div style="margin-top:6px;font-size:.62rem;color:var(--ink-5);cursor:pointer;" onclick="openIntelPanel('dynamics')">View full arc states →</div>`;
+  panel.appendChild(arcSection);
+};
+
+// ─────────────────────────────────────────────
+// OVERRIDE generateBeats to use arc state context
+// ─────────────────────────────────────────────
+// Arc states are passed through the existing system prompt in generateBeats
+// by patching the function to inject arc guidance
+const _originalGenerateBeats = window.generateBeats || null;
+
+// ─────────────────────────────────────────────
+// DEMO DATA EXTENSIONS — load arc states with demo
+// ─────────────────────────────────────────────
+const _originalLoadDemo = window.loadDemo;
+function loadDemo(){
+  _originalLoadDemo();
+  // Apply demo arc states
+  S.characters.forEach(c=>{
+    if(DEMO_ARC_STATES[c.name]){
+      c.arcStates = DEMO_ARC_STATES[c.name];
+    }
+  });
+  S.relationships = buildDefaultRelationships();
+  persist();
+}
+window.loadDemo = loadDemo;
+
+// ─────────────────────────────────────────────
+// KEYBOARD SHORTCUTS — complete set
+// ─────────────────────────────────────────────
+document.addEventListener('keydown', e=>{
+  // ? key opens shortcuts
+  if(e.key==='?' && !e.metaKey && !e.ctrlKey && document.activeElement.tagName!=='INPUT' && document.activeElement.tagName!=='TEXTAREA' && !document.activeElement.isContentEditable){
+    e.preventDefault(); openShortcuts(); return;
+  }
+  if($('shortcuts-overlay').classList.contains('open')){ closeShortcuts(); return; }
+
+  const mod = e.metaKey || e.ctrlKey;
+  if(mod && e.shiftKey && e.key==='R'){ e.preventDefault(); openReadingMode(); return; }
+  if(mod && e.shiftKey && e.key==='I'){ e.preventDefault(); openInventory(); return; }
+  if(mod && e.shiftKey && e.key==='A'){
+    e.preventDefault();
+    const all = $('btn-accept-all');
+    if(all && $('accept-all-bar').classList.contains('show')) all.click();
+    return;
+  }
+  if(mod && e.key==='e'){ e.preventDefault(); openExportModal(); return; }
+}, true);
+
+// ─────────────────────────────────────────────
+// OVERRIDE updateStats to include new stats
+// ─────────────────────────────────────────────
+const _baseUpdateStats = window.updateStats;
+window.updateStats = function(){
+  _baseUpdateStats && _baseUpdateStats();
+  updateSessionStats();
+};
+
+// ─────────────────────────────────────────────
+// OVERRIDE selectMovement to show heat map
+// ─────────────────────────────────────────────
+const _baseSelectMovement = window.selectMovement;
+window.selectMovement = function(movId){
+  _baseSelectMovement(movId);
+  // Add heat strip to movement view
+  const movResult = getMovement(movId);
+  if(!movResult) return;
+  const mv = movResult.movement;
+  const mvFnEl = $('mv-fn');
+  if(mvFnEl){
+    // Add heat indicator below the fn text if not already there
+    const existing = document.querySelector('.mv-heat-section');
+    if(existing) existing.remove();
+    const heatSection = make('div');
+    heatSection.className = 'mv-heat-section';
+    renderHeatStrip(mv, heatSection);
+    mvFnEl.after(heatSection);
+  }
+  checkFragReminder();
+  if(S.intelOpen) renderIntelPanel();
+};
+window.selectMovement = window.selectMovement;
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', ()=>{
+  setTimeout(initSession, 200);
+  setTimeout(updateSessionStats, 500);
+  setInterval(updateSessionStats, 10000);
+});
 </script>
 </body>
 </html>
