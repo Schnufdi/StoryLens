@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>BodyLens — Get Started</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Space+Grotesk:wght@300;400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+.summary-shell{display:none;max-width:720px;margin:0 auto;padding:40px 24px 120px;}
+.summary-shell.visible{display:block;}
+.sum-hero{padding:32px 0 28px;border-bottom:1px solid var(--bd);margin-bottom:32px;}
+.sum-kicker{font-size:10px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--jade);margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.sum-kicker::before{content:'';width:20px;height:1px;background:var(--jade);}
+.sum-title{font-family:var(--serif);font-size:48px;font-weight:300;line-height:0.95;letter-spacing:-0.025em;color:var(--dk-1);margin-bottom:14px;}
+.sum-subtitle{font-size:14px;font-weight:300;color:var(--dk-2);line-height:1.7;max-width:520px;}
+.sum-section{margin-bottom:28px;border:1px solid var(--bd);border-radius:6px;overflow:hidden;}
+.sum-section-head{background:var(--ink-2);padding:14px 20px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px;}
+.sum-section-icon{font-size:16px;width:28px;text-align:center;}
+.sum-section-title{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--dk-2);}
+.sum-section-title.jade{color:var(--jade);}.sum-section-title.amber{color:var(--amber);}.sum-section-title.gold{color:var(--gold);}.sum-section-title.red{color:var(--red);}
+.sum-body{background:var(--ink-1);}
+.sum-row{display:grid;grid-template-columns:160px 1fr;border-bottom:1px solid var(--bd);padding:12px 20px;align-items:baseline;gap:16px;}
+.sum-row:last-child{border-bottom:none;}
+.sum-label{font-size:11px;font-weight:600;color:var(--dk-3);letter-spacing:0.04em;}
+.sum-val{font-size:13px;font-weight:300;color:var(--dk-1);line-height:1.6;}
+.sum-val strong{color:var(--jade);font-weight:600;}.sum-val.amber{color:var(--amber);}.sum-val.red{color:var(--red);}
+.sum-why{padding:14px 20px;background:rgba(0,200,160,0.04);border-bottom:1px solid var(--bd);font-size:12px;font-weight:300;color:var(--dk-2);line-height:1.7;font-style:italic;border-left:3px solid var(--jade-br);}
+.sum-why.amber{background:rgba(196,124,24,0.04);border-left-color:var(--amber-br);}
+.sum-why.red{background:rgba(217,78,53,0.04);border-left-color:var(--red-br);}
+.sum-macros{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--bd);}
+.sum-macro{background:var(--ink-1);padding:18px 14px;text-align:center;}
+.sum-macro-val{font-family:var(--mono);font-size:26px;font-weight:500;color:var(--jade);line-height:1;margin-bottom:4px;}
+.sum-macro-val.amber{color:var(--amber);}.sum-macro-val.slate{color:var(--dk-2);}
+.sum-macro-label{font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--dk-3);}
+.sum-injury{padding:14px 20px;border-bottom:1px solid var(--bd);border-left:3px solid var(--gold);}
+.sum-injury:last-child{border-bottom:none;}
+.sum-injury-loc{font-size:12px;font-weight:600;color:var(--gold);margin-bottom:4px;}
+.sum-injury-detail{font-size:12px;font-weight:300;color:var(--dk-2);line-height:1.65;}
+.sum-injury-mods{margin-top:8px;font-size:11px;font-weight:300;color:var(--dk-3);line-height:1.7;}
+.sum-tags{display:flex;flex-wrap:wrap;gap:6px;padding:12px 20px;}
+.sum-tag{font-size:10px;font-weight:600;letter-spacing:0.05em;padding:4px 12px;border-radius:20px;}
+.sum-tag.jade{color:var(--jade);background:var(--jade-dim);border:1px solid var(--jade-br);}
+.sum-tag.amber{color:var(--amber);background:var(--amber-dim);border:1px solid var(--amber-br);}
+.sum-tag.gold{color:var(--gold);background:var(--gold-dim);border:1px solid var(--gold-br);}
+.sum-tag.slate{color:var(--dk-2);background:var(--ink-3);border:1px solid var(--bd-2);}
+.sum-cta{display:flex;flex-direction:column;gap:10px;margin-top:32px;}
+.sum-btn-primary{display:block;width:100%;padding:16px 28px;background:var(--jade);border:none;border-radius:6px;font-family:var(--sans);font-size:14px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink);cursor:pointer;text-align:center;text-decoration:none;transition:background 0.15s;}
+.sum-btn-primary:hover{background:var(--jade-hi);}
+.sum-btn-ghost{display:block;width:100%;padding:12px 28px;background:transparent;border:1px solid var(--bd-2);border-radius:6px;font-family:var(--sans);font-size:12px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--dk-3);cursor:pointer;text-align:center;transition:all 0.15s;}
+@media(max-width:600px){
+  .sum-macros{grid-template-columns:repeat(2,1fr);}
+  .sum-row{grid-template-columns:1fr;gap:4px;}
+  .sum-title{font-size:34px;}
+}
+</style>
+</head>
+<body>
+
+<div class="ob-shell" id="ob-shell">
+  <div class="ob-header">
+    <div class="ob-brand">Body<em>Lens</em></div>
+    <div class="ob-step" id="ob-step">Let's get to know you</div>
+  </div>
+  <div class="ob-progress"><div class="ob-progress-fill" id="ob-progress" style="width:0%"></div></div>
+  <div class="ob-messages" id="ob-messages"></div>
+  <div class="ob-chips" id="ob-chips"></div>
+  <div class="ob-input-bar" id="ob-input-bar">
+    <div class="ob-input-inner">
+      <input class="ob-input" id="ob-input" type="text" placeholder="Type your answer…" autocomplete="off" autocorrect="off">
+      <button class="ob-send" id="ob-send" onclick="handleSend()">&#x2191;</button>
+    </div>
+  </div>
+</div>
+
+<div class="summary-shell" id="summary-shell">
+  <div id="summary-content"></div>
+</div>
+
+<script src="nav.js"></script>
+<script>
+if(hasProfile()){location.href="bodylens-day.html";}
+
+let profile={};
+let answers={};
+let selectedChips=[];
+let currentStep=0;
+
+const STEPS=[
+  {id:"welcome",msg:`Hi. I'm going to build you a complete personal programme. Training, nutrition, supplements, recovery. All structured around your body, your goals, and your life.<br><br>I'll ask you questions the way a good coach would. Be honest &mdash; the programme is only as good as what you tell me.<br><br><strong>What's your name?</strong>`,field:"name",chips:[],parse:v=>{profile.name=v.trim().split(" ")[0];return profile.name;}},
+  {id:"basics",msg:p=>`Good to meet you, ${p.name}.<br><br><strong>Age, height, and current weight?</strong><br><br>Just type naturally &mdash; something like <em>43, 181cm, 89kg</em>`,field:"basics",chips:[],parse:v=>{const n=v.match(/[\d.]+/g)||[];if(n.length>=3){profile.age=parseInt(n[0]);profile.height=parseInt(n[1]);profile.weight=parseFloat(n[2]);}else if(n.length===2){profile.age=parseInt(n[0]);profile.weight=parseFloat(n[1]);}answers.basics=v;return true;}},
+  {id:"sex",msg:()=>`Your sex &mdash; so I can calibrate hormonal targets and caloric baselines correctly.`,field:"sex",chips:["Male","Female"],parse:v=>{profile.sex=v.toLowerCase().includes("f")?"Female":"Male";return profile.sex;}},
+  {id:"look",msg:()=>`<strong>What do you want to look like?</strong><br><br>Don't give me a goal &mdash; describe the physique. What do you see when you picture the best version of yourself?`,field:"look",chips:[],parse:v=>{answers.look=v.trim();profile.target=v.trim();return v;},placeholder:"e.g. Lean with visible abs, tight glutes, athletic not bulky…"},
+  {id:"bodyfat",msg:()=>`Do you have any idea what your current body fat is? Even a rough estimate helps.`,field:"bodyFat",chips:["Around 10%","Around 12-13%","Around 15-18%","Around 20%+","No idea"],parse:v=>{const m=v.match(/\d+/);profile.bodyFat=m?parseInt(m[0]):null;return profile.bodyFat;}},
+  {id:"fat_storage",msg:()=>`Where do you carry the fat you want to lose?`,field:"fatStorage",chips:["Love handles / lower back","Belly","Chest","Thighs / hips","All over"],parse:v=>{profile.fatStorage=v.trim();return v;}},
+  {id:"energy",msg:()=>`How's your energy through the day?<br><br>Do you crash mid-morning or after lunch? Or can you go hours without noticing you're hungry?`,field:"energy",chips:["I crash mid-morning","I crash after lunch","Both &mdash; I crash a lot","Pretty stable energy","I can go hours without eating"],parse:v=>{answers.energy=v.trim();return v;}},
+  {id:"fasting",msg:()=>`Do you eat breakfast, or do you prefer to push your first meal later?`,field:"eatingWindow",chips:["I eat breakfast early","I skip breakfast &mdash; first meal at lunch","I do intermittent fasting","Depends on the day"],parse:v=>{answers.fasting=v.trim();profile.eatingWindow=v.toLowerCase().includes("skip")||v.toLowerCase().includes("lunch")||v.toLowerCase().includes("intermittent")?"12:00–20:00":v.toLowerCase().includes("early")||v.toLowerCase().includes("breakfast")?"08:00–20:00":"Flexible";return profile.eatingWindow;}},
+  {id:"trigger",msg:()=>`Is there any food you know you can't keep in the house? Something that once it's there, it's gone.<br><br>No judgement. This is important.`,field:"triggerFoods",chips:["Bread","Crisps / snacks","Chocolate","Alcohol","Takeaways","Nothing &mdash; good self-control"],parse:v=>{profile.triggerFoods=v.trim();answers.trigger=v.trim();return v;}},
+  {id:"emotional",msg:()=>`When you've had a hard day &mdash; what does that do to your eating? Do you reach for anything specific?`,field:"emotionalEating",chips:["Carbs &mdash; bread, pasta, crisps","Sweet things","I drink more","I eat more generally","Stress doesn't affect my eating"],parse:v=>{answers.emotionalEating=v.trim();return v;}},
+  {id:"diet",msg:()=>`How do you eat? Any restrictions or strong preferences?`,field:"dietType",chips:["No restrictions","No red meat","No dairy","Vegetarian","Vegan","No gluten"],parse:v=>{profile.dietType=v.trim();if(v.toLowerCase().includes("red meat"))profile.foodExclusions=["Red meat"];else if(v.toLowerCase().includes("vegan"))profile.foodExclusions=["All meat","Dairy","Eggs"];else if(v.toLowerCase().includes("vegetarian"))profile.foodExclusions=["Meat","Fish"];else profile.foodExclusions=[];return v;}},
+  {id:"cooking",msg:()=>`How do you cook? Any flavour preferences &mdash; simple, bold, specific cuisines you gravitate toward?`,field:"cooking",chips:["I meal prep on Sundays","I cook fresh most days","Mostly quick meals","I barely cook"],parse:v=>{answers.cooking=v.trim();return v;}},
+  {id:"experience",msg:()=>`Training experience &mdash; how long have you been lifting seriously?`,field:"experience",chips:["Just starting","1-2 years","2-3 years","3-5 years","5+ years &mdash; advanced"],parse:v=>{profile.experience=v.trim();return v;}},
+  {id:"training_days",msg:()=>`How many days a week can you genuinely train &mdash; in practice, given your actual life?`,field:"trainingDays",chips:["3 days","4 days","5 days","6 days"],parse:v=>{const m=v.match(/\d/);profile.trainingDays=m?parseInt(m[0]):4;return profile.trainingDays;}},
+  {id:"wake_time",msg:()=>`What time do you normally wake up?`,field:"wakeTime",chips:["05:30","06:00","06:30","07:00","07:30","08:00+"],parse:v=>{const m=v.match(/(\d{1,2})[:.]?(\d{2})?/);profile.wakeTime=m?`${m[1].padStart(2,"0")}:${m[2]||"00"}`:"07:00";return profile.wakeTime;}},
+  {id:"gym",msg:()=>`What gym setup do you have? Any equipment you specifically don't use?`,field:"gymAccess",chips:["Full commercial gym","Home gym &mdash; full","Home gym &mdash; basic","Bodyweight only"],parse:v=>{profile.gymAccess=v.trim();return v;}},
+  {id:"recovery",msg:()=>`Any recovery tools available &mdash; sauna, pool, cold plunge, steam room?<br><br>These become part of the programme, not optional extras.`,field:"recoveryTools",chips:["Sauna","Swimming pool","Cold plunge","Steam room","Hydro pool","None"],multiChip:true,parse:(v,sel)=>{const t=sel&&sel.length?sel:v.split(/[,;]+/).map(s=>s.trim()).filter(Boolean);profile.recoveryTools=t.filter(x=>x.toLowerCase()!=="none");return profile.recoveryTools;}},
+  {id:"alcohol",msg:()=>`What's your relationship with alcohol? Be honest &mdash; it affects sleep quality and body composition more than most people realise.`,field:"alcohol",chips:["I rarely drink","1-2 drinks a week","Social drinker &mdash; weekends","Several nights a week","I'm trying to cut back"],parse:v=>{answers.alcohol=v.trim();profile.alcoholHabit=v.trim();return v;}},
+  {id:"injuries_intro",msg:()=>`<strong>Now the important one.</strong><br><br>Any injuries, pain, or physical constraints? Current or historical. Knee, back, shoulder, hip &mdash; anything you've had to work around.<br><br>If nothing, just say none.`,field:"injuries_main",chips:["No injuries","Knee issue","Lower back","Shoulder","Hip","Multiple &mdash; I'll explain"],parse:v=>{answers.injuries=v.trim();if(v.toLowerCase()==="none"||v.toLowerCase().includes("no injur")){profile.injuries=[];}else{profile.injuries=[{location:"To be detailed",detail:v.trim(),modifications:[]}];}return v;}},
+  {id:"injury_detail",msg:()=>`Tell me more. What happened, when, and what movements make it worse?<br><br>The more specific you are, the more precisely I can modify the programme.`,field:"injury_detail",chips:[],skip:()=>!answers.injuries||answers.injuries.toLowerCase().includes("none")||answers.injuries.toLowerCase().includes("no injur"),parse:v=>{if(profile.injuries&&profile.injuries.length>0)profile.injuries[0].detail=v.trim();answers.injuryDetail=v.trim();return v;},placeholder:"e.g. Lower back — gets stiff after deadlifts, been an issue for 2 years…"},
+  {id:"pain_history",msg:()=>`Have you ever had to stop a movement because of actual pain &mdash; not soreness, sharp pain during the exercise?`,field:"pain_history",chips:["Yes &mdash; deadlifts","Yes &mdash; squats","Yes &mdash; overhead","Yes &mdash; running","No &mdash; never sharp pain"],parse:v=>{answers.painHistory=v.trim();return v;}},
+  {id:"nonneg",msg:()=>`Non-negotiables &mdash; things the programme has to work around, not try to eliminate.<br><br>Morning coffee, social life, schedule constraints. These are fixed points.`,field:"nonNegotiables",chips:["Morning coffee","Social drinks on weekends","Family evenings","Work travel","Fully flexible"],multiChip:true,parse:(v,sel)=>{const items=sel&&sel.length?sel:v.split(/[,;]+/).map(s=>s.trim()).filter(Boolean);profile.nonNegotiables=items.filter(t=>!t.toLowerCase().includes("flexible"));return profile.nonNegotiables;}},
+  {id:"confirm",msg:()=>`That's everything.<br><br>I'm building your programme now &mdash; macros, training split, supplement stack, daily structure. All derived from what you've told me.<br><br>Ready?`,field:"confirm",chips:["Build my programme →"],isConfirm:true,parse:v=>v},
+];
+
+function addMessage(role,html,isTyping=false){
+  const msgs=document.getElementById("ob-messages");
+  const div=document.createElement("div");
+  div.className=`ob-msg ${role}${isTyping?" ob-typing":""}`;
+  div.id=isTyping?"typing-indicator":"";
+  const avatar=document.createElement("div");
+  avatar.className="ob-avatar";
+  avatar.textContent=role==="ai"?"BL":(profile.name?profile.name[0].toUpperCase():"U");
+  const bubble=document.createElement("div");
+  bubble.className="ob-bubble";
+  if(isTyping)bubble.innerHTML='<div class="ob-dots"><span></span><span></span><span></span></div>';
+  else bubble.innerHTML=html;
+  div.appendChild(avatar);div.appendChild(bubble);
+  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+  return div;
+}
+
+function removeTyping(){const t=document.getElementById("typing-indicator");if(t)t.remove();}
+
+function showChips(chips,multi=false){
+  const c=document.getElementById("ob-chips");c.innerHTML="";selectedChips=[];
+  chips.forEach(chip=>{
+    const btn=document.createElement("button");
+    btn.className="ob-chip";btn.innerHTML=chip;
+    btn.onclick=()=>{
+      if(multi){
+        const a=btn.classList.toggle("active");
+        btn.style.borderColor=a?"var(--jade)":"";
+        btn.style.color=a?"var(--jade)":"";
+        btn.style.background=a?"var(--jade-dim)":"";
+        if(a)selectedChips.push(chip.replace(/<[^>]*>/g,"").trim());
+        else selectedChips=selectedChips.filter(x=>x!==chip.replace(/<[^>]*>/g,"").trim());
+      }else{
+        document.getElementById("ob-input").value=chip.replace(/<[^>]*>/g,"").trim();
+        handleSend();
+      }
+    };
+    c.appendChild(btn);
+  });
+  if(multi){
+    const done=document.createElement("button");
+    done.className="ob-chip";done.textContent="Done →";
+    done.style.cssText="border-color:var(--jade-br);color:var(--jade);";
+    done.onclick=()=>{
+      const val=selectedChips.length?selectedChips.join(", "):"None";
+      document.getElementById("ob-input").value=val;handleSend();
+    };
+    c.appendChild(done);
+  }
+}
+
+function clearChips(){document.getElementById("ob-chips").innerHTML="";}
+
+function updateProgress(idx){
+  const total=STEPS.filter(s=>!s._skip).length;
+  const pct=Math.min(95,Math.round((idx/total)*100));
+  document.getElementById("ob-progress").style.width=pct+"%";
+  document.getElementById("ob-step").textContent=idx<STEPS.length?`Step ${idx+1} of ${STEPS.length}`:"Complete";
+}
+
+async function showStep(idx){
+  if(idx>=STEPS.length){await generateProgramme();return;}
+  const step=STEPS[idx];
+  if(step.skip&&step.skip(profile)){currentStep++;await showStep(currentStep);return;}
+  const msgText=typeof step.msg==="function"?step.msg(profile):step.msg;
+  if(!msgText){currentStep++;await showStep(currentStep);return;}
+  updateProgress(idx);
+  addMessage("ai","",true);
+  await delay(500+Math.random()*300);
+  removeTyping();
+  addMessage("ai",msgText);
+  const chips=typeof step.chips==="function"?step.chips(profile):(step.chips||[]);
+  if(chips.length>0)showChips(chips,step.multiChip);
+  else clearChips();
+  const inp=document.getElementById("ob-input");
+  inp.placeholder=step.placeholder||"Type your answer…";
+  setTimeout(()=>inp.focus(),100);
+}
+
+async function handleSend(){
+  const inp=document.getElementById("ob-input");
+  const val=inp.value.trim();if(!val)return;
+  inp.value="";clearChips();
+  const step=STEPS[currentStep];
+  addMessage("user",val);
+  if(step.isConfirm){currentStep++;await generateProgramme();return;}
+  step.parse(val,selectedChips.length?selectedChips:null);
+  const acks=["Got it.","Understood.","Good.","Noted.","Makes sense."];
+  if(currentStep>0&&currentStep<STEPS.length-2&&Math.random()>0.5){
+    await delay(200);addMessage("ai",acks[Math.floor(Math.random()*acks.length)]);await delay(200);
+  }
+  currentStep++;await showStep(currentStep);
+}
+
+async function generateProgramme(){
+  clearChips();
+  document.getElementById("ob-input-bar").style.display="none";
+  addMessage("ai",`Building your programme. I'm reasoning through your macros, training split, supplement timing, and daily structure based on everything you've told me.<br><br>This takes about 20 seconds.`);
+  await delay(600);
+  const genEl=addMessage("ai",`<div style="display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--dk-3);min-width:220px;"><div id="gs-1">⏳ Calculating your macro targets…</div><div id="gs-2" style="opacity:0.3;">⏳ Designing your training split…</div><div id="gs-3" style="opacity:0.3;">⏳ Building injury modifications…</div><div id="gs-4" style="opacity:0.3;">⏳ Programming supplement stack…</div><div id="gs-5" style="opacity:0.3;">⏳ Generating your summary…</div></div>`);
+  const anim=(id,t,d)=>setTimeout(()=>{const el=document.getElementById(id);if(el){el.textContent="✓ "+t;el.style.color="var(--jade)";el.style.opacity="1";}},d);
+  anim("gs-1","Macro targets calculated",1000);
+  anim("gs-2","Training split designed",4000);
+  anim("gs-3","Injury modifications built",7000);
+  anim("gs-4","Supplement stack programmed",10000);
+  anim("gs-5","Summary ready",14000);
+  try{
+    const prog=await buildFullProgramme();
+    Object.assign(profile,prog.profile||{});
+    profile.weekPlan=prog.weekPlan||buildFallbackWeekPlan();
+    profile.supplements=prog.supplements||buildFallbackSupplements();
+    profile.injuryAssessments=prog.injuries||[];
+    profile.coachSummary=prog.coachSummary||"";
+    profile.generated=true;profile.generatedAt=new Date().toISOString();
+    BL_STORE.set("profile",profile);
+    await delay(16000);
+    showSummary(profile,prog);
+  }catch(err){
+    console.error(err);
+    calculateMacrosFallback();
+    profile.weekPlan=buildFallbackWeekPlan();
+    profile.supplements=buildFallbackSupplements();
+    profile.injuryAssessments=[];
+    profile.generated=true;profile.generatedAt=new Date().toISOString();
+    BL_STORE.set("profile",profile);
+    await delay(2000);
+    showSummary(profile,{});
+  }
+}
+
+function showSummary(profile,programme){
+  document.getElementById("ob-shell").style.display="none";
+  const el=document.getElementById("summary-shell");
+  el.classList.add("visible");
+  el.innerHTML=buildSummaryHTML(profile,programme);
+  window.scrollTo(0,0);
+}
+
+async function buildFullProgramme(){
+  const prompt=`You are a senior performance coach. Build a complete programme from this coaching conversation data. Reason like a coach.
+
+PROFILE:
+Name: ${profile.name} | Age: ${profile.age} | Sex: ${profile.sex} | Height: ${profile.height}cm | Weight: ${profile.weight}kg
+Body fat: ${profile.bodyFat||"unknown"}% | Fat storage: ${profile.fatStorage||"n/a"}
+Desired physique: ${answers.look||"n/a"}
+Energy pattern: ${answers.energy||"n/a"}
+Eating window: ${profile.eatingWindow||"flexible"}
+Trigger foods: ${profile.triggerFoods||"none"}
+Emotional eating: ${answers.emotionalEating||"none"}
+Diet type: ${profile.dietType||"omnivore"} | Exclusions: ${(profile.foodExclusions||[]).join(", ")||"none"}
+Cooking: ${answers.cooking||"n/a"}
+Experience: ${profile.experience||"n/a"} | Training days: ${profile.trainingDays||4}
+Wake time: ${profile.wakeTime||"07:00"} | Gym: ${profile.gymAccess||"full commercial gym"}
+Recovery tools: ${(profile.recoveryTools||[]).join(", ")||"none"}
+Alcohol: ${answers.alcohol||"n/a"}
+Injuries: ${answers.injuries||"none"}${answers.injuryDetail?" — "+answers.injuryDetail:""}
+Pain history: ${answers.painHistory||"none"}
+Non-negotiables: ${(profile.nonNegotiables||[]).join(", ")||"none"}
+
+Return ONLY a JSON object:
+{
+  "profile": {
+    "goal": "derived primary goal",
+    "calories": number,
+    "protein": number,
+    "carbs": number,
+    "fat": number,
+    "tdee": number,
+    "calorieReasoning": "2-3 sentence explanation",
+    "proteinReasoning": "1-2 sentence explanation",
+    "fastingWindow": "e.g. 12:00-20:00",
+    "mealCount": number,
+    "keyFoodPrinciples": ["principle 1","principle 2","principle 3"],
+    "foodsToAvoid": ["item"],
+    "triggerStrategy": "1-2 sentences"
+  },
+  "weekPlan": [
+    {"day":"Monday","type":"Push","focus":"Chest, shoulders, triceps","kcal":number,"priority":"training","keyExercises":["Bench press 4x8-10","OHP 3x10","Lateral raise 3x15"],"modifications":[],"coachNote":"one sentence"}
+  ],
+  "injuries": [
+    {"location":"area","assessment":"coach assessment","avoidMovements":["movement"],"safeAlternatives":["alternative"],"rehabilitationNotes":"what to do long term"}
+  ],
+  "supplements": [
+    {"name":"name","dose":"dose","timing":"timing","reason":"one sentence why this person specifically"}
+  ],
+  "coachSummary": "3-4 sentences: overall read, biggest opportunity, the one thing that will make or break progress"
+}
+weekPlan must have 7 entries Mon-Sun. Return ONLY the JSON.`;
+
+  const r=await quickCoach(prompt,"",2500);
+  const m=r.match(/\{[\s\S]*\}/);
+  if(!m)throw new Error("No JSON");
+  return JSON.parse(m[0]);
+}
+
+function buildSummaryHTML(profile,programme){
+  const p=programme.profile||{};
+  const injuries=programme.injuries||profile.injuryAssessments||[];
+  const supps=programme.supplements||profile.supplements||[];
+  const weekPlan=programme.weekPlan||profile.weekPlan||[];
+  const coach=programme.coachSummary||profile.coachSummary||"";
+  const cal=p.calories||profile.calories||"—";
+  const prot=p.protein||profile.protein||"—";
+  const carbs=p.carbs||profile.carbs||"—";
+  const fat=p.fat||profile.fat||"—";
+  const trainingDays=weekPlan.filter(d=>d.priority==="training").map(d=>d.day).join(", ");
+  const restDays=weekPlan.filter(d=>d.priority!=="training").map(d=>d.day).join(", ");
+
+  return `
+<div class="sum-hero">
+  <div class="sum-kicker">Programme complete &middot; Built for ${profile.name}</div>
+  <div class="sum-title">Your programme.<br>Built from scratch.</div>
+  <div class="sum-subtitle">Everything below was derived from your answers &mdash; the way a coach would reason through your situation. Read it through. If anything needs adjusting, update it in your profile.</div>
+</div>
+
+${coach?`<div class="sum-section"><div class="sum-section-head"><div class="sum-section-icon">&#127919;</div><div class="sum-section-title jade">Coach's read</div></div><div class="sum-body"><div class="sum-why" style="font-style:normal;font-size:13px;padding:18px 20px;">${coach}</div></div></div>`:""}
+
+<div class="sum-section">
+  <div class="sum-section-head"><div class="sum-section-icon">&#128100;</div><div class="sum-section-title">Your profile</div></div>
+  <div class="sum-body">
+    <div class="sum-row"><div class="sum-label">Name</div><div class="sum-val"><strong>${profile.name}</strong></div></div>
+    <div class="sum-row"><div class="sum-label">Age / Sex</div><div class="sum-val">${profile.age||"&mdash;"} &middot; ${profile.sex||"&mdash;"}</div></div>
+    <div class="sum-row"><div class="sum-label">Height / Weight</div><div class="sum-val">${profile.height?profile.height+"cm":"&mdash;"} &middot; ${profile.weight?profile.weight+"kg":"&mdash;"}</div></div>
+    <div class="sum-row"><div class="sum-label">Body fat</div><div class="sum-val">${profile.bodyFat?profile.bodyFat+"%":"Not assessed"}</div></div>
+    <div class="sum-row"><div class="sum-label">Fat storage</div><div class="sum-val">${profile.fatStorage||"&mdash;"}</div></div>
+    <div class="sum-row"><div class="sum-label">Goal</div><div class="sum-val"><strong>${p.goal||profile.goal||"&mdash;"}</strong></div></div>
+    <div class="sum-row"><div class="sum-label">Target</div><div class="sum-val">${profile.target||"&mdash;"}</div></div>
+    <div class="sum-row"><div class="sum-label">Wake time</div><div class="sum-val">${profile.wakeTime||"&mdash;"}</div></div>
+    <div class="sum-row"><div class="sum-label">Eating window</div><div class="sum-val">${p.fastingWindow||profile.eatingWindow||"&mdash;"}</div></div>
+    <div class="sum-row"><div class="sum-label">Non-negotiables</div><div class="sum-val">${profile.nonNegotiables&&profile.nonNegotiables.length?profile.nonNegotiables.join(", "):"None specified"}</div></div>
+  </div>
+</div>
+
+<div class="sum-section">
+  <div class="sum-section-head"><div class="sum-section-icon">&#127825;</div><div class="sum-section-title amber">Nutrition targets</div></div>
+  <div class="sum-body">
+    <div class="sum-macros">
+      <div class="sum-macro"><div class="sum-macro-val">${cal}</div><div class="sum-macro-label">Calories/day</div></div>
+      <div class="sum-macro"><div class="sum-macro-val jade">${prot}g</div><div class="sum-macro-label">Protein</div></div>
+      <div class="sum-macro"><div class="sum-macro-val amber">${carbs}g</div><div class="sum-macro-label">Carbs</div></div>
+      <div class="sum-macro"><div class="sum-macro-val slate">${fat}g</div><div class="sum-macro-label">Fat</div></div>
+    </div>
+    ${p.calorieReasoning?`<div class="sum-why amber">${p.calorieReasoning}</div>`:""}
+    ${p.proteinReasoning?`<div class="sum-why">${p.proteinReasoning}</div>`:""}
+    <div class="sum-row"><div class="sum-label">TDEE</div><div class="sum-val">${p.tdee||"&mdash;"} kcal/day</div></div>
+    <div class="sum-row"><div class="sum-label">Meals/day</div><div class="sum-val">${p.mealCount||"3&ndash;4"}</div></div>
+    <div class="sum-row"><div class="sum-label">Diet</div><div class="sum-val">${profile.dietType||"&mdash;"}</div></div>
+    <div class="sum-row"><div class="sum-label">Avoid</div><div class="sum-val${(p.foodsToAvoid||[]).length?" red":""}">${(p.foodsToAvoid||profile.foodExclusions||[]).join(", ")||"No restrictions"}</div></div>
+    ${p.triggerStrategy?`<div class="sum-row"><div class="sum-label">Trigger strategy</div><div class="sum-val">${p.triggerStrategy}</div></div>`:""}
+    ${p.keyFoodPrinciples&&p.keyFoodPrinciples.length?`<div class="sum-tags">${p.keyFoodPrinciples.map(pr=>`<span class="sum-tag amber">${pr}</span>`).join("")}</div>`:""}
+  </div>
+</div>
+
+<div class="sum-section">
+  <div class="sum-section-head"><div class="sum-section-icon">&#127947;</div><div class="sum-section-title jade">Training split</div></div>
+  <div class="sum-body">
+    <div class="sum-row"><div class="sum-label">Days/week</div><div class="sum-val"><strong>${profile.trainingDays||weekPlan.filter(d=>d.priority==="training").length}</strong></div></div>
+    <div class="sum-row"><div class="sum-label">Training days</div><div class="sum-val">${trainingDays||"&mdash;"}</div></div>
+    <div class="sum-row"><div class="sum-label">Rest days</div><div class="sum-val">${restDays||"&mdash;"}</div></div>
+    <div class="sum-row"><div class="sum-label">Gym</div><div class="sum-val">${profile.gymAccess||"&mdash;"}</div></div>
+    <div class="sum-row"><div class="sum-label">Recovery</div><div class="sum-val">${profile.recoveryTools&&profile.recoveryTools.length?profile.recoveryTools.join(", "):"None"}</div></div>
+  </div>
+  <div style="background:var(--ink-1);">
+    ${weekPlan.map(day=>`
+    <div style="border-bottom:1px solid var(--bd);padding:14px 20px;${day.priority==="training"?"border-left:3px solid var(--jade);":""}">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
+        <span style="font-size:12px;font-weight:600;color:${day.priority==="training"?"var(--jade)":"var(--dk-2)"};">${day.day}</span>
+        <span style="font-size:11px;font-weight:500;color:var(--dk-3);">${day.type}</span>
+      </div>
+      <div style="font-size:12px;font-weight:300;color:var(--dk-2);">${day.focus||""}</div>
+      ${day.keyExercises&&day.keyExercises.length?`<div style="font-size:11px;font-weight:300;color:var(--dk-3);margin-top:3px;">${day.keyExercises.slice(0,3).join(" &middot; ")}</div>`:""}
+      ${day.coachNote?`<div style="font-size:11px;font-style:italic;color:var(--dk-3);margin-top:4px;">${day.coachNote}</div>`:""}
+    </div>`).join("")}
+  </div>
+</div>
+
+${injuries.length||(profile.injuries&&profile.injuries.length)?`
+<div class="sum-section">
+  <div class="sum-section-head"><div class="sum-section-icon">&#129657;</div><div class="sum-section-title gold">Injuries &amp; modifications</div></div>
+  <div class="sum-body">
+    ${injuries.length?injuries.map(inj=>`
+    <div class="sum-injury">
+      <div class="sum-injury-loc">${inj.location}</div>
+      <div class="sum-injury-detail">${inj.assessment||inj.detail||""}</div>
+      ${inj.avoidMovements&&inj.avoidMovements.length?`<div class="sum-injury-mods"><strong style="color:var(--red);">Avoid:</strong> ${inj.avoidMovements.join(", ")}<br><strong style="color:var(--jade);">Instead:</strong> ${(inj.safeAlternatives||[]).join(", ")}<br>${inj.rehabilitationNotes?`<strong style="color:var(--gold);">Long term:</strong> ${inj.rehabilitationNotes}`:""}</div>`:""}
+    </div>`).join(""):(profile.injuries||[]).map(inj=>`
+    <div class="sum-injury">
+      <div class="sum-injury-loc">${inj.location||"Injury noted"}</div>
+      <div class="sum-injury-detail">${inj.detail||"Details to be confirmed"}</div>
+    </div>`).join("")}
+  </div>
+</div>`:""}
+
+${supps.length?`
+<div class="sum-section">
+  <div class="sum-section-head"><div class="sum-section-icon">&#128138;</div><div class="sum-section-title gold">Supplement stack</div></div>
+  <div class="sum-body">
+    ${supps.map(s=>`
+    <div style="border-bottom:1px solid var(--bd);padding:14px 20px;display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;">
+      <div><div style="font-size:12px;font-weight:600;color:var(--dk-1);">${s.name}</div><div style="font-size:11px;font-weight:300;color:var(--dk-3);">${s.dose} &middot; ${s.timing}</div></div>
+      <div style="font-size:12px;font-weight:300;color:var(--dk-2);line-height:1.5;">${s.reason||""}</div>
+    </div>`).join("")}
+  </div>
+</div>`:""}
+
+${profile.alcoholHabit&&!profile.alcoholHabit.toLowerCase().includes("rarely")?`
+<div class="sum-section">
+  <div class="sum-section-head"><div class="sum-section-icon">&#127863;</div><div class="sum-section-title">Alcohol strategy</div></div>
+  <div class="sum-body">
+    <div class="sum-why red" style="font-style:normal;font-size:13px;">Alcohol directly blocks mTOR &mdash; the molecular switch for muscle adaptation. A training session followed by significant alcohol is work without the reward. <strong>No alcohol on training days.</strong> Rest days: maximum 2 units, finish by 20:00 so clearance completes before sleep.</div>
+    <div class="sum-row"><div class="sum-label">Your habit</div><div class="sum-val">${profile.alcoholHabit}</div></div>
+    <div class="sum-row"><div class="sum-label">Rule</div><div class="sum-val red">No alcohol on training days</div></div>
+    <div class="sum-row"><div class="sum-label">Rest days</div><div class="sum-val">Max 2 units &middot; Finish by 20:00</div></div>
+  </div>
+</div>`:""}
+
+<div class="sum-cta">
+  <a class="sum-btn-primary" href="bodylens-day.html">Open today's plan &rarr;</a>
+  <button class="sum-btn-ghost" onclick="startOver()">Start over &mdash; redo onboarding</button>
+</div>
+<div style="height:40px;"></div>`;
+}
+
+function calculateMacrosFallback(){
+  const w=profile.weight||80,age=profile.age||35,sex=profile.sex||"Male";
+  const goal=(profile.goal||answers.look||"").toLowerCase();
+  let bmr=sex==="Male"?10*w+6.25*(profile.height||175)-5*age+5:10*w+6.25*(profile.height||165)-5*age-161;
+  const days=profile.trainingDays||4,mult=days<=3?1.55:days<=5?1.65:1.725;
+  const tdee=Math.round(bmr*mult);
+  const calories=goal.includes("lose")||goal.includes("cut")||goal.includes("lean")?tdee-350:tdee+150;
+  const exp=(profile.experience||"").toLowerCase();
+  const ppm=exp.includes("advanc")||exp.includes("5+")?2.2:2.0;
+  const protein=Math.round(w*ppm),fat=Math.max(Math.round(w*1.0),Math.round(calories*0.25/9));
+  const carbs=Math.max(80,Math.round((calories-protein*4-fat*9)/4));
+  Object.assign(profile,{calories,protein,fat,carbs,tdee});
+}
+
+function buildFallbackWeekPlan(){
+  const k=profile.calories||2400,r=Math.round(k*0.9);
+  return [
+    {day:"Monday",type:"Push",focus:"Chest, shoulders, triceps",kcal:k,priority:"training",keyExercises:["Bench press 4×8-10","Overhead press 3×10","Lateral raise 3×15"],modifications:[],coachNote:"CNS freshest today. Heaviest pressing session."},
+    {day:"Tuesday",type:"Rest",focus:"Recovery and nutrition",kcal:r,priority:"rest",keyExercises:[],modifications:[],coachNote:"MPS from Monday peaks today. Hit protein."},
+    {day:"Wednesday",type:"Pull",focus:"Back, biceps, rear delts",kcal:k,priority:"training",keyExercises:["Pull-ups 4×6-8","Cable row 3×10","Face pull 3×15"],modifications:[],coachNote:"Weighted pull-ups first while CNS is fresh."},
+    {day:"Thursday",type:"Rest",focus:"Recovery and prep",kcal:r,priority:"rest",keyExercises:[],modifications:[],coachNote:"Thursday evening protected. No alcohol."},
+    {day:"Friday",type:"Posterior Chain",focus:"Glutes, hamstrings",kcal:Math.round(k*1.03),priority:"training",keyExercises:["Hip thrust 4×10","RDL 3×8","Step-up 3×12"],modifications:[],coachNote:"Most important session. Collagen 45min before."},
+    {day:"Saturday",type:"Upper",focus:"Full upper strength",kcal:k,priority:"training",keyExercises:["Shoulder press 4×8","Row 3×10","Tricep work 3×12"],modifications:[],coachNote:"Second stimulus for push and pull muscles."},
+    {day:"Sunday",type:"Rest",focus:"Full rest",kcal:r,priority:"rest",keyExercises:[],modifications:[],coachNote:"Complete the week."},
+  ];
+}
+
+function buildFallbackSupplements(){
+  const s=[
+    {name:"Creatine monohydrate",dose:"5g",timing:"Daily, any time",reason:"Phosphocreatine resynthesis. 5-15% strength improvement. No loading needed."},
+    {name:"Omega-3 EPA/DHA",dose:"2-3g",timing:"With largest meal",reason:"COX pathway suppression. Reduces inflammation. Amplifies MPS response to protein."},
+    {name:"Vitamin D3 + K2",dose:"3000IU + 100mcg",timing:"With fat meal",reason:"UK latitude: near-universal deficiency Oct-Apr. Drives testosterone and immune function."},
+    {name:"Magnesium glycinate",dose:"400mg",timing:"30min before sleep",reason:"GABA receptor cofactor. Enables deep slow-wave sleep where GH pulses."},
+    {name:"L-Theanine",dose:"200mg",timing:"With every coffee",reason:"Alpha wave modulation. Removes caffeine anxiety. Take with each coffee."},
+  ];
+  if(profile.age>=35)s.push({name:"Ashwagandha KSM-66",dose:"600mg",timing:"Daily",reason:"HPA axis modulation. Reduces cortisol 25-30%. Testosterone support."});
+  if(profile.injuries&&profile.injuries.length)s.unshift({name:"Collagen peptides + Vitamin C",dose:"15g + 50mg",timing:"45min before training",reason:"5.5x connective tissue synthesis during loading window. Direct joint repair protocol."});
+  return s;
+}
+
+function startOver(){
+  if(confirm("This will clear your profile and restart onboarding. Are you sure?")){BL_STORE.clear();location.reload();}
+}
+
+function delay(ms){return new Promise(r=>setTimeout(r,ms));}
+
+document.getElementById("ob-input").addEventListener("keydown",e=>{if(e.key==="Enter")handleSend();});
+showStep(0);
+</script>
+</body>
+</html>

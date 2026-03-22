@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>BodyLens — Today</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Space+Grotesk:wght@300;400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="site-nav">
+  <div class="nav-brand">Body<em>Lens</em></div>
+  <div class="nav-links">
+    <a class="nav-link nav-daily active" href="bodylens-day.html">Today</a>
+    <a class="nav-link nav-daily" href="bodylens-week.html">Week</a>
+    <a class="nav-link nav-daily" href="bodylens-optimal.html">The Machine</a>
+    <div class="nav-sep"></div>
+    <a class="nav-link" href="bodylens-profile.html">Profile</a>
+    <a class="nav-link" href="bodylens-instructions.html">Instructions</a>
+    <a class="nav-link" href="bodylens-nonneg.html">My Rules</a>
+    <div class="nav-sep"></div>
+    <a class="nav-link" href="bodylens-fuel.html">Food System</a>
+    <a class="nav-link" href="bodylens-body.html">Muscle Guide</a>
+    <a class="nav-link" href="bodylens-training.html">Training</a>
+    <div class="nav-sep"></div>
+    <a class="nav-link" href="bodylens-story.html">The Story</a>
+    <a class="nav-link" href="bodylens-synthesis.html">How It Runs</a>
+    <div class="nav-sep"></div>
+    <a class="nav-link" href="bodylens-onboard.html" id="nav-setup">⚙ Setup</a>
+  </div>
+  <div class="nav-meta" id="nav-meta"></div>
+</nav>
+
+<!-- MAIN -->
+<div class="day-shell" id="day-main">
+  <!-- Content rendered by JS -->
+  <div class="generating" id="loading-state">
+    <div class="gen-spinner"></div>
+    <div class="gen-label" id="loading-label">Loading your day…</div>
+  </div>
+</div>
+
+<!-- ASK ANYTHING BAR — fixed bottom -->
+<div class="ask-bar" id="ask-bar" style="display:none;">
+  <div style="max-width:680px;margin:0 auto;">
+    <div class="ask-resp" id="ask-resp"></div>
+    <div class="ask-chips" id="ask-chips"></div>
+  </div>
+  <div class="ask-bar-inner">
+    <input
+      class="ask-input"
+      id="ask-input"
+      type="text"
+      placeholder="Ask anything — I'm hungry, knee feels tight, can I have wine tonight…"
+      autocomplete="off"
+    >
+    <button class="ask-btn" id="ask-btn" onclick="handleAsk()">↑</button>
+  </div>
+</div>
+
+<script src="nav.js"></script>
+<script>
+// ════════════════════════════════════════════════════════
+//  DAY PAGE — Daily operating system
+//  Builds the day plan from stored profile.
+//  Renders timeline. Answers any question in context.
+// ════════════════════════════════════════════════════════
+
+const profile   = getProfile();
+const todayIdx  = getTodayIndex();
+const todayName = getTodayName();
+
+// ── REDIRECT IF NO PROFILE ───────────────────────────────
+if (!profile) {
+  document.getElementById('day-main').innerHTML = `
+    <div class="no-profile">
+      <div class="no-profile-icon">💪</div>
+      <h2>Let's build your programme</h2>
+      <p>Answer a few questions and I'll create a complete personalised plan — training, nutrition, supplements, recovery. Everything you need.</p>
+      <a href="bodylens-onboard.html">Get started →</a>
+    </div>`;
+  document.getElementById('ask-bar').style.display = 'none';
+  document.getElementById('nav-setup').style.color = 'var(--jade)';
+  document.querySelector('.nav-meta').innerHTML = '';
+  throw new Error('No profile'); // Stop execution
+}
+
+// ── NAV META ────────────────────────────────────────────
+const navMeta = document.getElementById('nav-meta');
+if (profile.name) {
+  navMeta.innerHTML = `<span class="nav-tag nt-jade">${profile.name}</span>`;
+}
+
+// ── DAY DATA ─────────────────────────────────────────────
+const weekPlan  = profile.weekPlan || [];
+const todayPlan = weekPlan[todayIdx] || { type: 'Rest', focus: 'Recovery', kcal: profile.calories || 2200 };
+const isTraining = todayPlan.priority === 'training';
+
+// ── CACHE KEY ────────────────────────────────────────────
+// Cache today's plan so we don't regenerate on every page open
+const CACHE_KEY = 'dayplan_' + new Date().toISOString().slice(0, 10);
+
+// ── BOOT ────────────────────────────────────────────────
+async function init() {
+  const cached = BL_STORE.get(CACHE_KEY);
+  if (cached && cached.blocks) {
+    renderDay(cached);
+    return;
+  }
+
+  setLoading('Building your day…');
+  try {
+    const plan = await generateDayPlan();
+    BL_STORE.set(CACHE_KEY, plan);
+    renderDay(plan);
+  } catch(err) {
+    console.error('Day plan error:', err);
+    renderDay(buildFallbackPlan());
+  }
+}
+
+function setLoading(msg) {
+  document.getElementById('loading-label').textContent = msg;
+  document.getElementById('loading-state').style.display = 'flex';
+  document.getElementById('ask-bar').style.display = 'none';
+}
+
+// ── GENERATE DAY PLAN ────────────────────────────────────
+async function generateDayPlan() {
+  const wakeTime = profile.wakeTime || '06:30';
+  const [wakeH, wakeM] = wakeTime.split(':').map(Number);
+
+  const prompt = `Generate a complete daily plan for ${todayName} for this person.
+
+TODAY: ${todayName} — ${todayPlan.type} (${todayPlan.focus})
+Training day: ${isTraining ? 'YES' : 'NO'}
+Key exercises: ${(todayPlan.keyExercises || []).join(', ') || 'Rest day'}
+Modifications: ${(todayPlan.modifications || []).join(', ') || 'None'}
+Wake time: ${wakeTime}
+Calories today: ${todayPlan.kcal || profile.calories}
+Protein: ${profile.protein}g | Carbs: ${profile.carbs}g | Fat: ${profile.fat}g
+Injuries: ${profile.injuries && profile.injuries.length ? profile.injuries.map(i=>i.detail||i.location).join(', ') : 'None'}
+Non-negotiables: ${profile.nonNegotiables ? profile.nonNegotiables.join(', ') : 'None'}
+Supplements: ${profile.supplements ? profile.supplements.join(' | ') : 'Standard stack'}
+Recovery tools: ${profile.recoveryTools ? profile.recoveryTools.join(', ') : 'None'}
+Food exclusions: ${profile.foodExclusions ? profile.foodExclusions.join(', ') : 'None'}
+Trigger foods to avoid: ${profile.triggerFoods || 'None'}
+Goal: ${profile.goal}
+
+Return a JSON object with this structure:
+{
+  "dayTitle": "Monday — Push Day" (or "Tuesday — Rest & Recover"),
+  "dayBrief": "2-3 sentence description of what today is about and why",
+  "priority": "One sentence — the single most important thing today",
+  "blocks": [
+    {
+      "time": "06:00",
+      "type": "training" | "meal" | "supp" | "recovery" | "sleep" | "note",
+      "title": "Brief title e.g. Wake + morning ignition",
+      "tag": "optional short tag e.g. Non-negotiable",
+      "tagColor": "jade" | "amber" | "gold" | "slate",
+      "detail": "Full instructions. Be specific and practical. What exactly to do, eat, or take.",
+      "items": [
+        { "name": "Item name", "meta": "e.g. 200mg or 3 reps" }
+      ]
+    }
+  ],
+  "macroTargets": {
+    "calories": ${todayPlan.kcal || profile.calories},
+    "protein": ${profile.protein},
+    "carbs": ${profile.carbs},
+    "fat": ${profile.fat}
+  }
+}
+
+REQUIREMENTS:
+- Include ALL of: wake routine, supplements with exact timing, all meals with specific foods and portions, training session (if training day) with exercises and sets/reps, recovery protocol, wind-down, sleep time
+- Supplements: be exact — what, how much, when, with what
+- Meals: be specific — exact foods, approximate portions, why this meal at this time
+- Training: list specific exercises with sets, reps, and any weight guidance
+- Recovery: specify which tools to use (sauna, pool etc) and for how long
+- Sleep: what time, what to do beforehand, any sleep supplements
+- If training day: include collagen timing before training if relevant to their goals/injuries
+- Make it feel like a personal trainer wrote it, not a generic plan
+- Return ONLY the JSON object, no other text`;
+
+  const response = await quickCoach(prompt, '', 2000);
+  const jsonMatch = response.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON in response');
+  return JSON.parse(jsonMatch[0]);
+}
+
+// ── RENDER DAY ───────────────────────────────────────────
+function renderDay(plan) {
+  document.getElementById('loading-state').style.display = 'none';
+  document.getElementById('ask-bar').style.display = 'block';
+
+  const main = document.getElementById('day-main');
+  const macros = plan.macroTargets || { calories: profile.calories, protein: profile.protein, carbs: profile.carbs, fat: profile.fat };
+  const logged = getTodayMacros();
+
+  main.innerHTML = `
+    <!-- Day header -->
+    <div class="day-header">
+      <div class="day-date">${formatDate()}</div>
+      <div class="day-title">${plan.dayTitle || todayName}</div>
+      <div class="day-subtitle">${plan.dayBrief || ''}</div>
+      ${plan.priority ? `<div style="margin-top:12px;padding:10px 14px;background:var(--jade-dim);border:1px solid var(--jade-br);border-radius:4px;font-size:12px;font-weight:500;color:var(--jade);">${plan.priority}</div>` : ''}
+    </div>
+
+    <!-- Macro targets -->
+    <div class="day-macros">
+      <div class="day-macro">
+        <div class="day-macro-val jade">${macros.calories}</div>
+        <div class="day-macro-label">Calories</div>
+      </div>
+      <div class="day-macro">
+        <div class="day-macro-val jade">${macros.protein}g</div>
+        <div class="day-macro-label">Protein</div>
+      </div>
+      <div class="day-macro">
+        <div class="day-macro-val amber">${macros.carbs}g</div>
+        <div class="day-macro-label">Carbs</div>
+      </div>
+      <div class="day-macro">
+        <div class="day-macro-val">${macros.fat}g</div>
+        <div class="day-macro-label">Fat</div>
+      </div>
+    </div>
+
+    <!-- Macro progress (if food logged) -->
+    ${logged.calories > 0 ? renderMacroBars(logged, macros) : ''}
+
+    <!-- Timeline -->
+    <div class="day-section-label">Your day</div>
+    <div id="timeline-blocks">
+      ${(plan.blocks || []).map(renderBlock).join('')}
+    </div>
+
+    <!-- Refresh -->
+    <div style="margin-top:24px;text-align:center;">
+      <button onclick="refreshPlan()" style="background:transparent;border:1px solid var(--bd-2);color:var(--dk-3);padding:8px 18px;border-radius:20px;font-size:11px;cursor:pointer;font-family:var(--sans);letter-spacing:0.04em;">↺ Regenerate today's plan</button>
+    </div>
+  `;
+
+  // Set up ask chips
+  setupAskChips();
+  // Open first block by default
+  const first = document.querySelector('.timeline-block');
+  if (first) first.classList.add('open');
+}
+
+function renderBlock(block) {
+  const items = (block.items || []).map(item => `
+    <div class="tl-item">
+      <span class="tl-item-name">${item.name}</span>
+      <span class="tl-item-meta">${item.meta || ''}</span>
+    </div>
+  `).join('');
+
+  const tag = block.tag
+    ? `<div class="tl-tag ${block.tagColor || 'slate'}">${block.tag}</div>`
+    : '';
+
+  return `
+    <div class="timeline-block ${block.type || 'note'}" onclick="this.classList.toggle('open')">
+      <div class="tl-head">
+        <div class="tl-time">${block.time || ''}</div>
+        <div class="tl-title">${block.title || ''}</div>
+        ${tag}
+      </div>
+      <div class="tl-body">
+        <div class="tl-detail">${(block.detail || '').replace(/\n/g, '<br>')}</div>
+        ${items ? `<div class="tl-items">${items}</div>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function renderMacroBars(logged, targets) {
+  return `
+    <div style="background:var(--ink-2);border:1px solid var(--bd);border-radius:6px;padding:16px;margin-bottom:24px;">
+      <div style="font-size:9px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--dk-3);margin-bottom:12px;">Logged today</div>
+      ${macrBar('Calories', logged.calories, targets.calories, 'jade')}
+      ${macrBar('Protein',  logged.protein,  targets.protein,  'jade')}
+      ${macrBar('Carbs',    logged.carbs,    targets.carbs,    'amber')}
+      ${macrBar('Fat',      logged.fat,      targets.fat,      '')}
+    </div>
+  `;
+}
+
+function macrBar(label, val, target, color) {
+  const pct = Math.min(100, Math.round((val / target) * 100));
+  const over = val > target * 1.05;
+  return `
+    <div class="macro-bar-wrap">
+      <div class="macro-bar-label">
+        <span>${label}</span>
+        <span>${val}${label === 'Calories' ? '' : 'g'} / ${target}${label === 'Calories' ? '' : 'g'}</span>
+      </div>
+      <div class="macro-bar-track">
+        <div class="macro-bar-fill ${over ? 'red' : color}" style="width:${pct}%"></div>
+      </div>
+    </div>
+  `;
+}
+
+// ── ASK ANYTHING ─────────────────────────────────────────
+function setupAskChips() {
+  const chips = document.getElementById('ask-chips');
+  const todayType = todayPlan.type || 'Rest';
+  const isRest = !isTraining;
+
+  const questions = isRest
+    ? [
+        "I'm hungry — what can I eat?",
+        "What's the best recovery today?",
+        "Can I have a drink tonight?",
+        "How many calories have I got left?",
+      ]
+    : [
+        "I'm hungry — what can I eat?",
+        "Should I train if I feel tired?",
+        "How heavy should I go today?",
+        "Can I have a drink tonight?",
+      ];
+
+  chips.innerHTML = questions.map(q => `
+    <button class="ask-chip" onclick="setAsk(this.textContent)">${q}</button>
+  `).join('');
+}
+
+function setAsk(text) {
+  document.getElementById('ask-input').value = text;
+  document.getElementById('ask-input').focus();
+}
+
+async function handleAsk() {
+  const input = document.getElementById('ask-input');
+  const q = input.value.trim();
+  if (!q) return;
+
+  const btn  = document.getElementById('ask-btn');
+  const resp = document.getElementById('ask-resp');
+
+  btn.disabled = true;
+  input.value = '';
+  resp.className = 'ask-resp visible loading';
+  resp.textContent = 'Thinking…';
+
+  // Build context — what the person has eaten, what day it is, what the plan says
+  const foodLog = getFoodLog();
+  const logged  = getTodayMacros();
+  const context = `
+TODAY: ${todayName} — ${todayPlan.type}
+Calories remaining: ${(todayPlan.kcal || profile.calories) - logged.calories} kcal
+Protein remaining: ${profile.protein - logged.protein}g
+Food logged so far: ${foodLog.length ? foodLog.map(e => `${e.time} ${e.name}`).join(', ') : 'Nothing yet'}
+Training today: ${isTraining ? 'YES — ' + (todayPlan.keyExercises || []).join(', ') : 'No — rest day'}
+Question context: User is asking in real time during their day.
+`.trim();
+
+  try {
+    const answer = await quickCoach(q, context, 400);
+    resp.className = 'ask-resp visible';
+    resp.textContent = answer;
+  } catch(e) {
+    resp.className = 'ask-resp visible';
+    resp.textContent = 'Connection error — try again.';
+  }
+
+  btn.disabled = false;
+}
+
+// ── REFRESH ──────────────────────────────────────────────
+async function refreshPlan() {
+  BL_STORE.del(CACHE_KEY);
+  document.getElementById('day-main').innerHTML = `
+    <div class="generating">
+      <div class="gen-spinner"></div>
+      <div class="gen-label">Regenerating today's plan…</div>
+    </div>`;
+  document.getElementById('ask-bar').style.display = 'none';
+  await init();
+}
+
+// ── FALLBACK ─────────────────────────────────────────────
+function buildFallbackPlan() {
+  const wakeTime = profile.wakeTime || '06:30';
+  const [wakeH] = wakeTime.split(':').map(Number);
+  const kcal = todayPlan.kcal || profile.calories || 2500;
+  const protein = profile.protein || 185;
+
+  const blocks = [
+    {
+      time: wakeTime,
+      type: 'note',
+      title: 'Wake + morning routine',
+      detail: `No phone for the first 5 minutes. 500ml water immediately. 10 minutes outside facing the sky — no sunglasses. This sets your circadian clock for the day and determines tonight's sleep quality.\n\nCold shower to finish — 30-60 seconds cold at the end. Noradrenaline surge, HPA recalibration.`,
+      items: [{ name: 'Water', meta: '500ml immediately' }, { name: 'Sunlight', meta: '10 minutes' }, { name: 'Cold shower', meta: '30-60 sec cold finish' }],
+    },
+  ];
+
+  if (isTraining) {
+    // Add collagen timing
+    const collTime = `${String(wakeH + 1).padStart(2,'0')}:30`;
+    blocks.push({
+      time: collTime,
+      type: 'supp',
+      title: 'Pre-training: Collagen + Vitamin C',
+      tag: 'Take now',
+      tagColor: 'gold',
+      detail: `Take 45-60 minutes before training starts. Peak plasma hydroxyproline during the loading window = 5.5x connective tissue synthesis. This is the most targeted joint/tendon intervention in the stack.`,
+      items: [{ name: 'Collagen peptides', meta: '15g' }, { name: 'Vitamin C', meta: '50mg' }],
+    });
+  }
+
+  // Add coffee
+  const coffeeH = wakeH + 1;
+  blocks.push({
+    time: `${String(coffeeH).padStart(2,'0')}:30`,
+    type: 'note',
+    title: 'Coffee + L-Theanine',
+    detail: `Coffee arrives 90 minutes after waking — after the cortisol peak has cleared. Taking it during the cortisol peak builds tolerance faster and produces a larger crash when both drop. 200mg L-Theanine with each flat white: alpha wave modulation, removes the anxiety amplification, leaves the focus.`,
+    items: [{ name: 'Flat white', meta: '1-2 cups' }, { name: 'L-Theanine', meta: '200mg with each' }],
+  });
+
+  // Add training or rest content
+  if (isTraining) {
+    const trainH = wakeH + 2;
+    blocks.push({
+      time: `${String(trainH).padStart(2,'0')}:00`,
+      type: 'training',
+      title: `${todayPlan.type} session`,
+      tag: 'Train',
+      tagColor: 'jade',
+      detail: `Focus: ${todayPlan.focus}\n\nKey exercises: ${(todayPlan.keyExercises || []).join(', ')}\n\n${todayPlan.modifications && todayPlan.modifications.length ? 'Modifications: ' + todayPlan.modifications.join(', ') : ''}`,
+      items: (todayPlan.keyExercises || []).map(ex => ({ name: ex, meta: '3-4 sets' })),
+    });
+  }
+
+  // Meals
+  const mealTimes = ['08:00', '12:00', '16:00', '19:00'];
+  const mealDescs = [
+    { title: 'Breakfast', detail: `High protein start. Eggs or Greek yoghurt + oats. ${Math.round(protein * 0.25)}g protein target for this meal.`, items: [{ name: 'Eggs or Greek yoghurt', meta: `${Math.round(protein * 0.25)}g protein` }, { name: 'Oats or sourdough', meta: '60-80g' }] },
+    { title: 'Lunch', detail: `Lean protein + complex carbs. Chicken or fish + rice or sweet potato + vegetables. ${Math.round(protein * 0.3)}g protein.`, items: [{ name: 'Chicken / fish', meta: '200g' }, { name: 'Rice / sweet potato', meta: '150g cooked' }, { name: 'Vegetables', meta: 'Unlimited' }] },
+    { title: 'Afternoon snack', detail: `Protein hit to bridge to dinner. Keep it simple.`, items: [{ name: 'Greek yoghurt or whey', meta: `${Math.round(protein * 0.2)}g protein` }] },
+    { title: 'Dinner', detail: `Complete the protein target. Moderate fat, lower carbs unless training day.`, items: [{ name: 'Protein source', meta: '200-250g' }, { name: 'Vegetables', meta: 'Generous' }] },
+  ];
+
+  mealDescs.forEach((meal, i) => {
+    blocks.push({ time: mealTimes[i], type: 'meal', title: meal.title, tag: 'Eat', tagColor: 'amber', detail: meal.detail, items: meal.items });
+  });
+
+  // Supplements
+  blocks.push({
+    time: '22:00',
+    type: 'supp',
+    title: 'Evening supplements',
+    tag: 'Before bed',
+    tagColor: 'gold',
+    detail: `Take 30-60 minutes before sleep. Magnesium glycinate enables the GABAergic inhibition that allows the brain to properly switch off. Without it, the cortex stays activated. This is the most evidence-backed non-pharmaceutical sleep intervention available.`,
+    items: [
+      { name: 'Magnesium glycinate', meta: '400mg' },
+      { name: 'Omega-3', meta: '2-3g (if not taken at dinner)' },
+    ],
+  });
+
+  // Sleep
+  const sleepH = wakeH === 6 ? 22 : wakeH + 16;
+  blocks.push({
+    time: `${String(sleepH).padStart(2,'0')}:00`,
+    type: 'sleep',
+    title: 'Sleep',
+    tag: 'Non-negotiable',
+    tagColor: 'slate',
+    detail: `No screens from ${sleepH - 1}:00. Cool room: 17-19°C. Dark. The GH pulse happens in the first slow-wave cycle — every factor that delays or fragments sleep reduces the pulse. 8 hours is the operating condition, not a preference.`,
+    items: [
+      { name: 'Screen-off by', meta: `${String(sleepH - 1).padStart(2,'0')}:00` },
+      { name: 'Room temperature', meta: '17-19°C' },
+      { name: 'Target sleep', meta: '8 hours' },
+    ],
+  });
+
+  return {
+    dayTitle: `${todayName} — ${todayPlan.type}`,
+    dayBrief: `${todayPlan.focus}. ${kcal} kcal today. Protein target: ${protein}g.`,
+    priority: isTraining ? `Training day. Hit ${protein}g protein. Take collagen 45 min before the session.` : `Rest day. Nutrition is the lever — hit ${protein}g protein. Let yesterday's work complete.`,
+    blocks: blocks.sort((a, b) => a.time.localeCompare(b.time)),
+    macroTargets: { calories: kcal, protein, carbs: profile.carbs || 200, fat: profile.fat || 80 },
+  };
+}
+
+// ── UTILITIES ────────────────────────────────────────────
+function formatDate() {
+  const now = new Date();
+  return now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+// Enter key for ask
+document.getElementById('ask-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') handleAsk();
+});
+
+// ── BOOT ────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
