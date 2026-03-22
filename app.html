@@ -4,1039 +4,697 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Narrative</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-/* ── DESIGN TOKENS ───────────────────────────────────────────── */
+/* ═══ TOKENS ═══════════════════════════════════════════════════ */
 :root {
-  --paper:       #f5f2ed;
-  --paper-2:     #ede9e2;
-  --paper-3:     #e4dfd6;
-  --ink:         #1c1917;
-  --ink-2:       #44403c;
-  --ink-3:       #78716c;
-  --ink-4:       #a8a29e;
-  --ink-5:       #d6d3d1;
-  --accent:      #c2622b;
-  --accent-pale: #f5e6dc;
-  --ai-tint:     rgba(194,98,43,0.06);
-  --planned:     #a8a29e;
-  --drafted:     #c2622b;
-  --accepted:    #2d6a4f;
-  --emerging:    #7c6fcd;
-  --border:      rgba(28,25,23,0.08);
-  --border-2:    rgba(28,25,23,0.14);
-  --shadow-sm:   0 1px 4px rgba(28,25,23,0.06);
-  --shadow-md:   0 4px 20px rgba(28,25,23,0.09);
-  --shadow-lg:   0 12px 48px rgba(28,25,23,0.13);
-  --serif:       'Lora', Georgia, serif;
-  --sans:        'Inter', system-ui, sans-serif;
-  --ease:        cubic-bezier(.4,0,.2,1);
-  --dur:         220ms;
+  --paper:     #f5f2ed;
+  --paper-2:   #edeae3;
+  --paper-3:   #e3dfd7;
+  --ink:       #1c1917;
+  --ink-2:     #3d3936;
+  --ink-3:     #6b6560;
+  --ink-4:     #9c9590;
+  --ink-5:     #cdc9c3;
+  --accent:    #b85a28;
+  --accent-l:  #f2e4d8;
+  --green:     #2d6a4f;
+  --green-l:   #dceee6;
+  --violet:    #5b4fcf;
+  --violet-l:  #eceafb;
+  --gold:      #a07c20;
+  --gold-l:    #f5edcc;
+  --border:    rgba(28,25,23,.09);
+  --border-2:  rgba(28,25,23,.16);
+  --ai-tint:   rgba(45,106,79,.055);
+  --voice-tint:rgba(160,124,32,.06);
+  --sans:'Inter',system-ui,sans-serif;
+  --serif:'Lora',Georgia,serif;
+  --ease:cubic-bezier(.4,0,.2,1);
+  --dur:200ms;
 }
 
-/* ── RESET ───────────────────────────────────────────────────── */
+/* ═══ BASE ══════════════════════════════════════════════════════ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
 body{font-family:var(--sans);background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased}
-button{font-family:inherit;cursor:pointer;border:none;background:none}
-input,textarea{font-family:inherit;outline:none}
-a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,textarea,select{font-family:inherit;outline:none;border:none;background:none;color:inherit}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:2px}
 
-/* ── APP SHELL ───────────────────────────────────────────────── */
-#app {
-  display: grid;
-  grid-template-columns: 48px 1fr;
-  grid-template-rows: 38px 1fr;
-  grid-template-areas: "tb tb" "rail main";
-  height: 100vh;
-  transition: grid-template-columns var(--dur) var(--ease);
-}
-#app.sidebar-open {
-  grid-template-columns: 240px 1fr;
-}
-#app.intel-open {
-  /* intelligence panel handled inside main */
-}
+/* ═══ SHELL ═════════════════════════════════════════════════════ */
+#shell{display:grid;grid-template-rows:40px 1fr;grid-template-columns:48px 208px 1fr 308px;grid-template-areas:"tb tb tb tb" "rail sb ed panel";height:100vh;transition:grid-template-columns var(--dur) var(--ease)}
+#shell.sb-off{grid-template-columns:48px 0px 1fr 308px}
+#shell.panel-off{grid-template-columns:48px 208px 1fr 0px}
+#shell.both-off{grid-template-columns:48px 0px 1fr 0px}
 
-/* ── TOPBAR ──────────────────────────────────────────────────── */
-#topbar {
-  grid-area: tb;
-  display: flex; align-items: center;
-  padding: 0 16px 0 0;
-  border-bottom: 1px solid var(--border);
-  background: var(--paper);
-  z-index: 100;
-  gap: 12px;
-}
-#tb-logo {
-  width: 48px; height: 38px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--serif); font-size: 1rem; font-weight: 500;
-  color: var(--ink); letter-spacing: -0.02em;
-  border-right: 1px solid var(--border);
-}
-#tb-title {
-  font-family: var(--serif); font-size: 0.9rem;
-  color: var(--ink); font-weight: 400;
-  cursor: text; padding: 2px 6px; border-radius: 4px;
-  transition: background var(--dur);
-  min-width: 120px;
-}
-#tb-title:hover { background: var(--paper-2); }
-#tb-title[contenteditable]:focus { background: var(--paper-2); outline: none; }
-#tb-crumb {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 0.75rem; color: var(--ink-4);
-}
-#tb-crumb .sep { color: var(--ink-5); }
-#tb-right {
-  margin-left: auto; display: flex; align-items: center; gap: 6px;
-}
-.tb-btn {
-  height: 26px; padding: 0 10px; border-radius: 4px;
-  font-size: 0.72rem; font-weight: 500; letter-spacing: 0.02em;
-  color: var(--ink-3); border: 1px solid var(--border-2);
-  background: transparent; transition: all var(--dur) var(--ease);
-  display: flex; align-items: center; gap: 5px;
-}
-.tb-btn:hover { background: var(--paper-2); color: var(--ink); }
-.tb-btn.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-#save-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--ink-5); transition: background 0.4s;
-  flex-shrink: 0;
-}
-#save-dot.saving { background: #f59e0b; }
-#save-dot.saved  { background: var(--accepted); }
+/* ═══ TOPBAR ════════════════════════════════════════════════════ */
+#topbar{grid-area:tb;display:flex;align-items:center;gap:10px;padding:0 14px 0 0;background:var(--paper);border-bottom:1px solid var(--border);z-index:100}
+#tb-logo{width:48px;height:40px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:1.05rem;font-weight:500;color:var(--ink);border-right:1px solid var(--border);flex-shrink:0;letter-spacing:-.02em}
+#tb-title{font-family:var(--serif);font-size:.88rem;font-weight:400;padding:2px 6px;border-radius:4px;cursor:text;transition:background var(--dur);min-width:80px;max-width:220px}
+#tb-title:hover{background:var(--paper-2)}
+#tb-title:focus{background:var(--paper-2);outline:none}
+#tb-sep{width:1px;height:18px;background:var(--border-2)}
+#tb-crumb{font-size:.72rem;color:var(--ink-4);display:flex;align-items:center;gap:5px}
+#tb-right{margin-left:auto;display:flex;align-items:center;gap:6px}
+.tbtn{height:26px;padding:0 10px;border-radius:4px;font-size:.72rem;font-weight:500;color:var(--ink-3);border:1px solid var(--border-2);transition:all var(--dur);display:flex;align-items:center;gap:4px;letter-spacing:.01em}
+.tbtn:hover{background:var(--paper-2);color:var(--ink)}
+.tbtn.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+#save-dot{width:6px;height:6px;border-radius:50%;background:var(--ink-5);transition:background .5s;flex-shrink:0}
+#save-dot.saving{background:#f59e0b}
+#save-dot.saved{background:var(--green)}
 
-/* ── ICON RAIL ───────────────────────────────────────────────── */
-#rail {
-  grid-area: rail;
-  width: 48px; flex-shrink: 0;
-  border-right: 1px solid var(--border);
-  display: flex; flex-direction: column;
-  align-items: center; padding: 10px 0; gap: 2px;
-  background: var(--paper);
-  z-index: 90;
-}
-.rail-btn {
-  width: 34px; height: 34px; border-radius: 6px;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--ink-4); font-size: 0.85rem;
-  transition: all var(--dur) var(--ease);
-  position: relative;
-}
-.rail-btn:hover { background: var(--paper-2); color: var(--ink-2); }
-.rail-btn.active { background: var(--paper-3); color: var(--ink); }
-.rail-btn svg { width: 16px; height: 16px; stroke-width: 1.5; }
-.rail-sep { width: 20px; height: 1px; background: var(--border); margin: 4px 0; }
-.rail-bottom { margin-top: auto; }
+/* ═══ RAIL ══════════════════════════════════════════════════════ */
+#rail{grid-area:rail;width:48px;border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:2px;background:var(--paper)}
+.rbtn{width:34px;height:34px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--ink-4);transition:all var(--dur)}
+.rbtn:hover{background:var(--paper-2);color:var(--ink-2)}
+.rbtn.on{background:var(--paper-3);color:var(--ink)}
+.rbtn svg{width:15px;height:15px;stroke-width:1.6;fill:none;stroke:currentColor}
+.rsep{width:20px;height:1px;background:var(--border);margin:3px 0}
+.r-bottom{margin-top:auto}
 
-/* ── MAIN AREA ───────────────────────────────────────────────── */
-#main {
-  grid-area: main;
-  display: flex; overflow: hidden;
-  position: relative;
-}
+/* ═══ SIDEBAR ═══════════════════════════════════════════════════ */
+#sb{grid-area:sb;background:var(--paper);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;transition:width var(--dur) var(--ease)}
+.sb-head{padding:12px 12px 8px;border-bottom:1px solid var(--border);flex-shrink:0}
+.sb-lbl{font-size:.62rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);margin-bottom:8px;display:block}
+.sb-scroll{flex:1;overflow-y:auto;padding:8px}
+.clu-row{display:flex;align-items:flex-start;gap:7px;padding:6px 7px;border-radius:5px;cursor:pointer;transition:background var(--dur);position:relative;margin-bottom:1px}
+.clu-row:hover{background:var(--paper-2)}
+.clu-row.active{background:var(--paper-2)}
+.clu-row.active::before{content:'';position:absolute;left:0;top:4px;bottom:4px;width:2px;border-radius:1px;background:var(--accent)}
+.clu-dot{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--ink-5);flex-shrink:0;margin-top:3px;transition:all var(--dur)}
+.clu-dot.planned{border-color:var(--ink-5)}
+.clu-dot.active-w{border-color:var(--accent);background:var(--accent-l);animation:dpulse 2s infinite}
+.clu-dot.drafted{border-color:var(--accent);background:var(--accent)}
+.clu-dot.accepted{border-color:var(--green);background:var(--green)}
+@keyframes dpulse{0%,100%{opacity:1}50%{opacity:.4}}
+.clu-info{flex:1;min-width:0}
+.clu-name{font-size:.78rem;font-weight:500;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px}
+.clu-row.active .clu-name{color:var(--ink)}
+.clu-fn{font-size:.65rem;color:var(--ink-4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.clu-temp{width:28px;flex-shrink:0;margin-top:2px}
+.temp-bar{height:3px;border-radius:2px;background:var(--ink-5);transition:background var(--dur),width var(--dur)}
+.sb-foot{padding:10px 12px;border-top:1px solid var(--border);flex-shrink:0}
+.sb-stat{font-size:.68rem;color:var(--ink-4);display:flex;justify-content:space-between;margin-bottom:2px}
+.sb-stat strong{color:var(--ink-3);font-weight:500}
 
-/* ── SIDEBAR (structure navigator) ──────────────────────────── */
-#sidebar {
-  width: 0; overflow: hidden;
-  border-right: 1px solid transparent;
-  background: var(--paper);
-  display: flex; flex-direction: column;
-  transition: width var(--dur) var(--ease), border-color var(--dur);
-  flex-shrink: 0;
-}
-#app.sidebar-open #sidebar {
-  width: 192px;
-  border-color: var(--border);
-}
-.sb-section { padding: 14px 12px 8px; }
-.sb-label {
-  font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--ink-4);
-  margin-bottom: 8px; display: block;
-}
-.cluster-row {
-  display: flex; align-items: center; gap: 8px;
-  padding: 5px 8px; border-radius: 5px; cursor: pointer;
-  transition: background var(--dur); position: relative;
-}
-.cluster-row:hover { background: var(--paper-2); }
-.cluster-row.active {
-  background: var(--paper-2);
-}
-.cluster-row.active::before {
-  content: ''; position: absolute; left: 0; top: 3px; bottom: 3px;
-  width: 2px; border-radius: 1px; background: var(--accent);
-}
-.c-dot {
-  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-  border: 1.5px solid var(--ink-5);
-  transition: all var(--dur);
-}
-.c-dot.planned  { border-color: var(--planned); background: transparent; }
-.c-dot.drafted  { border-color: var(--drafted); background: var(--drafted); }
-.c-dot.accepted { border-color: var(--accepted); background: var(--accepted); }
-.c-dot.active-w { border-color: var(--accent); background: var(--accent-pale); animation: dot-pulse 2s infinite; }
-@keyframes dot-pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
-.c-label {
-  font-size: 0.78rem; color: var(--ink-2); flex: 1;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.cluster-row.active .c-label { color: var(--ink); font-weight: 500; }
-.c-count { font-size: 0.65rem; color: var(--ink-4); }
-.sb-footer {
-  margin-top: auto; padding: 12px;
-  border-top: 1px solid var(--border);
-}
-.sb-stat {
-  font-size: 0.7rem; color: var(--ink-4);
-  display: flex; justify-content: space-between; margin-bottom: 3px;
-}
-.sb-stat strong { color: var(--ink-3); font-weight: 500; }
+/* ═══ EDITOR COLUMN ═════════════════════════════════════════════ */
+#ed{grid-area:ed;display:flex;flex-direction:column;overflow:hidden;position:relative;background:var(--paper)}
 
-/* ── EDITOR COLUMN ───────────────────────────────────────────── */
-#editor-col {
-  flex: 1; display: flex; flex-direction: column;
-  overflow: hidden; position: relative;
-  min-width: 0;
-}
+/* Temp arc strip */
+#arc-strip{height:52px;border-bottom:1px solid var(--border);flex-shrink:0;padding:0 32px;display:flex;align-items:center;gap:0;overflow:hidden;position:relative}
+#arc-strip canvas{display:block}
+.arc-label{position:absolute;bottom:4px;font-size:.58rem;color:var(--ink-5);pointer-events:none}
 
-/* Cluster context bar */
-#cluster-bar {
-  padding: 8px 48px;
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-  flex-shrink: 0;
-  opacity: 1; transition: opacity var(--dur);
-}
-#cluster-bar.hidden { opacity: 0; pointer-events: none; }
-.cb-left { display: flex; align-items: center; gap: 12px; }
-.cb-name {
-  font-family: var(--serif); font-size: 0.9rem; font-weight: 500;
-  color: var(--ink);
-}
-.cb-fn { font-size: 0.72rem; color: var(--ink-4); }
-.state-pill {
-  font-size: 0.65rem; font-weight: 600; letter-spacing: 0.06em;
-  text-transform: uppercase; padding: 2px 8px; border-radius: 20px;
-}
-.sp-planned  { background: rgba(168,162,158,0.15); color: var(--planned); }
-.sp-drafted  { background: var(--accent-pale); color: var(--accent); }
-.sp-accepted { background: rgba(45,106,79,0.1);  color: var(--accepted); }
-.sp-emerging { background: rgba(124,111,205,0.1); color: var(--emerging); }
+/* Cluster bar */
+#clu-bar{padding:8px 48px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;opacity:0;transition:opacity var(--dur)}
+#clu-bar.visible{opacity:1}
+.cb-left{display:flex;align-items:center;gap:10px}
+.cb-name{font-family:var(--serif);font-size:.9rem;font-weight:500;color:var(--ink)}
+.cb-fn{font-size:.72rem;color:var(--ink-4)}
+.status-pill{font-size:.6rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:20px}
+.sp-planned{background:var(--paper-3);color:var(--ink-4)}
+.sp-active{background:var(--accent-l);color:var(--accent)}
+.sp-accepted{background:var(--green-l);color:var(--green)}
 
-/* ── THE EDITOR SURFACE ─────────────────────────────────────── */
-#editor-scroll {
-  flex: 1; overflow-y: auto; overflow-x: hidden;
-  padding: 0;
-  scroll-behavior: smooth;
-}
-#editor-scroll::-webkit-scrollbar { width: 4px; }
-#editor-scroll::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 2px; }
+/* Editor scroll */
+#ed-scroll{flex:1;overflow-y:auto;padding:0}
 
-/* Accepted scenes above active */
-.accepted-scene {
-  max-width: 640px; margin: 0 auto;
-  padding: 40px 0 32px;
-  border-bottom: 1px solid var(--border);
-  animation: scene-in 0.4s var(--ease) both;
-}
-@keyframes scene-in { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
-.as-label {
-  font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--ink-5);
-  margin-bottom: 10px;
-  display: flex; align-items: center; gap: 8px;
-}
-.as-label::after { content:''; flex:1; height:1px; background:var(--border); }
-.as-prose {
-  font-family: var(--serif); font-size: 17px;
-  line-height: 1.92; color: var(--ink-2);
-}
-.as-prose p { margin-bottom: 1.1em; }
+/* Transition view */
+#transition-view{display:none;position:absolute;inset:0;background:var(--paper);z-index:50;align-items:center;justify-content:center;padding:60px 48px}
+#transition-view.show{display:flex}
+.tv-inner{max-width:580px;width:100%}
+.tv-kicker{font-size:.65rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+.tv-title{font-family:var(--serif);font-size:1.6rem;font-weight:400;color:var(--ink);margin-bottom:20px;line-height:1.2}
+.tv-summary{font-family:var(--serif);font-size:1rem;line-height:1.85;color:var(--ink-2);margin-bottom:24px;padding-left:16px;border-left:2px solid var(--border-2)}
+.tv-signals{margin-bottom:28px}
+.tv-sig-title{font-size:.62rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);margin-bottom:10px}
+.tv-sig{display:flex;align-items:flex-start;gap:7px;padding:5px 0;border-bottom:1px solid var(--border)}
+.tv-sig:last-child{border:none}
+.tv-sig-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px}
+.tv-sig-text{font-size:.8rem;color:var(--ink-2);line-height:1.5}
+.tv-actions{display:flex;gap:8px}
+.tv-btn-go{height:34px;padding:0 20px;border-radius:6px;background:var(--ink);color:var(--paper);font-size:.8rem;font-weight:500;transition:background var(--dur)}
+.tv-btn-go:hover{background:var(--ink-2)}
+.tv-btn-skip{height:34px;padding:0 14px;border-radius:6px;border:1px solid var(--border-2);font-size:.8rem;color:var(--ink-3);transition:all var(--dur)}
+.tv-btn-skip:hover{background:var(--paper-2);color:var(--ink)}
 
-/* Active editor zone */
-#active-zone {
-  max-width: 640px; margin: 0 auto;
-  padding: 48px 0 120px;
-  min-height: 60vh;
-  position: relative;
-}
+/* Accepted scenes */
+.acc-scene{max-width:640px;margin:0 auto;padding:36px 0 28px;border-bottom:1px solid var(--border);animation:fadeup .4s var(--ease) both}
+@keyframes fadeup{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.acc-lbl{font-size:.6rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-5);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.acc-lbl::after{content:'';flex:1;height:1px;background:var(--border)}
+.acc-prose{font-family:var(--serif);font-size:17px;line-height:1.92;color:var(--ink-2)}
+.acc-prose p{margin-bottom:1.1em}
 
-/* Empty state watermark */
-#empty-state {
-  position: absolute; inset: 48px 0 0;
-  pointer-events: none; user-select: none;
-  display: flex; flex-direction: column;
-  align-items: flex-start;
-  opacity: 1; transition: opacity 0.4s;
-}
-#empty-state.hidden { opacity: 0; }
-.es-watermark {
-  font-family: var(--serif); font-size: 3.5rem; font-weight: 500;
-  color: var(--ink); opacity: 0.04; line-height: 1.1;
-  margin-bottom: 2rem; pointer-events: none;
-}
-.es-instruction {
-  font-size: 0.82rem; color: var(--ink-4); font-style: italic;
-  margin-bottom: 20px; pointer-events: none;
-}
-.es-generate {
-  font-size: 0.8rem; color: var(--ink-4);
-  border-bottom: 1px dashed var(--ink-5);
-  cursor: pointer; pointer-events: all;
-  transition: color var(--dur), border-color var(--dur);
-  padding-bottom: 1px;
-}
-.es-generate:hover { color: var(--accent); border-color: var(--accent); }
+/* Active zone */
+#active-zone{max-width:640px;margin:0 auto;padding:44px 0 140px;min-height:55vh;position:relative}
 
-/* The actual editable manuscript surface */
-#manuscript {
-  font-family: var(--serif); font-size: 17.5px;
-  line-height: 1.92; color: var(--ink);
-  min-height: 200px; outline: none;
-  white-space: pre-wrap; word-break: break-word;
-  caret-color: var(--accent);
-  position: relative; z-index: 1;
-}
-#manuscript p { margin-bottom: 1.1em; }
-#manuscript:empty::before {
-  content: '';
-  display: block; height: 1px;
-}
+/* Empty state */
+#empty-state{position:absolute;inset:44px 0 0;pointer-events:none;opacity:1;transition:opacity .4s}
+#empty-state.gone{opacity:0}
+.es-bg{font-family:var(--serif);font-size:3.8rem;font-weight:500;color:var(--ink);opacity:.035;line-height:1.05;margin-bottom:1.4rem;user-select:none}
+.es-sub{font-size:.8rem;color:var(--ink-4);font-style:italic;margin-bottom:14px}
+.es-gen{font-size:.78rem;color:var(--ink-4);border-bottom:1px dashed var(--ink-5);cursor:pointer;pointer-events:all;transition:color var(--dur),border-color var(--dur);display:inline-block;padding-bottom:1px}
+.es-gen:hover{color:var(--accent);border-color:var(--accent)}
 
-/* AI draft overlay */
-.ai-draft {
-  color: var(--ink-2); opacity: 0.62;
-  font-family: var(--serif);
-  transition: opacity 1.5s var(--ease);
-}
-.ai-draft.settling { opacity: 1; }
+/* Fragment reminder */
+#frag-reminder{position:absolute;bottom:100px;left:0;right:0;display:flex;justify-content:center;pointer-events:none;opacity:0;transition:opacity .4s}
+#frag-reminder.show{opacity:1;pointer-events:all}
+.fr-inner{background:var(--paper);border:1px solid var(--border-2);border-radius:8px;padding:8px 14px;max-width:480px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 12px rgba(28,25,23,.07)}
+.fr-text{font-family:var(--serif);font-size:.82rem;color:var(--ink-2);font-style:italic;flex:1}
+.fr-label{font-size:.6rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);flex-shrink:0}
+.fr-close{font-size:.9rem;color:var(--ink-5);cursor:pointer;flex-shrink:0;line-height:1}
+.fr-close:hover{color:var(--ink-3)}
 
-/* Streaming cursor */
-.stream-cursor {
-  display: inline-block; width: 2px; height: 1.1em;
-  background: var(--accent); vertical-align: text-bottom;
-  border-radius: 1px;
-  animation: blink 1s step-end infinite;
-}
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+/* Manuscript */
+#manuscript{font-family:var(--serif);font-size:17.5px;line-height:1.92;color:var(--ink);min-height:160px;caret-color:var(--accent);position:relative;z-index:1;white-space:pre-wrap;word-break:break-word}
+#manuscript:focus{outline:none}
+#manuscript p{margin-bottom:1.1em}
+.ai-block{background:var(--ai-tint);border-radius:2px;transition:background 2s var(--ease)}
+.ai-block.fading{background:transparent}
+.voice-block{background:var(--voice-tint);border-radius:2px;transition:background 2s var(--ease)}
+.voice-block.fading{background:transparent}
+.stream-cur{display:inline-block;width:2px;height:1.05em;background:var(--accent);vertical-align:text-bottom;border-radius:1px;animation:blink 1s step-end infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 
-/* Generating shimmer */
-#gen-shimmer {
-  display: none;
-  font-family: var(--serif); font-size: 17.5px;
-  line-height: 1.92; color: var(--ink-4);
-  font-style: italic;
-}
-#gen-shimmer.active { display: block; }
-.gen-line {
-  display: inline-block; height: 1em; border-radius: 3px;
-  background: linear-gradient(90deg, var(--paper-2) 25%, var(--paper-3) 50%, var(--paper-2) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
-  vertical-align: middle; margin-bottom: 0.4em;
-}
-@keyframes shimmer { 0%{background-position:200%} 100%{background-position:-200%} }
+/* Shimmer */
+#shimmer{display:none;font-family:var(--serif);font-size:17.5px;line-height:1.92}
+#shimmer.on{display:block}
+.sh-line{display:block;height:.9em;border-radius:3px;background:linear-gradient(90deg,var(--paper-2) 25%,var(--paper-3) 50%,var(--paper-2) 75%);background-size:200% 100%;animation:shim 1.4s infinite;margin-bottom:.55em}
+@keyframes shim{0%{background-position:200%}100%{background-position:-200%}}
 
-/* ── FLOATING ACTION BAR ─────────────────────────────────────── */
-#action-bar {
-  position: absolute; bottom: 28px; left: 50%;
-  transform: translateX(-50%);
-  display: flex; align-items: center; gap: 6px;
-  padding: 7px 10px; border-radius: 10px;
-  background: var(--paper); border: 1px solid var(--border-2);
-  box-shadow: var(--shadow-md);
-  opacity: 0; pointer-events: none;
-  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
-  transform: translateX(-50%) translateY(8px);
-  z-index: 50; white-space: nowrap;
-}
-#action-bar.visible {
-  opacity: 1; pointer-events: all;
-  transform: translateX(-50%) translateY(0);
-}
-.ab-btn {
-  height: 30px; padding: 0 13px; border-radius: 6px;
-  font-size: 0.78rem; font-weight: 500;
-  display: flex; align-items: center; gap: 5px;
-  transition: all var(--dur) var(--ease);
-}
-.ab-btn:hover { background: var(--paper-2); }
-.ab-accept { background: var(--ink); color: var(--paper); }
-.ab-accept:hover { background: var(--ink-2); }
-.ab-sep { width: 1px; height: 18px; background: var(--border-2); flex-shrink:0; }
-.ab-steer { color: var(--ink-3); }
-.ab-steer:hover { color: var(--ink); }
+/* ═══ WORD PALETTE ══════════════════════════════════════════════ */
+#palette{position:fixed;z-index:500;background:var(--paper);border:1px solid var(--border-2);border-radius:10px;box-shadow:0 4px 24px rgba(28,25,23,.14);padding:10px;min-width:300px;max-width:420px;display:none}
+#palette.show{display:block}
+.pal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.pal-title{font-size:.62rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4)}
+.pal-modes{display:flex;gap:3px}
+.pal-mode{height:20px;padding:0 8px;border-radius:3px;font-size:.65rem;font-weight:500;color:var(--ink-4);border:1px solid var(--border-2);transition:all var(--dur)}
+.pal-mode.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.pal-options{display:flex;flex-direction:column;gap:3px;margin-bottom:8px}
+.pal-opt{padding:7px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;transition:all var(--dur);text-align:left}
+.pal-opt:hover{background:var(--paper-2);border-color:var(--border-2)}
+.pal-opt-label{font-size:.6rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-4);margin-bottom:2px}
+.pal-opt-text{font-family:var(--serif);font-size:.9rem;color:var(--ink);line-height:1.4}
+.pal-custom{display:flex;gap:6px;margin-top:4px}
+.pal-custom input{flex:1;height:28px;background:var(--paper-2);border:1px solid var(--border-2);border-radius:5px;padding:0 8px;font-size:.8rem;transition:border-color var(--dur)}
+.pal-custom input:focus{border-color:var(--accent)}
+.pal-custom button{height:28px;padding:0 10px;border-radius:5px;background:var(--accent);color:#fff;font-size:.75rem;font-weight:500;transition:background var(--dur)}
+.pal-custom button:hover{background:#a04e20}
+.pal-loading{text-align:center;padding:14px;font-size:.78rem;color:var(--ink-4);font-style:italic}
 
-/* Steer input */
-#steer-input-row {
-  display: none; align-items: center; gap: 6px;
-}
-#steer-input-row.active { display: flex; }
-#steer-input {
-  height: 30px; border: none; background: transparent;
-  font-size: 0.8rem; color: var(--ink); width: 260px;
-  padding: 0 4px;
-}
-#steer-input::placeholder { color: var(--ink-5); }
-#steer-submit {
-  height: 26px; padding: 0 10px; border-radius: 5px;
-  font-size: 0.75rem; background: var(--accent); color: white;
-  font-weight: 500;
-}
+/* ═══ GEN BAR ═══════════════════════════════════════════════════ */
+#gen-bar{position:absolute;bottom:0;left:0;right:0;background:var(--paper);border-top:1px solid var(--border);z-index:40;padding:0}
 
-/* Focus mode */
-body.focus-mode #cluster-bar { opacity: 0; pointer-events: none; }
-body.focus-mode #rail { opacity: 0; pointer-events: none; }
-body.focus-mode #topbar { opacity: 0; pointer-events: none; }
+/* Mood row */
+#mood-row{display:flex;align-items:stretch;gap:0;border-bottom:1px solid var(--border)}
+.mood-opt{flex:1;padding:8px 10px;cursor:pointer;transition:background var(--dur);border-right:1px solid var(--border);text-align:left}
+.mood-opt:last-child{border-right:none}
+.mood-opt:hover{background:var(--paper-2)}
+.mood-opt.selected{background:var(--accent-l)}
+.mood-opt-name{font-size:.72rem;font-weight:600;color:var(--ink-2);margin-bottom:2px}
+.mood-opt.selected .mood-opt-name{color:var(--accent)}
+.mood-opt-desc{font-size:.62rem;color:var(--ink-4);line-height:1.4}
+.mood-surprise{flex:.7;background:var(--paper-2)}
+.mood-surprise .mood-opt-name{color:var(--ink-3)}
 
-/* ── INTELLIGENCE PANEL ──────────────────────────────────────── */
-#intel-panel {
-  width: 0; overflow: hidden;
-  border-left: 1px solid transparent;
-  background: var(--paper);
-  flex-shrink: 0;
-  display: flex; flex-direction: column;
-  transition: width var(--dur) var(--ease), border-color var(--dur);
-}
-#intel-panel.open {
-  width: 320px;
-  border-color: var(--border);
-}
-#ip-header {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-  flex-shrink: 0;
-}
-.ip-title {
-  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em;
-  text-transform: uppercase; color: var(--ink-3);
-}
-.ip-view-toggle {
-  display: flex; gap: 2px;
-  background: var(--paper-2); border-radius: 4px; padding: 2px;
-}
-.ip-vbtn {
-  height: 22px; padding: 0 8px; border-radius: 3px;
-  font-size: 0.68rem; font-weight: 500; color: var(--ink-4);
-  transition: all var(--dur);
-}
-.ip-vbtn.active { background: var(--paper); color: var(--ink); box-shadow: var(--shadow-sm); }
+/* Controls row */
+#ctrl-row{display:flex;align-items:center;gap:10px;padding:8px 14px}
+.ctrl-group{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.ctrl-lbl{font-size:.65rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-4);white-space:nowrap}
+.wc-slider{width:90px;-webkit-appearance:none;height:3px;border-radius:2px;background:var(--border-2);outline:none;cursor:pointer}
+.wc-slider::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--accent);cursor:pointer;transition:transform var(--dur)}
+.wc-slider::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.wc-val{font-size:.72rem;font-weight:500;color:var(--ink-2);min-width:32px}
+.heat-slider{width:70px;-webkit-appearance:none;height:3px;border-radius:2px;background:linear-gradient(to right,var(--green-l),var(--accent-l));outline:none;cursor:pointer}
+.heat-slider::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--gold);cursor:pointer}
+.ctrl-sep{width:1px;height:20px;background:var(--border-2);flex-shrink:0}
+#open-dir{flex:1;height:30px;background:var(--paper-2);border:1px solid var(--border-2);border-radius:5px;padding:0 10px;font-size:.8rem;transition:border-color var(--dur)}
+#open-dir:focus{border-color:var(--accent);background:var(--paper)}
+#open-dir::placeholder{color:var(--ink-5)}
+.voice-btn{height:30px;width:30px;border-radius:5px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-2);color:var(--ink-4);transition:all var(--dur);flex-shrink:0}
+.voice-btn:hover{background:var(--paper-2);color:var(--ink)}
+.voice-btn.recording{background:#fee2e2;border-color:#f87171;color:#dc2626;animation:pulse-r .8s infinite}
+@keyframes pulse-r{0%,100%{opacity:1}50%{opacity:.6}}
+.gen-btn{height:30px;padding:0 16px;border-radius:5px;background:var(--ink);color:var(--paper);font-size:.78rem;font-weight:500;transition:background var(--dur);flex-shrink:0;display:flex;align-items:center;gap:5px}
+.gen-btn:hover{background:var(--ink-2)}
+.gen-btn:disabled{opacity:.4;cursor:not-allowed}
+.vlock-btn{height:30px;padding:0 10px;border-radius:5px;font-size:.7rem;font-weight:500;color:var(--ink-4);border:1px solid var(--border-2);transition:all var(--dur);flex-shrink:0}
+.vlock-btn.on{background:var(--violet-l);color:var(--violet);border-color:rgba(91,79,207,.25)}
 
-/* Intelligence update indicator */
-#ip-updating {
-  display: none; align-items: center; gap: 6px;
-  padding: 6px 16px; background: rgba(194,98,43,0.05);
-  border-bottom: 1px solid var(--border);
-  font-size: 0.72rem; color: var(--accent);
-}
-#ip-updating.active { display: flex; }
-.ip-update-dot {
-  width: 5px; height: 5px; border-radius: 50%;
-  background: var(--accent); animation: dot-pulse 1s infinite;
-}
+/* Voice strip */
+#voice-strip{display:none;align-items:center;gap:10px;padding:8px 14px;background:var(--paper-2);border-bottom:1px solid var(--border)}
+#voice-strip.show{display:flex}
+.vs-dot{width:8px;height:8px;border-radius:50%;background:#dc2626;animation:pulse-r .6s infinite;flex-shrink:0}
+#voice-transcript{flex:1;font-family:var(--serif);font-size:.88rem;color:var(--ink-2);font-style:italic;min-height:20px}
+.vs-confirm{height:26px;padding:0 12px;border-radius:4px;background:var(--green);color:#fff;font-size:.72rem;font-weight:500;flex-shrink:0}
+.vs-cancel{height:26px;padding:0 8px;border-radius:4px;font-size:.72rem;color:var(--ink-4);flex-shrink:0}
 
-/* Panel scroll */
-#ip-scroll {
-  flex: 1; overflow-y: auto; padding: 0;
-}
-#ip-scroll::-webkit-scrollbar { width: 3px; }
-#ip-scroll::-webkit-scrollbar-thumb { background: var(--border-2); }
+/* ═══ PANEL ═════════════════════════════════════════════════════ */
+#panel{grid-area:panel;background:var(--paper);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;transition:width var(--dur) var(--ease)}
+#panel-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.ptab{flex:1;height:36px;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:500;color:var(--ink-4);cursor:pointer;border-bottom:2px solid transparent;transition:all var(--dur)}
+.ptab.on{color:var(--ink);border-bottom-color:var(--accent)}
+#panel-body{flex:1;overflow-y:auto}
 
-/* ── GRAPH VIEW ─────────────────────────────────────────────── */
-#graph-view { padding: 16px; }
-#story-graph {
-  width: 100%; height: 160px;
-  border-radius: 8px;
-  background: var(--paper-2);
-  margin-bottom: 12px;
-  overflow: hidden;
-  position: relative;
-}
-#story-graph canvas { display: block; }
+/* Intelligence tab */
+.ip-section{padding:12px 14px;border-bottom:1px solid var(--border)}
+.ip-sec-title{font-size:.62rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);margin-bottom:9px;display:flex;align-items:center;justify-content:space-between}
+.ip-count{font-weight:400;color:var(--ink-5);letter-spacing:0}
+.sig-row{display:flex;align-items:flex-start;gap:7px;padding:5px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:background var(--dur)}
+.sig-row:last-child{border:none}
+.sig-row:hover{background:var(--paper-2);margin:0 -14px;padding-left:14px;padding-right:14px}
+.sig-d{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.sig-d.planned{background:var(--ink-5)}
+.sig-d.drafted{background:var(--accent)}
+.sig-d.accepted{background:var(--green)}
+.sig-d.emerging{background:var(--violet)}
+.sig-txt{font-size:.78rem;color:var(--ink-2);line-height:1.45;flex:1}
+.sig-lbl{font-size:.62rem;color:var(--ink-4);margin-top:1px}
+.sig-badge{font-size:.58rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:1px 5px;border-radius:3px;flex-shrink:0;margin-top:2px}
+.sb-planned{background:var(--paper-3);color:var(--ink-4)}
+.sb-drafted{background:var(--accent-l);color:var(--accent)}
+.sb-accepted{background:var(--green-l);color:var(--green)}
+.sb-emerging{background:var(--violet-l);color:var(--violet)}
+.guide-card{background:rgba(184,90,40,.06);border:1px solid rgba(184,90,40,.14);border-radius:7px;padding:10px 12px}
+.guide-title{font-size:.62rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.guide-body{font-size:.78rem;color:var(--ink-2);line-height:1.55;font-style:italic}
+.guide-frags{margin-top:7px;display:flex;flex-direction:column;gap:3px}
+.guide-frag{font-size:.72rem;color:var(--ink-3);display:flex;gap:5px}
+.guide-frag::before{content:'↗';color:var(--accent);flex-shrink:0;font-style:normal}
 
-/* ── LIST VIEW ──────────────────────────────────────────────── */
-#list-view { display: none; }
-#list-view.active { display: block; }
-#graph-view.active { display: block; }
-#graph-view { display: none; }
+/* Characters tab */
+.char-card{padding:10px 14px;border-bottom:1px solid var(--border)}
+.cc-name{font-family:var(--serif);font-size:.95rem;font-weight:500;color:var(--ink);margin-bottom:2px}
+.cc-role{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--accent);margin-bottom:7px}
+.cc-row{display:flex;gap:5px;margin-bottom:3px;align-items:flex-start}
+.cc-key{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-4);width:44px;flex-shrink:0;padding-top:1px}
+.cc-val{font-size:.75rem;color:var(--ink-2);line-height:1.45}
+.cc-belief{margin-top:6px;padding:6px 8px;background:var(--paper-2);border-radius:4px;font-size:.72rem;color:var(--ink-3);line-height:1.45;font-style:italic}
+.cc-belief strong{color:var(--ink-2);font-style:normal;font-weight:500}
+.temp-mini{margin-top:7px}
+.temp-mini-lbl{font-size:.6rem;color:var(--ink-4);margin-bottom:3px}
+.temp-mini-bar{height:3px;border-radius:2px;background:var(--paper-3);overflow:hidden}
+.temp-mini-fill{height:100%;border-radius:2px;transition:width .5s var(--ease)}
 
-/* Intelligence sections */
-.ip-section { padding: 12px 16px; border-bottom: 1px solid var(--border); }
-.ip-section-title {
-  font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--ink-4);
-  margin-bottom: 10px;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.ip-count {
-  font-weight: 400; color: var(--ink-5); font-size: 0.65rem;
-  letter-spacing: 0;
-}
+/* Fragments tab */
+#frag-tab{padding:10px}
+.frag-add{display:flex;gap:6px;margin-bottom:10px}
+.frag-add textarea{flex:1;background:var(--paper-2);border:1px solid var(--border-2);border-radius:6px;padding:7px 9px;font-family:var(--serif);font-size:.85rem;line-height:1.5;resize:none;transition:border-color var(--dur);min-height:56px}
+.frag-add textarea:focus{border-color:var(--accent);background:var(--paper)}
+.frag-add-btn{align-self:flex-end;height:30px;padding:0 12px;border-radius:5px;background:var(--ink);color:var(--paper);font-size:.75rem;font-weight:500;flex-shrink:0}
+.frag-filters{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.frag-filter{height:22px;padding:0 9px;border-radius:20px;font-size:.65rem;font-weight:500;border:1px solid var(--border-2);color:var(--ink-4);cursor:pointer;transition:all var(--dur)}
+.frag-filter.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.frag-items{display:flex;flex-direction:column;gap:6px}
+.frag-item{background:var(--paper-2);border:1px solid var(--border);border-radius:7px;padding:9px 10px;cursor:default}
+.frag-item.used{opacity:.5}
+.frag-text{font-family:var(--serif);font-size:.88rem;color:var(--ink);line-height:1.55;margin-bottom:6px}
+.frag-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.frag-tag{font-size:.6rem;font-weight:500;padding:1px 6px;border-radius:3px;cursor:pointer}
+.ft-cluster{background:var(--accent-l);color:var(--accent)}
+.ft-theme{background:var(--violet-l);color:var(--violet)}
+.ft-char{background:var(--green-l);color:var(--green)}
+.ft-raw{background:var(--paper-3);color:var(--ink-4)}
+.ft-used{background:var(--paper-3);color:var(--ink-5)}
+.frag-actions{display:flex;gap:4px;margin-left:auto}
+.frag-act-btn{font-size:.6rem;color:var(--ink-4);padding:1px 5px;border-radius:3px;border:1px solid var(--border);transition:all var(--dur)}
+.frag-act-btn:hover{background:var(--paper-3);color:var(--ink-2)}
 
-/* Story signal rows */
-.signal-row {
-  display: flex; align-items: flex-start; gap: 8px;
-  padding: 5px 0; border-bottom: 1px solid var(--border);
-  cursor: pointer; transition: background var(--dur);
-}
-.signal-row:last-child { border-bottom: none; }
-.signal-row:hover { background: var(--paper-2); margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
-.sig-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  flex-shrink: 0; margin-top: 5px;
-}
-.sig-dot.planned  { background: var(--planned); opacity: 0.5; }
-.sig-dot.drafted  { background: var(--drafted); }
-.sig-dot.accepted { background: var(--accepted); }
-.sig-dot.emerging { background: var(--emerging); }
-.sig-text { font-size: 0.78rem; color: var(--ink-2); line-height: 1.5; flex: 1; }
-.sig-label { font-size: 0.65rem; color: var(--ink-4); margin-top: 1px; }
-.sig-badge {
-  font-size: 0.6rem; font-weight: 600; letter-spacing: 0.05em;
-  text-transform: uppercase; padding: 1px 5px; border-radius: 3px;
-  flex-shrink: 0; margin-top: 3px;
-}
-.sb-planned  { background: rgba(168,162,158,0.15); color: var(--planned); }
-.sb-drafted  { background: var(--accent-pale); color: var(--accent); }
-.sb-accepted { background: rgba(45,106,79,0.1);  color: var(--accepted); }
-.sb-emerging { background: rgba(124,111,205,0.12); color: var(--emerging); }
+/* ═══ OVERLAYS ══════════════════════════════════════════════════ */
 
-/* Cluster guidance card */
-.guidance-card {
-  background: var(--ai-tint);
-  border: 1px solid rgba(194,98,43,0.12);
-  border-radius: 8px; padding: 12px;
-  margin-bottom: 0;
-}
-.gc-title {
-  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.06em;
-  text-transform: uppercase; color: var(--accent);
-  margin-bottom: 8px;
-}
-.gc-body {
-  font-size: 0.8rem; color: var(--ink-2); line-height: 1.6;
-  font-style: italic;
-}
-.gc-threads { margin-top: 8px; }
-.gc-thread {
-  font-size: 0.72rem; color: var(--ink-3);
-  display: flex; align-items: flex-start; gap: 5px;
-  margin-bottom: 3px;
-}
-.gc-thread::before { content:'↗'; color: var(--accent); flex-shrink:0; font-style:normal; }
+/* Welcome */
+#welcome{position:fixed;inset:0;z-index:300;background:var(--paper);display:flex;align-items:center;justify-content:center;transition:opacity .4s}
+#welcome.off{opacity:0;pointer-events:none}
+.w-inner{max-width:560px;width:100%;padding:0 24px}
+.w-kick{font-size:.65rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.w-title{font-family:var(--serif);font-size:2.6rem;font-weight:400;color:var(--ink);line-height:1.12;margin-bottom:14px;letter-spacing:-.02em}
+.w-sub{font-size:.9rem;color:var(--ink-3);line-height:1.75;margin-bottom:28px;max-width:420px}
+.w-import{border:1.5px dashed var(--border-2);border-radius:10px;padding:20px;background:var(--paper);transition:border-color var(--dur),background var(--dur);margin-bottom:14px}
+.w-import:focus-within{border-color:var(--accent);background:var(--accent-l)}
+#outline-input{width:100%;resize:none;font-family:var(--serif);font-size:.95rem;line-height:1.75;color:var(--ink);min-height:110px}
+#outline-input::placeholder{color:var(--ink-5);font-style:italic}
+.w-actions{display:flex;align-items:center;gap:8px}
+.w-btn-p{height:36px;padding:0 20px;border-radius:6px;background:var(--ink);color:var(--paper);font-size:.82rem;font-weight:500;transition:background var(--dur)}
+.w-btn-p:hover{background:var(--ink-2)}
+.w-btn-g{height:36px;padding:0 14px;border-radius:6px;border:1px solid var(--border-2);font-size:.82rem;color:var(--ink-3);transition:all var(--dur)}
+.w-btn-g:hover{background:var(--paper-2);color:var(--ink)}
 
-/* Character items */
-.char-item { padding: 8px 0; border-bottom: 1px solid var(--border); }
-.char-item:last-child { border-bottom: none; }
-.ci-name {
-  font-size: 0.82rem; font-weight: 500; color: var(--ink);
-  margin-bottom: 3px; font-family: var(--serif);
-}
-.ci-role { font-size: 0.68rem; color: var(--accent); margin-bottom: 5px; font-weight: 500; }
-.ci-row { display: flex; gap: 4px; margin-bottom: 2px; }
-.ci-key { font-size: 0.68rem; color: var(--ink-4); font-weight: 500; width: 36px; flex-shrink:0; }
-.ci-val { font-size: 0.72rem; color: var(--ink-3); line-height: 1.4; }
-.ci-arc {
-  margin-top: 5px; font-size: 0.68rem; color: var(--ink-3);
-  border-top: 1px solid var(--border); padding-top: 4px;
-  display: flex; align-items: center; gap: 4px;
-}
-.ci-arc::before { content:'↗'; color: var(--emerging); font-size:0.6rem; }
+/* Parse overlay */
+#parse-ov{position:fixed;inset:0;z-index:400;background:var(--paper);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s}
+#parse-ov.on{opacity:1;pointer-events:all}
+.po-inner{max-width:480px;width:100%;padding:0 24px;transform:translateY(16px);transition:transform .4s var(--ease)}
+#parse-ov.on .po-inner{transform:none}
+.po-kick{font-size:.65rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.po-title{font-family:var(--serif);font-size:1.9rem;font-weight:400;color:var(--ink);margin-bottom:20px;line-height:1.15}
+.po-stream{font-size:.85rem;color:var(--ink-3);line-height:2.1;min-height:100px}
+.po-finding{opacity:0;transform:translateY(4px);animation:pfa .3s var(--ease) forwards;display:flex;gap:8px;align-items:baseline}
+@keyframes pfa{to{opacity:1;transform:none}}
+.po-key{color:var(--ink-4)}
+.po-val{color:var(--ink);font-family:var(--serif)}
+.po-bar-wrap{height:2px;background:var(--paper-3);border-radius:1px;margin-top:20px;overflow:hidden}
+.po-bar-fill{height:100%;background:var(--accent);border-radius:1px;width:0;transition:width .4s var(--ease)}
 
-/* Thread items */
-.thread-item {
-  padding: 6px 0; border-bottom: 1px solid var(--border);
-  display: flex; gap: 6px;
-}
-.thread-item:last-child { border-bottom: none; }
-.ti-icon { font-size: 0.65rem; color: var(--ink-5); flex-shrink:0; margin-top:3px; }
-.ti-text { font-size: 0.78rem; color: var(--ink-2); line-height: 1.5; }
-.ti-state { font-size: 0.65rem; color: var(--ink-4); margin-top:1px; }
+/* Confirm screen */
+#confirm-ov{position:fixed;inset:0;z-index:350;background:var(--paper);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s;overflow-y:auto}
+#confirm-ov.on{opacity:1;pointer-events:all}
+.co-inner{max-width:560px;width:100%;padding:32px 24px}
+.co-title{font-family:var(--serif);font-size:1.8rem;font-weight:400;color:var(--ink);margin-bottom:4px}
+.co-sub{font-size:.82rem;color:var(--ink-3);margin-bottom:22px;line-height:1.6}
+.co-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.co-field{display:flex;flex-direction:column;gap:3px}
+.co-field.full{grid-column:1/-1}
+.co-lbl{font-size:.62rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-4)}
+.co-inp{height:32px;border:1px solid var(--border-2);border-radius:5px;background:var(--paper);padding:0 9px;font-size:.82rem;color:var(--ink);transition:border-color var(--dur)}
+.co-inp:focus{border-color:var(--accent)}
+.co-ta{height:auto;min-height:48px;padding:7px 9px;resize:none;line-height:1.5}
+.co-arc{display:flex;gap:6px;flex-wrap:wrap}
+.arc-pill{height:28px;padding:0 12px;border-radius:20px;font-size:.72rem;font-weight:500;border:1.5px solid var(--border-2);color:var(--ink-3);cursor:pointer;transition:all var(--dur)}
+.arc-pill.on{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+.co-extracted{margin:14px 0}
+.co-ext-row{display:flex;align-items:flex-start;gap:7px;margin-bottom:6px;flex-wrap:wrap}
+.co-ext-key{font-size:.62rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4);min-width:58px;padding-top:3px;flex-shrink:0}
+.co-ext-tag{font-size:.72rem;padding:2px 7px;border-radius:3px;background:var(--paper-2);border:1px solid var(--border);color:var(--ink-2);margin:2px}
+.co-ext-tag.hi{border-color:rgba(45,106,79,.3)}
+.co-end-inp{width:100%;border:1px solid var(--border-2);border-radius:5px;background:var(--paper);padding:7px 9px;font-family:var(--serif);font-size:.88rem;line-height:1.55;resize:none;min-height:52px;color:var(--ink);transition:border-color var(--dur)}
+.co-end-inp:focus{border-color:var(--accent)}
+.co-actions{display:flex;gap:8px;margin-top:20px}
 
-/* ── INTELLIGENCE MAP OVERLAY ────────────────────────────────── */
-#intel-map {
-  position: fixed; inset: 0; z-index: 200;
-  background: rgba(28,25,23,0.5);
-  backdrop-filter: blur(6px);
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.3s var(--ease);
-}
-#intel-map.open { opacity: 1; pointer-events: all; }
-#map-modal {
-  background: var(--paper);
-  border-radius: 16px; box-shadow: var(--shadow-lg);
-  width: min(900px, 92vw); height: min(600px, 85vh);
-  display: flex; flex-direction: column; overflow: hidden;
-  transform: translateY(16px);
-  transition: transform 0.3s var(--ease);
-}
-#intel-map.open #map-modal { transform: none; }
-#mm-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-}
-.mm-title {
-  font-size: 0.82rem; font-weight: 500; color: var(--ink);
-  display: flex; align-items: center; gap: 8px;
-}
-.mm-legend { display: flex; gap: 14px; }
-.ml-item { display: flex; align-items: center; gap: 5px; font-size: 0.68rem; color: var(--ink-3); }
-.ml-dot { width: 7px; height: 7px; border-radius: 50%; }
-.ml-close {
-  width: 28px; height: 28px; border-radius: 5px;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--ink-4); font-size: 1rem; cursor: pointer;
-  transition: background var(--dur);
-}
-.ml-close:hover { background: var(--paper-2); color: var(--ink); }
-#mm-graph {
-  flex: 1; overflow: hidden; position: relative;
-}
-#mm-canvas { display: block; width: 100%; height: 100%; }
-#mm-footer {
-  padding: 10px 20px; border-top: 1px solid var(--border);
-  font-size: 0.72rem; color: var(--ink-4);
-  display: flex; justify-content: space-between;
-}
+/* Settings */
+#settings-ov{position:fixed;inset:0;z-index:500;background:rgba(28,25,23,.45);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center}
+#settings-ov.on{display:flex}
+.set-modal{background:var(--paper);border-radius:12px;padding:26px;width:min(400px,90vw);box-shadow:0 8px 40px rgba(28,25,23,.16)}
+.set-title{font-family:var(--serif);font-size:1.3rem;margin-bottom:5px}
+.set-sub{font-size:.8rem;color:var(--ink-3);margin-bottom:16px;line-height:1.6}
+.set-inp{width:100%;height:34px;border:1.5px solid var(--border-2);border-radius:6px;background:var(--paper);padding:0 10px;font-size:.83rem;margin-bottom:14px;transition:border-color var(--dur)}
+.set-inp:focus{border-color:var(--accent);outline:none}
+.set-actions{display:flex;gap:8px;justify-content:flex-end}
 
-/* ── PARSE OVERLAY ───────────────────────────────────────────── */
-#parse-overlay {
-  position: fixed; inset: 0; z-index: 300;
-  background: var(--paper);
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.4s;
-}
-#parse-overlay.active { opacity: 1; pointer-events: all; }
-#parse-inner {
-  max-width: 520px; width: 100%; padding: 0 24px;
-  transform: translateY(20px);
-  transition: transform 0.4s var(--ease);
-}
-#parse-overlay.active #parse-inner { transform: none; }
-.po-kicker {
-  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--accent);
-  margin-bottom: 12px;
-}
-.po-title {
-  font-family: var(--serif); font-size: 2rem; font-weight: 400;
-  color: var(--ink); margin-bottom: 24px; line-height: 1.2;
-}
-.parse-stream {
-  font-size: 0.85rem; color: var(--ink-3); line-height: 2;
-  min-height: 120px;
-}
-.ps-finding {
-  opacity: 0; transform: translateY(4px);
-  animation: ps-appear 0.3s var(--ease) forwards;
-  display: flex; gap: 8px; align-items: baseline;
-}
-@keyframes ps-appear { to { opacity:1; transform:none; } }
-.ps-label { color: var(--ink-4); }
-.ps-value { color: var(--ink); font-family: var(--serif); }
-.po-progress {
-  height: 2px; background: var(--paper-3); border-radius: 1px;
-  margin-top: 24px; overflow: hidden;
-}
-.po-bar {
-  height: 100%; background: var(--accent); border-radius: 1px;
-  width: 0; transition: width 0.4s var(--ease);
-}
+/* Toast */
+#toasts{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:5px;z-index:999;pointer-events:none;align-items:center}
+.toast{background:var(--ink);color:var(--paper);padding:7px 15px;border-radius:6px;font-size:.78rem;box-shadow:0 3px 14px rgba(28,25,23,.2);animation:tst .25s var(--ease);white-space:nowrap}
+@keyframes tst{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.toast.ok{background:var(--green)}
 
-/* ── ONBOARDING / WELCOME ────────────────────────────────────── */
-#welcome {
-  position: fixed; inset: 0; z-index: 200;
-  background: var(--paper);
-  display: flex; align-items: center; justify-content: center;
-  transition: opacity 0.4s;
-}
-#welcome.hidden { opacity: 0; pointer-events: none; }
-#welcome-inner { max-width: 560px; width: 100%; padding: 0 24px; }
-.w-kicker {
-  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--accent); margin-bottom: 14px;
-}
-.w-title {
-  font-family: var(--serif); font-size: 2.6rem; font-weight: 400;
-  color: var(--ink); line-height: 1.15; margin-bottom: 16px;
-}
-.w-sub {
-  font-size: 0.9rem; color: var(--ink-3); line-height: 1.75;
-  margin-bottom: 32px; max-width: 420px;
-}
-.w-import-area {
-  border: 1.5px dashed var(--border-2);
-  border-radius: 10px; padding: 24px;
-  background: var(--paper);
-  transition: border-color var(--dur), background var(--dur);
-  margin-bottom: 16px;
-}
-.w-import-area:focus-within {
-  border-color: var(--accent);
-  background: var(--accent-pale);
-}
-#outline-input {
-  width: 100%; border: none; background: transparent; resize: none;
-  font-family: var(--serif); font-size: 0.95rem; line-height: 1.75;
-  color: var(--ink); min-height: 120px;
-}
-#outline-input::placeholder { color: var(--ink-5); font-style: italic; }
-.w-actions { display: flex; gap: 8px; align-items: center; }
-.w-btn-primary {
-  height: 36px; padding: 0 20px; border-radius: 6px;
-  background: var(--ink); color: var(--paper);
-  font-size: 0.82rem; font-weight: 500;
-  transition: background var(--dur);
-}
-.w-btn-primary:hover { background: var(--ink-2); }
-.w-btn-ghost {
-  height: 36px; padding: 0 16px; border-radius: 6px;
-  font-size: 0.82rem; color: var(--ink-3);
-  border: 1px solid var(--border-2);
-  transition: all var(--dur);
-}
-.w-btn-ghost:hover { background: var(--paper-2); color: var(--ink); }
-.w-hint { font-size: 0.72rem; color: var(--ink-4); margin-left: auto; font-style: italic; }
+/* Reading mode */
+body.reading #shell{display:none}
+#reading-mode{display:none;position:fixed;inset:0;background:var(--paper);overflow-y:auto;z-index:200}
+body.reading #reading-mode{display:block}
+.rm-inner{max-width:600px;margin:0 auto;padding:80px 40px}
+.rm-title{font-family:var(--serif);font-size:2rem;font-weight:400;color:var(--ink);margin-bottom:8px}
+.rm-exit{position:fixed;top:20px;right:24px;height:28px;padding:0 12px;border-radius:5px;border:1px solid var(--border-2);font-size:.75rem;color:var(--ink-3);background:var(--paper);cursor:pointer;transition:all var(--dur)}
+.rm-exit:hover{background:var(--paper-2);color:var(--ink)}
+.rm-cluster{margin-bottom:48px}
+.rm-clbl{font-size:.62rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-5);margin-bottom:18px}
+.rm-prose{font-family:var(--serif);font-size:18px;line-height:2;color:var(--ink)}
+.rm-prose p{margin-bottom:1.1em}
 
-/* Confirmation screen after parse */
-#confirm-screen {
-  display: none; max-width: 560px; width: 100%; padding: 0 24px;
-}
-#confirm-screen.active { display: block; }
-#welcome-inner.hidden { display: none; }
-.cs-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-.cs-field { display: flex; flex-direction: column; gap: 4px; }
-.cs-label { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-4); }
-.cs-input {
-  height: 32px; border: 1px solid var(--border-2); border-radius: 5px;
-  background: var(--paper); padding: 0 10px;
-  font-size: 0.82rem; color: var(--ink);
-  transition: border-color var(--dur);
-}
-.cs-input:focus { border-color: var(--accent); }
-.cs-full { grid-column: 1/-1; }
-.cs-textarea {
-  height: auto; min-height: 56px; padding: 8px 10px;
-  resize: none; line-height: 1.6;
-}
-.arc-pills { display: flex; gap: 6px; flex-wrap: wrap; }
-.arc-pill {
-  height: 28px; padding: 0 12px; border-radius: 20px;
-  font-size: 0.72rem; font-weight: 500;
-  border: 1.5px solid var(--border-2);
-  color: var(--ink-3); cursor: pointer;
-  transition: all var(--dur);
-}
-.arc-pill.selected {
-  border-color: var(--accent); color: var(--accent);
-  background: var(--accent-pale);
-}
-.cs-extracted { margin-bottom: 16px; }
-.ce-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
-.ce-key { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-4); min-width: 60px; }
-.ce-tag {
-  font-size: 0.72rem; padding: 2px 8px; border-radius: 3px;
-  background: var(--paper-2); color: var(--ink-2);
-  border: 1px solid var(--border); cursor: default;
-}
-.ce-conf-high { border-color: rgba(45,106,79,0.3); }
-.ce-conf-med  { border-color: rgba(194,98,43,0.2); }
-.ce-conf-low  { opacity: 0.6; }
-.cs-confirm { display: flex; gap: 8px; margin-top: 20px; }
-
-/* ── TOAST ───────────────────────────────────────────────────── */
-#toasts {
-  position: fixed; bottom: 20px; left: 50%;
-  transform: translateX(-50%);
-  display: flex; flex-direction: column; gap: 6px;
-  z-index: 500; pointer-events: none; align-items: center;
-}
-.toast {
-  background: var(--ink); color: var(--paper);
-  padding: 8px 16px; border-radius: 6px;
-  font-size: 0.78rem; box-shadow: var(--shadow-md);
-  animation: toast-in 0.25s var(--ease);
-  white-space: nowrap;
-}
-@keyframes toast-in { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
-
-/* ── KEY HINT ─────────────────────────────────────────────────── */
-#keyhint {
-  position: fixed; bottom: 10px; right: 12px;
-  font-size: 0.62rem; color: var(--ink-5);
-  display: flex; gap: 10px; z-index: 10;
-}
-.kh { display: flex; gap: 3px; align-items: center; }
-kbd {
-  font-family: var(--sans); font-size: 0.6rem;
-  background: var(--paper-2); border: 1px solid var(--border-2);
-  border-radius: 3px; padding: 1px 4px;
-  color: var(--ink-3);
-}
+/* Kbd hint */
+#kbd{position:fixed;bottom:8px;right:10px;font-size:.58rem;color:var(--ink-5);display:flex;gap:8px;z-index:10;pointer-events:none}
+.kh{display:flex;gap:2px;align-items:center}
+kbd{font-family:var(--sans);font-size:.56rem;background:var(--paper-2);border:1px solid var(--border-2);border-radius:3px;padding:1px 3px;color:var(--ink-3)}
 </style>
 </head>
 <body>
 
-<!-- ── WELCOME / IMPORT SCREEN ─────────────────────────────── -->
+<!-- ═══ WELCOME ════════════════════════════════════════════════ -->
 <div id="welcome">
-  <div id="welcome-inner">
-    <div class="w-kicker">Structured narrative execution</div>
-    <h1 class="w-title">Where is your<br>story right now?</h1>
-    <p class="w-sub">Paste an outline, synopsis, or story notes. The intelligence layer will find the structure — then help you write it, scene by scene, without losing the thread.</p>
-    <div class="w-import-area">
-      <textarea id="outline-input" rows="5" placeholder="Paste your story, outline, or synopsis…&#10;&#10;Even rough notes are enough to begin."></textarea>
+  <div class="w-inner">
+    <div class="w-kick">AI-assisted storytelling</div>
+    <h1 class="w-title">Your story.<br>Finally on the page.</h1>
+    <p class="w-sub">Paste your outline or story notes. The intelligence layer reads it deeply, structures it into your chosen arc, and helps you write it — scene by scene — without losing the thread.</p>
+    <div class="w-import">
+      <textarea id="outline-input" rows="5" placeholder="Paste your story, outline, synopsis, or rough notes…&#10;&#10;Even a paragraph is enough to begin."></textarea>
     </div>
     <div class="w-actions">
-      <button class="w-btn-primary" id="btn-analyse">Analyse story →</button>
-      <button class="w-btn-ghost" id="btn-demo">Load demo</button>
-      <span class="w-hint">or press ⌘↵</span>
+      <button class="w-btn-p" id="btn-analyse">Analyse &amp; structure →</button>
+      <button class="w-btn-g" id="btn-demo">Load demo</button>
+      <span style="font-size:.72rem;color:var(--ink-5);margin-left:4px;font-style:italic">⌘↵ to begin</span>
     </div>
   </div>
+</div>
 
-  <!-- Confirmation screen -->
-  <div id="confirm-screen">
-    <div class="po-kicker">Story model ready</div>
-    <div style="font-family:var(--serif);font-size:1.5rem;font-weight:400;margin-bottom:20px;color:var(--ink)" id="cs-story-title">—</div>
+<!-- ═══ PARSE OVERLAY ══════════════════════════════════════════ -->
+<div id="parse-ov">
+  <div class="po-inner">
+    <div class="po-kick">Reading your story</div>
+    <div class="po-title">Finding what's already there.</div>
+    <div class="po-stream" id="po-stream"></div>
+    <div class="po-bar-wrap"><div class="po-bar-fill" id="po-bar"></div></div>
+  </div>
+</div>
 
-    <div class="cs-fields">
-      <div class="cs-field">
-        <span class="cs-label">Genre</span>
-        <input class="cs-input" id="cs-genre" type="text" placeholder="e.g. Literary fiction">
+<!-- ═══ CONFIRM ════════════════════════════════════════════════ -->
+<div id="confirm-ov">
+  <div class="co-inner">
+    <div class="co-title" id="co-story-title">—</div>
+    <p class="co-sub">Review the model and confirm your arc structure before writing begins.</p>
+    <div class="co-grid">
+      <div class="co-field"><span class="co-lbl">Genre</span><input class="co-inp" id="co-genre" placeholder="e.g. Literary fiction"></div>
+      <div class="co-field"><span class="co-lbl">Tone</span><input class="co-inp" id="co-tone" placeholder="e.g. Restrained, dark"></div>
+      <div class="co-field"><span class="co-lbl">Point of view</span><input class="co-inp" id="co-pov" placeholder="e.g. Third person limited"></div>
+      <div class="co-field"><span class="co-lbl">Premise</span><input class="co-inp" id="co-premise" placeholder="One sentence"></div>
+      <div class="co-field full">
+        <span class="co-lbl">The ending (fixed anchor — informs all generation)</span>
+        <textarea class="co-inp co-ta" id="co-ending" rows="2" placeholder="Describe how the story ends. This is kept as the fixed destination."></textarea>
       </div>
-      <div class="cs-field">
-        <span class="cs-label">Tone</span>
-        <input class="cs-input" id="cs-tone" type="text" placeholder="e.g. Restrained, dark">
-      </div>
-      <div class="cs-field cs-full">
-        <span class="cs-label">Point of view</span>
-        <input class="cs-input" id="cs-pov" type="text" placeholder="e.g. Third person limited — Robert">
-      </div>
-      <div class="cs-field cs-full">
-        <span class="cs-label">Premise</span>
-        <textarea class="cs-input cs-textarea" id="cs-premise" rows="2" placeholder="The story in one sentence"></textarea>
-      </div>
-      <div class="cs-field cs-full">
-        <span class="cs-label">Arc structure</span>
-        <div class="arc-pills" id="arc-pills">
-          <button class="arc-pill selected" data-arc="3act">Three-act · 7 clusters</button>
-          <button class="arc-pill" data-arc="5part">Five-part arc · 5 clusters</button>
+      <div class="co-field full">
+        <span class="co-lbl">Arc structure</span>
+        <div class="co-arc" id="co-arc">
+          <button class="arc-pill on" data-arc="3act">Three-act · 7 clusters</button>
+          <button class="arc-pill" data-arc="5part">Five-part · 5 clusters</button>
           <button class="arc-pill" data-arc="custom">Custom · 3 clusters</button>
         </div>
       </div>
     </div>
-
-    <div class="cs-extracted" id="cs-extracted"></div>
-
-    <div class="cs-confirm">
-      <button class="w-btn-primary" id="btn-begin">Begin writing →</button>
-      <button class="w-btn-ghost" id="btn-back">← Back</button>
+    <div class="co-extracted" id="co-extracted"></div>
+    <div class="co-actions">
+      <button class="w-btn-p" id="btn-begin">Begin writing →</button>
+      <button class="w-btn-g" id="btn-back-co">← Back</button>
     </div>
   </div>
 </div>
 
-<!-- ── PARSE OVERLAY ───────────────────────────────────────── -->
-<div id="parse-overlay">
-  <div id="parse-inner">
-    <div class="po-kicker">Reading your story</div>
-    <div class="po-title">Finding what's already there.</div>
-    <div class="parse-stream" id="parse-stream"></div>
-    <div class="po-progress"><div class="po-bar" id="po-bar"></div></div>
+<!-- ═══ SETTINGS ═══════════════════════════════════════════════ -->
+<div id="settings-ov">
+  <div class="set-modal">
+    <div class="set-title">Settings</div>
+    <p class="set-sub">Your API key enables live AI generation, deep import analysis, word palette, and voice conversion. Stored only in your browser — never sent anywhere except directly to Anthropic.</p>
+    <input type="password" class="set-inp" id="api-key-input" placeholder="sk-ant-…">
+    <div class="set-actions">
+      <button class="w-btn-g" id="set-cancel">Cancel</button>
+      <button class="w-btn-p" id="set-save">Save key</button>
+    </div>
   </div>
 </div>
 
-<!-- ── MAIN APP ────────────────────────────────────────────── -->
-<div id="app">
+<!-- ═══ SHELL ══════════════════════════════════════════════════ -->
+<div id="shell">
+
   <!-- Topbar -->
   <header id="topbar">
     <div id="tb-logo">n</div>
     <div id="tb-title" contenteditable="true" spellcheck="false">Untitled</div>
-    <div id="tb-crumb">
-      <span class="sep">›</span>
-      <span id="tb-cluster">—</span>
-    </div>
+    <div id="tb-sep"></div>
+    <div id="tb-crumb"><span id="tb-clu">—</span></div>
     <div id="tb-right">
-      <div id="save-dot" title="Saved"></div>
-      <button class="tb-btn" id="btn-map" title="Story intelligence map">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="6" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="12" cy="18" r="2"/><path d="M7 12h3M14 8l3 3M14 16l3-3M7 12h3"/></svg>
-        Map
-      </button>
-      <button class="tb-btn" id="btn-intel" title="Intelligence panel (⌘I)">
-        Intelligence
-      </button>
-      <button class="tb-btn" id="btn-focus" title="Focus mode (⌘⇧F)">Focus</button>
-      <button class="tb-btn" id="btn-export-tb">Export</button>
+      <div id="save-dot"></div>
+      <button class="tbtn" id="btn-read">Read</button>
+      <button class="tbtn" id="btn-map-tb">Map</button>
+      <button class="tbtn on" id="btn-panel-tb">Intelligence</button>
+      <button class="tbtn" id="btn-export-tb">Export</button>
+      <button class="tbtn" id="btn-settings-tb">⚙</button>
     </div>
   </header>
 
-  <!-- Icon rail -->
+  <!-- Rail -->
   <nav id="rail">
-    <button class="rail-btn" id="rail-structure" title="Story structure (⌘\)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+    <button class="rbtn" id="rail-sb" title="Structure ⌘\">
+      <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
     </button>
-    <div class="rail-sep"></div>
-    <button class="rail-btn" id="rail-intel-sm" title="Intelligence">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2a7 7 0 0 1 7 7c0 2.4-1.2 4.5-3 5.7V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.3A7 7 0 0 1 12 2z"/><path d="M10 21h4"/></svg>
+    <div class="rsep"></div>
+    <button class="rbtn" id="rail-intel" title="Intelligence ⌘I">
+      <svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 2.4-1.2 4.5-3 5.7V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.3A7 7 0 0 1 12 2z"/><path d="M10 21h4"/></svg>
     </button>
-    <button class="rail-btn rail-bottom" id="rail-settings" title="Settings">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
+    <button class="rbtn" id="rail-frags" title="Fragments">
+      <svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+    </button>
+    <div class="rsep"></div>
+    <button class="rbtn r-bottom" id="rail-settings2" title="Settings">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
     </button>
   </nav>
 
-  <!-- Main -->
-  <div id="main">
-    <!-- Sidebar -->
-    <aside id="sidebar">
-      <div class="sb-section">
-        <span class="sb-label">Arc</span>
-        <div id="cluster-list"></div>
-      </div>
-      <div class="sb-footer">
-        <div class="sb-stat"><span>Words</span><strong id="sb-words">0</strong></div>
-        <div class="sb-stat"><span>Scenes accepted</span><strong id="sb-scenes">0</strong></div>
-        <div class="sb-stat"><span>Clusters done</span><strong id="sb-clusters">0 / 0</strong></div>
-      </div>
-    </aside>
+  <!-- Sidebar -->
+  <aside id="sb">
+    <div class="sb-head">
+      <span class="sb-lbl">Story arc</span>
+      <div id="cluster-list"></div>
+    </div>
+    <div class="sb-foot">
+      <div class="sb-stat"><span>Words</span><strong id="sb-words">0</strong></div>
+      <div class="sb-stat"><span>Scenes</span><strong id="sb-scenes">0</strong></div>
+      <div class="sb-stat"><span>Progress</span><strong id="sb-prog">0 / 0</strong></div>
+    </div>
+  </aside>
 
-    <!-- Editor column -->
-    <div id="editor-col">
-      <!-- Cluster context bar -->
-      <div id="cluster-bar" class="hidden">
-        <div class="cb-left">
-          <span class="cb-name" id="cb-name">—</span>
-          <span class="cb-fn" id="cb-fn">—</span>
+  <!-- Editor -->
+  <div id="ed">
+    <!-- Arc temperature strip -->
+    <div id="arc-strip">
+      <canvas id="arc-canvas" height="52"></canvas>
+    </div>
+
+    <!-- Cluster bar -->
+    <div id="clu-bar">
+      <div class="cb-left">
+        <span class="cb-name" id="cb-name">—</span>
+        <span class="cb-fn" id="cb-fn">—</span>
+      </div>
+      <span id="cb-pill"></span>
+    </div>
+
+    <!-- Transition view -->
+    <div id="transition-view">
+      <div class="tv-inner">
+        <div class="tv-kicker" id="tv-kicker">Moving to —</div>
+        <div class="tv-title" id="tv-title">What happened before</div>
+        <div class="tv-summary" id="tv-summary"></div>
+        <div class="tv-signals">
+          <div class="tv-sig-title">Carry into this cluster</div>
+          <div id="tv-signals-list"></div>
         </div>
-        <div id="cb-state-pill"></div>
-      </div>
-
-      <!-- Editor scroll area -->
-      <div id="editor-scroll">
-        <!-- Accepted scenes list -->
-        <div id="accepted-scenes"></div>
-
-        <!-- Active writing zone -->
-        <div id="active-zone">
-          <!-- Empty state -->
-          <div id="empty-state">
-            <div class="es-watermark" id="es-watermark">Setup</div>
-            <div class="es-instruction" id="es-instruction">Emotional register: establishment · Pacing: measured</div>
-            <div class="es-generate" id="es-generate">Generate a draft for this scene →</div>
-          </div>
-
-          <!-- Generating shimmer -->
-          <div id="gen-shimmer">
-            <div class="gen-line" style="width:91%"></div>
-            <div class="gen-line" style="width:78%"></div>
-            <div class="gen-line" style="width:85%"></div>
-            <div class="gen-line" style="width:43%"></div>
-            <br>
-            <div class="gen-line" style="width:88%"></div>
-            <div class="gen-line" style="width:72%"></div>
-            <div class="gen-line" style="width:62%"></div>
-          </div>
-
-          <!-- Manuscript surface -->
-          <div id="manuscript" contenteditable="false" spellcheck="true"></div>
-        </div>
-      </div>
-
-      <!-- Floating action bar -->
-      <div id="action-bar">
-        <div id="normal-actions">
-          <button class="ab-btn ab-accept" id="btn-accept">Accept ✓</button>
-          <div class="ab-sep"></div>
-          <button class="ab-btn ab-steer" id="btn-regen">Regenerate ↺</button>
-          <div class="ab-sep"></div>
-          <button class="ab-btn ab-steer" id="btn-steer">Steer →</button>
-        </div>
-        <div id="steer-input-row">
-          <input type="text" id="steer-input" placeholder="Make this darker / more subtext / slow down…">
-          <button id="steer-submit">Apply</button>
-          <div class="ab-sep"></div>
-          <button class="ab-btn ab-steer" id="btn-steer-cancel">✕</button>
+        <div class="tv-actions">
+          <button class="tv-btn-go" id="tv-go">Enter this cluster →</button>
+          <button class="tv-btn-skip" id="tv-skip">Skip transition</button>
         </div>
       </div>
     </div>
 
-    <!-- Intelligence panel -->
-    <aside id="intel-panel">
-      <div id="ip-header">
-        <span class="ip-title">Narrative intelligence</span>
-        <div class="ip-view-toggle">
-          <button class="ip-vbtn active" id="vbtn-list">List</button>
-          <button class="ip-vbtn" id="vbtn-graph">Graph</button>
+    <!-- Editor scroll -->
+    <div id="ed-scroll">
+      <div id="accepted-list"></div>
+      <div id="active-zone">
+        <div id="empty-state">
+          <div class="es-bg" id="es-bg">Setup</div>
+          <div class="es-sub" id="es-sub">Establishment · measured pacing</div>
+          <div class="es-gen" id="es-gen-link">Generate a draft for this scene →</div>
         </div>
-      </div>
-      <div id="ip-updating">
-        <div class="ip-update-dot"></div>
-        Updating model…
-      </div>
-      <div id="ip-scroll">
-        <div id="list-view" class="active"></div>
-        <div id="graph-view">
-          <div style="padding:12px">
-            <canvas id="story-graph-canvas" height="140"></canvas>
+        <div id="shimmer">
+          <div class="sh-line" style="width:88%"></div>
+          <div class="sh-line" style="width:74%"></div>
+          <div class="sh-line" style="width:82%"></div>
+          <div class="sh-line" style="width:46%"></div>
+          <br>
+          <div class="sh-line" style="width:90%"></div>
+          <div class="sh-line" style="width:68%"></div>
+          <div class="sh-line" style="width:55%"></div>
+        </div>
+        <div id="manuscript" contenteditable="true" spellcheck="true"></div>
+        <div id="frag-reminder">
+          <div class="fr-inner">
+            <span class="fr-label">Fragment</span>
+            <span class="fr-text" id="fr-text">—</span>
+            <span class="fr-close" id="fr-close">✕</span>
           </div>
         </div>
       </div>
-    </aside>
+    </div>
+
+    <!-- Gen bar -->
+    <div id="gen-bar">
+      <div id="voice-strip">
+        <div class="vs-dot"></div>
+        <div id="voice-transcript">Listening…</div>
+        <button class="vs-confirm" id="vs-confirm">Convert to prose</button>
+        <button class="vs-cancel" id="vs-cancel">Cancel</button>
+      </div>
+      <div id="mood-row">
+        <div class="mood-opt selected" data-mood="deepen">
+          <div class="mood-opt-name">Deepen</div>
+          <div class="mood-opt-desc">More interiority, slower, richer subtext</div>
+        </div>
+        <div class="mood-opt" data-mood="escalate">
+          <div class="mood-opt-name">Escalate</div>
+          <div class="mood-opt-desc">Raise tension, tighten, press forward</div>
+        </div>
+        <div class="mood-opt" data-mood="turn">
+          <div class="mood-opt-name">Turn</div>
+          <div class="mood-opt-desc">Something shifts — a reveal, a rupture</div>
+        </div>
+        <div class="mood-opt mood-surprise" data-mood="surprise">
+          <div class="mood-opt-name">Surprise me</div>
+          <div class="mood-opt-desc">AI picks what the story needs</div>
+        </div>
+      </div>
+      <div id="ctrl-row">
+        <div class="ctrl-group">
+          <span class="ctrl-lbl">Words</span>
+          <input type="range" class="wc-slider" id="wc-slider" min="80" max="600" value="200" step="20">
+          <span class="wc-val" id="wc-val">200</span>
+        </div>
+        <div class="ctrl-sep"></div>
+        <div class="ctrl-group">
+          <span class="ctrl-lbl">Heat</span>
+          <input type="range" class="heat-slider" id="heat-slider" min="0" max="100" value="40">
+        </div>
+        <div class="ctrl-sep"></div>
+        <button class="vlock-btn" id="vlock-btn" title="Match my prose voice">Voice lock</button>
+        <div class="ctrl-sep"></div>
+        <input type="text" id="open-dir" placeholder="Add a direction… e.g. make Robert more passive, push the subtext">
+        <button class="voice-btn" id="voice-btn" title="Voice input (TBC)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+        </button>
+        <button class="gen-btn" id="gen-btn">Generate ↵</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel -->
+  <aside id="panel">
+    <div id="panel-tabs">
+      <div class="ptab on" data-tab="intel">Intelligence</div>
+      <div class="ptab" data-tab="chars">Characters</div>
+      <div class="ptab" data-tab="frags">Fragments</div>
+    </div>
+    <div id="panel-body"></div>
+  </aside>
+</div>
+
+<!-- Word palette -->
+<div id="palette">
+  <div class="pal-header">
+    <span class="pal-title">Enhance</span>
+    <div class="pal-modes">
+      <button class="pal-mode on" data-mode="sharpen">Sharpen</button>
+      <button class="pal-mode" data-mode="elevate">Elevate</button>
+    </div>
+  </div>
+  <div class="pal-options" id="pal-options">
+    <div class="pal-loading">Generating alternatives…</div>
+  </div>
+  <div class="pal-custom">
+    <input type="text" id="pal-dir" placeholder="Try something specific…">
+    <button id="pal-custom-go">→</button>
   </div>
 </div>
 
-<!-- ── INTELLIGENCE MAP MODAL ──────────────────────────────── -->
-<div id="intel-map">
-  <div id="map-modal">
-    <div id="mm-header">
-      <div class="mm-title">
-        Story intelligence map
-      </div>
-      <div class="mm-legend">
-        <div class="ml-item"><div class="ml-dot" style="background:var(--planned);opacity:0.5"></div>Planned</div>
-        <div class="ml-item"><div class="ml-dot" style="background:var(--drafted)"></div>Drafted</div>
-        <div class="ml-item"><div class="ml-dot" style="background:var(--accepted)"></div>Accepted</div>
-        <div class="ml-item"><div class="ml-dot" style="background:var(--emerging)"></div>Emerging</div>
-        <div class="ml-close" id="btn-map-close">✕</div>
-      </div>
-    </div>
-    <div id="mm-graph">
-      <canvas id="mm-canvas"></canvas>
-    </div>
-    <div id="mm-footer">
-      <span id="mm-summary">—</span>
-      <span>Click a cluster node to navigate</span>
-    </div>
-  </div>
-</div>
-
-<!-- ── SETTINGS MODAL ─────────────────────────────────────── -->
-<div id="settings-modal" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(28,25,23,0.4);backdrop-filter:blur(4px);align-items:center;justify-content:center">
-  <div style="background:var(--paper);border-radius:12px;padding:28px;width:min(420px,90vw);box-shadow:var(--shadow-lg)">
-    <div style="font-family:var(--serif);font-size:1.3rem;margin-bottom:6px">API key</div>
-    <p style="font-size:0.82rem;color:var(--ink-3);margin-bottom:16px;line-height:1.6">Your Anthropic key enables live AI generation and live intelligence updates. Stored only in your browser.</p>
-    <input type="password" id="api-key-input" placeholder="sk-ant-…" style="width:100%;height:34px;border:1.5px solid var(--border-2);border-radius:6px;padding:0 12px;font-size:0.85rem;color:var(--ink);background:var(--paper);margin-bottom:14px">
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="w-btn-ghost" id="settings-cancel">Cancel</button>
-      <button class="w-btn-primary" id="settings-save">Save</button>
-    </div>
+<!-- Reading mode -->
+<div id="reading-mode">
+  <button class="rm-exit" id="rm-exit">Exit reading mode</button>
+  <div class="rm-inner">
+    <div class="rm-title" id="rm-title">—</div>
+    <div id="rm-content"></div>
   </div>
 </div>
 
 <div id="toasts"></div>
-
-<div id="keyhint">
+<div id="kbd">
   <span class="kh"><kbd>⌘</kbd><kbd>\</kbd> structure</span>
   <span class="kh"><kbd>⌘</kbd><kbd>I</kbd> intelligence</span>
-  <span class="kh"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>F</kbd> focus</span>
   <span class="kh"><kbd>⌘</kbd><kbd>↵</kbd> generate</span>
+  <span class="kh"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>R</kbd> read</span>
 </div>
 
 <script>
@@ -1049,89 +707,86 @@ const S = {
   characters: [],
   themes: [],
   threads: [],
+  ending: '',
+  fragments: [],
   activeIdx: 0,
-  rawOutline: '',
   apiKey: null,
-  intelOpen: false,
-  sidebarOpen: false,
-  focusMode: false,
   parsedData: null,
   selectedArc: '3act',
-
-  // Live narrative model
-  model: {
-    signals: [],      // {type, text, clusterId, state: planned|drafted|accepted|emerging}
-    clusterGuidance: {}, // clusterId → {text, threads}
-    lastUpdated: null,
-  }
+  voiceLock: false,
+  selectedMood: 'deepen',
+  wordCount: 200,
+  heat: 40,
+  openDir: '',
+  panelTab: 'intel',
+  palMode: 'sharpen',
+  palSelection: null,
+  palRange: null,
+  isGenerating: false,
 };
 
-const ARC_TEMPLATES = {
-  '3act': [
-    {id:'act1',   label:'Act 1',        fn:'Setup',              emotional:'Establishment',  pacing:'measured'},
-    {id:'act2a',  label:'Act 2A',       fn:'Rising conflict',    emotional:'Escalation',     pacing:'building'},
-    {id:'mid',    label:'Midpoint',     fn:'Pivot',              emotional:'Reversal',        pacing:'sharp'},
-    {id:'act2b',  label:'Act 2B',       fn:'Complication',       emotional:'Crisis build',    pacing:'urgent'},
-    {id:'crisis', label:'Crisis',       fn:'Darkest moment',     emotional:'Collapse',        pacing:'compressed'},
-    {id:'climax', label:'Climax',       fn:'Confrontation',      emotional:'Peak',            pacing:'relentless'},
-    {id:'res',    label:'Resolution',   fn:'New equilibrium',    emotional:'Release',         pacing:'stilling'},
+const ARCS = {
+  '3act':[
+    {id:'act1',  label:'Act 1',       fn:'Setup',           emotional:'Establishment', pacing:'measured',    tension:.2},
+    {id:'act2a', label:'Act 2A',      fn:'Rising conflict', emotional:'Escalation',    pacing:'building',    tension:.45},
+    {id:'mid',   label:'Midpoint',    fn:'Pivot',           emotional:'Reversal',      pacing:'sharp',       tension:.65},
+    {id:'act2b', label:'Act 2B',      fn:'Complication',    emotional:'Crisis build',  pacing:'urgent',      tension:.75},
+    {id:'crisis',label:'Crisis',      fn:'Darkest moment',  emotional:'Collapse',      pacing:'compressed',  tension:.92},
+    {id:'climax',label:'Climax',      fn:'Confrontation',   emotional:'Peak',          pacing:'relentless',  tension:1.0},
+    {id:'res',   label:'Resolution',  fn:'New equilibrium', emotional:'Release',       pacing:'stilling',    tension:.35},
   ],
-  '5part': [
-    {id:'exp',  label:'Exposition',    fn:'World and character', emotional:'Grounding',   pacing:'open'},
-    {id:'rise', label:'Rising action', fn:'Destabilisation',    emotional:'Unease',      pacing:'building'},
-    {id:'clx',  label:'Climax',        fn:'Peak conflict',       emotional:'Maximum',     pacing:'relentless'},
-    {id:'fall', label:'Falling action',fn:'Consequences',       emotional:'Exhaustion',  pacing:'easing'},
-    {id:'den',  label:'Denouement',    fn:'Resolution',          emotional:'Clarity',     pacing:'still'},
+  '5part':[
+    {id:'exp',  label:'Exposition',    fn:'World & character', emotional:'Grounding',  pacing:'open',       tension:.15},
+    {id:'rise', label:'Rising action', fn:'Destabilisation',   emotional:'Unease',     pacing:'building',   tension:.55},
+    {id:'clx',  label:'Climax',        fn:'Peak conflict',     emotional:'Maximum',    pacing:'relentless', tension:1.0},
+    {id:'fall', label:'Falling action',fn:'Consequences',      emotional:'Exhaustion', pacing:'easing',     tension:.55},
+    {id:'den',  label:'Denouement',    fn:'Resolution',        emotional:'Clarity',    pacing:'still',      tension:.2},
   ],
-  'custom': [
-    {id:'c1', label:'Opening',  fn:'Establish', emotional:'Grounding',  pacing:'open'},
-    {id:'c2', label:'Middle',   fn:'Develop',   emotional:'Escalate',   pacing:'building'},
-    {id:'c3', label:'Closing',  fn:'Resolve',   emotional:'Release',    pacing:'still'},
+  'custom':[
+    {id:'c1',label:'Opening', fn:'Establish', emotional:'Grounding',  pacing:'open',     tension:.2},
+    {id:'c2',label:'Middle',  fn:'Develop',   emotional:'Escalate',   pacing:'building', tension:.7},
+    {id:'c3',label:'Closing', fn:'Resolve',   emotional:'Release',    pacing:'still',    tension:.25},
   ]
 };
 
 const DEMO = {
-  title: 'Ashes of Us',
-  genre: 'Literary fiction', tone: 'Restrained, melancholic',
-  pov: 'Third person limited — Robert',
-  premise: 'Three men whose friendship forms in early 2000s London and fractures over fifteen years of concealment.',
-  outline: `Ashes of Us
+  title:'Ashes of Us',genre:'Literary fiction',tone:'Restrained, melancholic, precise',
+  pov:'Third person limited — Robert',
+  premise:'Three men whose intense friendship forms in early 2000s London fractures over fifteen years of concealment and a betrayal Robert has spent his adult life explaining away.',
+  ending:'Robert tells Marcus the truth — not in a court but in a bar, late, in the rain. The aftermath is not redemption. It is something quieter — a return to ground zero. The friendship may not survive it. Robert finds he can live with that.',
+  outline:`Ashes of Us
 
-Three men: Robert, Marcus, Daniel. They meet at university in 2001.
+Three men: Robert, Marcus, Daniel. They meet at university in 2001 in a flat on Bethnal Green Road above a fabric shop.
 
-Robert is a corporate lawyer whose controlled exterior conceals a betrayal he committed early in his career — a decision that advanced him and damaged Daniel. He has lived with this through what looks like compartmentalisation.
+Robert is a corporate lawyer, 42. His controlled exterior conceals a betrayal he made early in his career — a decision that advanced him professionally and damaged Daniel. He has lived with this through what looks like compartmentalisation but is closer to erasure. He wants to be seen as good. He fears being found out. His false belief: that what he did was not what it was.
 
 Marcus contacts Robert after years of silence. They meet. The past keeps interrupting the present. Daniel is what Marcus wants to talk about. Something has happened to Daniel.
 
-The central event: Robert chose himself. He has spent fifteen years explaining to himself why this was not what it was.
+The central event — the betrayal — is revealed at the midpoint. Robert, given access to information that could have helped Daniel, chose instead to protect himself. He has spent fifteen years explaining why this was not what it was.
 
-The crisis: Robert must decide whether to tell Marcus the truth. The truth would change how Marcus sees him. It might end what remains of the friendship.
+The crisis: Robert must decide whether to tell Marcus the truth. The truth would change how Marcus sees him. It might end what remains of the friendship. It would also be the first honest thing Robert has done in fifteen years.
 
-The ending is not redemption. It is quieter — a return to ground.
+The ending: Robert tells him. The aftermath is not redemption — it is something quieter and more complicated. A kind of return to ground.
 
 Characters:
-Robert — protagonist, 42, lawyer. Wants: to be seen as good. Fears: being found out.
-Marcus — Robert's estranged friend. Wants: the truth. Fears: that he already knows it.
-Daniel — absent. The one most damaged by what Robert did.
+Robert — protagonist, 42, lawyer. Wants: to be seen as good. Fears: being found out. False belief: that he is fundamentally a good person who made one difficult decision.
+Marcus — Robert's estranged closest friend. Wants: the truth. Fears: that he already knows it. Arc: from patience to confrontation.
+Daniel — absent presence, revealed through memory. The one most damaged by Robert's choice. Wants: unknown. Fears: unknown.
 
-Themes: Male friendship, dissociation, the cost of self-construction, fire as motif.`,
-  characters: [
-    {name:'Robert',role:'Protagonist',want:'To be seen as good',fear:'Being found out',arc:'From erasure toward honesty',confidence:'high'},
-    {name:'Marcus',role:'Ally/Antagonist',want:'The truth',fear:'He already knows it',arc:'From patience to confrontation',confidence:'high'},
-    {name:'Daniel',role:'Absent presence',want:'Unknown',fear:'Unknown',arc:'Revealed through memory',confidence:'med'},
+Themes: Male friendship, dissociation, the cost of self-construction, fire as recurring motif, the duality of love and power.
+
+Open threads: The exact nature of the Whitmore decision. What happened to Daniel. Whether Marcus already knows. The Bethnal Green flat as memory site — why it keeps returning.`,
+  characters:[
+    {name:'Robert',role:'Protagonist',want:'To be seen as good',fear:'Being found out',belief:'That he is fundamentally good — the betrayal was a difficult decision, not a moral failure',arc:'From erasure toward honesty',confidence:'high'},
+    {name:'Marcus',role:'Ally / Antagonist',want:'The truth',fear:'He already knows it',belief:'That friendship can survive honesty',arc:'From patience to confrontation',confidence:'high'},
+    {name:'Daniel',role:'Absent presence',want:'Unknown — revealed through memory',fear:'Unknown',belief:'Unknown',arc:'Revealed through Robert and Marcus\'s accounts',confidence:'med'},
   ],
-  themes: ['Male friendship','Dissociation','Self-construction','Betrayal','Fire motif'],
-  threads: [
-    'The nature of Robert\'s betrayal — not yet specified',
-    'What happened to Daniel',
-    'Whether Marcus already knows the truth',
-    'The Bethnal Green flat as memory site',
-  ]
+  themes:['Male friendship','Dissociation','Self-construction','Betrayal','Fire motif','Love and power'],
+  threads:['The Whitmore decision — not yet specified','What happened to Daniel','Whether Marcus already knows','The Bethnal Green flat as recurring memory site'],
 };
 
-// Demo prose per cluster
 const DEMO_PROSE = {
-  act1: `The flat was on the fourth floor of a building on Bethnal Green Road, above a fabric shop that smelled of dust and synthetic fibre even in winter. Robert had found it on a notice board. He remembered folding the paper into quarters and putting it in his jacket pocket with the seriousness of a man pocketing a contract.
+  act1:`The flat was on the fourth floor of a building on Bethnal Green Road, above a fabric shop that smelled of dust and synthetic fibre even in winter. Robert had found it on a notice board at the university. He remembered folding the paper into quarters and putting it in his jacket pocket with the seriousness of a man pocketing a contract.
 
 Marcus arrived with two bags and borrowed keys and the particular energy he always carried — not enthusiasm exactly, more a forward momentum he couldn't entirely control. He had brought a plant. Robert didn't ask where from.
 
@@ -1141,7 +796,7 @@ Marcus arrived with two bags and borrowed keys and the particular energy he alwa
 
 Daniel came three days later. He said he'd been sorting something out. He didn't say what. Robert didn't ask. It was the first of many such arrangements between them — the space around Daniel's explanations always slightly larger than the explanation itself.`,
 
-  act2a: `The meeting had been Marcus's idea, which meant it had been carefully framed as spontaneous. Robert recognised this and came anyway, because the alternative was to acknowledge what the recognition meant.
+  act2a:`The meeting had been Marcus's idea, which meant it had been carefully framed as spontaneous. Robert recognised this and came anyway, because the alternative was to acknowledge what the recognition meant.
 
 The bar was loud enough to require leaning in. Robert found this useful.
 
@@ -1155,9 +810,9 @@ Robert turned his glass. Outside, the rain had started — that particular Londo
 
 "Being asked about yourself and answering."`,
 
-  mid: `He told himself afterwards that the decision had been made before he knew he was making it. That there was a logic to it that transcended the event. This was the first lie, and it was the one that made all the others necessary.
+  mid:`He told himself afterwards that the decision had been made before he knew he was making it. That there was a logic to it that transcended the event. This was the first lie, and it was the one that made all the others necessary.
 
-The Whitmore file sat on his desk for eleven days before he acted on it. In those eleven days he understood, with a clarity he hadn't asked for, what he was capable of. Not in the abstract. In the specific, with names attached.
+The Whitmore file sat on his desk for eleven days before he acted on it. In those eleven days he understood, with a clarity he hadn't asked for, what he was capable of. Not in the abstract. In the specific, with names attached, with consequences he could trace forward in time and chose not to.
 
 He chose himself. He would spend fifteen years explaining to himself why this was not what it was.`,
 };
@@ -1165,1083 +820,1135 @@ He chose himself. He would spend fifteen years explaining to himself why this wa
 // ═══════════════════════════════════════════════════════════════
 // STORAGE
 // ═══════════════════════════════════════════════════════════════
-function save() {
-  try { localStorage.setItem('nv2_state', JSON.stringify(S)); } catch(e){}
+function persist() {
+  try { localStorage.setItem('nv3', JSON.stringify(S)); } catch(e){}
+  dot('saving');
+  clearTimeout(persist._t);
+  persist._t = setTimeout(()=>dot('saved'), 800);
 }
-function loadSaved() {
+function restore() {
   try {
-    const d = localStorage.getItem('nv2_state');
+    const d = localStorage.getItem('nv3');
     if (d) { Object.assign(S, JSON.parse(d)); return true; }
   } catch(e){}
   return false;
 }
 
 // ═══════════════════════════════════════════════════════════════
-// PARSE (heuristic — same logic as before, AI path via API)
+// API
 // ═══════════════════════════════════════════════════════════════
-async function parseOutline(text) {
-  if (S.apiKey) {
-    try { return await parseWithAI(text); } catch(e){ console.warn('AI parse failed',e); }
-  }
-  return parseHeuristic(text);
-}
-
-async function parseWithAI(text) {
+async function callClaude(system, user, maxTokens=1000) {
+  if (!S.apiKey) throw new Error('no-key');
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method:'POST',
     headers:{'Content-Type':'application/json','x-api-key':S.apiKey,'anthropic-version':'2023-06-01'},
-    body: JSON.stringify({
-      model:'claude-sonnet-4-20250514', max_tokens:2000,
-      system:`Extract story elements. Return only valid JSON:
-{"title":string|null,"genre":string,"tone":string,"pov":string,"premise":string,
-"characters":[{"name":string,"role":string,"want":string,"fear":string,"arc":string,"confidence":"high"|"med"|"low"}],
-"themes":[string],"openThreads":[string],"plotEvents":[{"event":string,"weight":"pivotal"|"supporting"}]}`,
-      messages:[{role:'user',content:`Parse:\n\n${text}`}]
-    })
-  });
-  const d = await r.json();
-  if (d.error) throw new Error(d.error.message);
-  return JSON.parse(d.content[0].text.replace(/```json|```/g,'').trim());
-}
-
-function parseHeuristic(text) {
-  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
-  const title = lines[0]?.length < 60 ? lines[0].replace(/^#\s*/,'') : null;
-
-  // Characters
-  const chars = [];
-  const charSec = text.match(/[Cc]haracters?:([\s\S]*?)(?:\n\n|\n[A-Z]|$)/);
-  if (charSec) {
-    charSec[1].split('\n').filter(Boolean).forEach(l => {
-      const m = l.match(/^([A-Z][a-z]+)/);
-      if (!m) return;
-      const want = l.match(/[Ww]ants?:?\s*([^.]+)/)?.[1]?.trim() || 'Unknown';
-      const fear = l.match(/[Ff]ears?:?\s*([^.]+)/)?.[1]?.trim() || 'Unknown';
-      chars.push({name:m[1],role:'Character',want,fear,arc:'To be determined',confidence:'high'});
-    });
-  }
-  // Fallback name detection
-  if (!chars.length) {
-    const names = new Set();
-    (text.match(/\b([A-Z][a-z]{2,12})\b/g)||[]).forEach(n => {
-      if (!['The','His','Her','This','That','They','What','When','Where','Who','London','January'].includes(n)) names.add(n);
-    });
-    [...names].slice(0,4).forEach(n => chars.push({name:n,role:'Character',want:'Unknown',fear:'Unknown',arc:'To be determined',confidence:'low'}));
-  }
-
-  // Themes
-  const themeWords = ['friendship','love','power','betrayal','identity','memory','loss','redemption','truth','family','ambition','loyalty','grief','desire','mortality','dissociation','class','justice'];
-  const lower = text.toLowerCase();
-  const themes = themeWords.filter(t=>lower.includes(t)).map(t=>t[0].toUpperCase()+t.slice(1));
-  const themeSec = text.match(/[Tt]hemes?:([^\n]+)/)?.[1];
-  if (themeSec) themeSec.split(/[,;]/).map(s=>s.trim()).filter(Boolean).forEach(t=>{ if(!themes.includes(t)) themes.push(t); });
-
-  // Threads
-  const threads = (text.match(/[A-Z][^.!?]*\?/g)||[]).slice(0,3).map(s=>s.trim());
-  const whether = (text.match(/whether\s+[^.]+\./g)||[]).slice(0,2).map(s=>s[0].toUpperCase()+s.slice(1).trim());
-  threads.push(...whether);
-
-  const genreMap = {literary:'Literary fiction',thriller:'Thriller',romance:'Romance',fantasy:'Fantasy',horror:'Horror',mystery:'Mystery',screenplay:'Screenplay'};
-  let genre = 'Fiction';
-  for (const [k,v] of Object.entries(genreMap)) { if (lower.includes(k)){genre=v;break;} }
-
-  return {
-    title, genre,
-    tone: lower.includes('melanchol')||lower.includes('dark') ? 'Dark, melancholic' : 'Dramatic',
-    pov: lower.includes('first person') ? 'First person' : lower.includes('multiple') ? 'Multiple POV' : 'Third person limited',
-    premise: lines.find(l=>l.length>60)?.substring(0,200) || text.substring(0,200),
-    characters: chars.slice(0,6),
-    themes: themes.slice(0,8),
-    openThreads: threads.slice(0,5),
-  };
-}
-
-// ═══════════════════════════════════════════════════════════════
-// ARC / CLUSTER SETUP
-// ═══════════════════════════════════════════════════════════════
-function initArc(arcType) {
-  S.selectedArc = arcType;
-  S.clusters = ARC_TEMPLATES[arcType].map((t,i) => ({
-    ...t, idx:i, status:'planned',
-    scenes:[], wordCount:0,
-    extractedEvents:[]
-  }));
-  S.activeIdx = 0;
-}
-
-// ═══════════════════════════════════════════════════════════════
-// SCENE GENERATION
-// ═══════════════════════════════════════════════════════════════
-async function generateScene(steerDirection='') {
-  const cluster = S.clusters[S.activeIdx];
-  if (!cluster) return;
-
-  cluster.status = 'drafting';
-  showGenerating(true);
-  hideEmptyState();
-
-  try {
-    let prose;
-    if (S.apiKey) {
-      prose = await generateWithAI(cluster, steerDirection);
-    } else {
-      await sleep(1400);
-      prose = DEMO_PROSE[cluster.id] || buildDemoProse(cluster);
-    }
-
-    showDraftProse(prose, cluster);
-    cluster.status = 'drafted';
-    updateSidebar();
-    updateClusterBar();
-    triggerIntelUpdate('scene generated');
-  } catch(e) {
-    showGenerating(false);
-    showEmptyState();
-    toast('Generation failed: ' + e.message);
-  }
-}
-
-async function generateWithAI(cluster, steerDir) {
-  const recent = S.clusters
-    .flatMap(c => c.scenes.filter(s=>s.status==='accepted'))
-    .slice(-2)
-    .map(s => s.prose.substring(0,400))
-    .join('\n\n---\n\n');
-
-  const chars = S.characters.map(c=>`${c.name} (${c.role}): wants ${c.want}, fears ${c.fear}`).join('\n');
-  const system = `You write literary fiction. Co-writing "${S.project?.title}".
-Genre: ${S.project?.genre}. Tone: ${S.project?.tone}. POV: ${S.project?.pov}.
-Characters:\n${chars}
-Themes: ${S.themes.join(', ')}
-Active threads: ${S.threads.slice(0,3).join('; ')}
-
-Write a single scene for: ${cluster.label} — ${cluster.fn}.
-Emotional register: ${cluster.emotional}. Pacing: ${cluster.pacing}.
-${recent ? `Recent context:\n${recent}` : 'This is the opening.'}
-
-Write prose only. 3-5 paragraphs. Literary quality. Show don't tell.${steerDir ? `\n\nDirection: ${steerDir}` : ''}`;
-
-  const r = await fetch('https://api.anthropic.com/v1/messages', {
-    method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':S.apiKey,'anthropic-version':'2023-06-01'},
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:900,system,messages:[{role:'user',content:`Write the scene for ${cluster.label}.`}]})
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:maxTokens,system,messages:[{role:'user',content:user}]})
   });
   const d = await r.json();
   if (d.error) throw new Error(d.error.message);
   return d.content[0].text.trim();
 }
 
-function buildDemoProse(cluster) {
-  return `${cluster.label} opened in the way these things do — not with announcement, but with a quiet shift in the quality of the air.
-
-The character found themselves at a threshold they had been approaching for some time without naming it. What was required now was something different from what had been required before. The function of this moment was ${cluster.fn.toLowerCase()}, and the story knew it even if the character did not.
-
-The register was ${cluster.emotional.toLowerCase()}. The pacing drew inward. Nothing was resolved here — that would come later, or it would not come. For now, there was only this.`;
+// ═══════════════════════════════════════════════════════════════
+// DEEP IMPORT
+// ═══════════════════════════════════════════════════════════════
+async function deepParse(text) {
+  const system = `You are a narrative analysis engine performing deep literary extraction.
+Analyse the story text and return ONLY valid JSON with this structure:
+{
+  "title": string|null,
+  "genre": string,
+  "tone": string,
+  "pov": string,
+  "premise": string,
+  "ending": string|null,
+  "centralConflict": string,
+  "characters": [{"name":string,"role":string,"want":string,"fear":string,"belief":string,"contradiction":string,"arc":string,"confidence":"high"|"med"|"low"}],
+  "themes": [string],
+  "motifs": [string],
+  "openThreads": [string],
+  "plotEvents": [{"event":string,"position":"early"|"mid"|"late","weight":"pivotal"|"supporting"}],
+  "emotionalBeats": [{"beat":string,"type":"revelation"|"rupture"|"connection"|"collapse"|"shift"}],
+  "tensionProfile": [{"label":string,"tension":number}],
+  "subtextGaps": [string],
+  "voiceNotes": string|null
+}
+Be specific. Extract psychology, not just facts. Identify what is implied but not stated.`;
+  try {
+    const raw = await callClaude(system, `Analyse deeply:\n\n${text}`, 2500);
+    return JSON.parse(raw.replace(/```json|```/g,'').trim());
+  } catch(e) {
+    return fallbackParse(text);
+  }
 }
 
-let streamInterval = null;
-function showDraftProse(prose, cluster) {
-  showGenerating(false);
-  const ms = document.getElementById('manuscript');
-  ms.contentEditable = 'false';
-  ms.innerHTML = '';
-
-  // Stream in word by word
-  const words = prose.split(' ');
-  let idx = 0;
-  const wrapper = document.createElement('div');
-  wrapper.className = 'ai-draft';
-
-  // Render paragraphs
-  const paras = prose.split('\n').filter(p=>p.trim());
-  paras.forEach((p,pi) => {
-    const el = document.createElement('p');
-    el.dataset.paraIdx = pi;
-    el.textContent = '';
-    wrapper.appendChild(el);
-  });
-  ms.appendChild(wrapper);
-
-  // Stream word by word
-  let paraIdx = 0; let charIdx = 0;
-  const allParaWords = paras.map(p => p.split(' '));
-  let wi = 0; let pi2 = 0;
-
-  if (streamInterval) clearInterval(streamInterval);
-  streamInterval = setInterval(() => {
-    if (pi2 >= allParaWords.length) {
-      clearInterval(streamInterval);
-      // Add cursor
-      const lastP = wrapper.querySelector(`p[data-para-idx="${paras.length-1}"]`);
-      if (lastP) {
-        const cur = document.createElement('span');
-        cur.className = 'stream-cursor'; lastP.appendChild(cur);
-      }
-      // Settle
-      setTimeout(() => { wrapper.classList.add('settling'); }, 1200);
-      showActionBar(true);
-      return;
-    }
-    const wordArr = allParaWords[pi2];
-    if (wi < wordArr.length) {
-      const el = wrapper.querySelector(`p[data-para-idx="${pi2}"]`);
-      if (el) el.textContent = wordArr.slice(0, wi+1).join(' ');
-      wi++;
-    } else {
-      pi2++; wi = 0;
-    }
-  }, 28);
-
-  // Store for accept
-  ms.dataset.pendingProse = prose;
-  ms.dataset.pendingCluster = cluster.id;
+function fallbackParse(text) {
+  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
+  const title = lines[0]?.length < 70 ? lines[0].replace(/^#+\s*/,'') : null;
+  const lower = text.toLowerCase();
+  const chars = [];
+  const csec = text.match(/[Cc]haracters?:([\s\S]*?)(?:\n\n|\n[A-Z][^\n]{3,}:|$)/);
+  if (csec) {
+    csec[1].split('\n').filter(Boolean).forEach(l => {
+      const m = l.match(/^([A-Z][a-z]+)/);
+      if (!m) return;
+      chars.push({name:m[1],role:'Character',want:l.match(/[Ww]ants?:?\s*([^.]+)/)?.[1]?.trim()||'Unknown',fear:l.match(/[Ff]ears?:?\s*([^.]+)/)?.[1]?.trim()||'Unknown',belief:'Unknown',contradiction:'Unknown',arc:'To be determined',confidence:'high'});
+    });
+  }
+  const themeWords=['friendship','love','power','betrayal','identity','memory','loss','redemption','truth','family','ambition','loyalty','grief','desire','mortality','dissociation','class','justice','fire','water','light'];
+  const themes = themeWords.filter(t=>lower.includes(t)).map(t=>t[0].toUpperCase()+t.slice(1));
+  const tsec = text.match(/[Tt]hemes?:([^\n]+)/)?.[1];
+  if (tsec) tsec.split(/[,;]/).map(s=>s.trim()).filter(Boolean).forEach(t=>{ if(!themes.includes(t)) themes.push(t); });
+  const threads = (text.match(/[A-Z][^.!?]*\?/g)||[]).slice(0,4).map(s=>s.trim());
+  const motifs = text.match(/[Mm]otifs?:([^\n]+)/)?.[1]?.split(/[,;]/).map(s=>s.trim()).filter(Boolean) || [];
+  const genres = {literary:'Literary fiction',thriller:'Thriller',romance:'Romance',fantasy:'Fantasy',horror:'Horror',mystery:'Mystery',screenplay:'Screenplay'};
+  let genre='Fiction';
+  for (const [k,v] of Object.entries(genres)) { if(lower.includes(k)){genre=v;break;} }
+  return {title,genre,tone:lower.includes('melanchol')||lower.includes('dark')?'Dark, melancholic':'Dramatic',pov:'Third person',premise:lines.find(l=>l.length>60)?.substring(0,200)||text.substring(0,200),ending:null,centralConflict:'',characters:chars.slice(0,6),themes:themes.slice(0,8),motifs:motifs.slice(0,5),openThreads:threads.slice(0,5),plotEvents:[],emotionalBeats:[],tensionProfile:[],subtextGaps:[],voiceNotes:null};
 }
 
-function acceptScene() {
-  const ms = document.getElementById('manuscript');
-  const prose = ms.dataset.pendingProse;
-  const clusterId = ms.dataset.pendingCluster;
-  if (!prose) return;
+// ═══════════════════════════════════════════════════════════════
+// ARC SETUP
+// ═══════════════════════════════════════════════════════════════
+function initArc(arcType, parsed) {
+  S.selectedArc = arcType;
+  S.clusters = ARCS[arcType].map((t,i) => ({
+    ...t, idx:i, status:'planned',
+    scenes:[], wordCount:0,
+    extractedEvents:[], temp:t.tension,
+    summary:null, forwardSignals:[],
+  }));
+  // Auto-calibrate: distribute plot events across clusters
+  if (parsed?.plotEvents?.length) {
+    const evts = parsed.plotEvents;
+    const n = S.clusters.length;
+    evts.forEach((e,i) => {
+      const pos = e.position==='early'?0:e.position==='late'?n-1:Math.floor(n/2);
+      const ci = Math.min(pos + Math.floor(i/(evts.length/3)), n-1);
+      if (!S.clusters[ci].extractedEvents) S.clusters[ci].extractedEvents=[];
+      S.clusters[ci].extractedEvents.push(e.event);
+    });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SCENE GENERATION
+// ═══════════════════════════════════════════════════════════════
+async function generateScene() {
+  if (S.isGenerating) return;
+  S.isGenerating = true;
+  const btn = $('gen-btn'); btn.disabled = true;
 
   const cluster = S.clusters[S.activeIdx];
-  if (!cluster) return;
+  if (!cluster) { S.isGenerating=false; btn.disabled=false; return; }
 
-  // Settle the draft text
-  const draft = ms.querySelector('.ai-draft');
-  if (draft) {
-    draft.classList.remove('ai-draft');
-    const cursor = draft.querySelector('.stream-cursor');
-    if (cursor) cursor.remove();
+  cluster.status = 'drafting';
+  hideEmpty();
+  $('shimmer').classList.add('on');
+
+  // Gather fragments for this cluster
+  const clusterFrags = S.fragments.filter(f=>f.clusterId===cluster.id&&f.state!=='used');
+
+  try {
+    let prose;
+    if (S.apiKey) {
+      prose = await generateWithAI(cluster, clusterFrags);
+    } else {
+      await sleep(1600);
+      prose = DEMO_PROSE[cluster.id] || buildFallbackProse(cluster);
+    }
+    $('shimmer').classList.remove('on');
+    S.isGenerating = false;
+    btn.disabled = false;
+    insertAIProse(prose);
+    cluster.status = 'drafted';
+    renderSidebar();
+    updateClusterBar();
+    showFragReminder(clusterFrags);
+  } catch(e) {
+    $('shimmer').classList.remove('on');
+    S.isGenerating = false;
+    btn.disabled = false;
+    showEmpty();
+    toast(e.message === 'no-key' ? 'Add API key in settings to enable AI generation.' : 'Generation failed: ' + e.message);
+  }
+}
+
+async function generateWithAI(cluster, frags) {
+  const proj = S.project;
+  const recent = S.clusters.slice(0, S.activeIdx)
+    .flatMap(c=>c.scenes.filter(s=>s.status==='accepted'))
+    .slice(-2).map(s=>s.prose.substring(0,350)).join('\n\n---\n\n');
+
+  const chars = S.characters.map(c=>`${c.name} (${c.role}): wants "${c.want}", fears "${c.fear}", false belief: "${c.belief||'unknown'}"`).join('\n');
+
+  const moodMap = {
+    deepen:'Deepen interiority — slower, more interior, richer subtext, the prose finds what the character cannot say',
+    escalate:'Escalate tension — tighten, press forward, sentences shorter, the pressure increases',
+    turn:'Turn something — introduce a shift, a revelation, a rupture, something changes that cannot be unchanged',
+    surprise:'Pick the continuation this story most needs — structurally justified but tonally unexpected'
+  };
+
+  const heat = S.heat / 100;
+  const heatInstr = heat < 0.3 ? 'Stay very close to what came before — same tone, same rhythm, incremental' :
+                    heat > 0.7 ? 'Take it somewhere — introduce something unexpected but structurally justified' :
+                    'Balance continuity with forward movement';
+
+  const fragInstr = frags.length ? `\n\nFragment(s) assigned to this cluster — consider weaving in if the moment is right:\n${frags.map(f=>`"${f.text}"`).join('\n')}` : '';
+
+  const endingInstr = S.ending ? `\n\nThe story's ending (fixed anchor — do not contradict): ${S.ending}` : '';
+
+  const voiceSample = S.voiceLock ? getVoiceSample() : '';
+  const voiceInstr = voiceSample ? `\n\nMatch this prose voice closely:\n"${voiceSample}"` : '';
+
+  const system = `You are co-writing a ${proj?.genre||'literary fiction'} novel titled "${proj?.title||'Untitled'}".
+Tone: ${proj?.tone||'literary'}. POV: ${proj?.pov||'third person'}.
+Themes: ${S.themes.join(', ')}.
+
+Characters:
+${chars}
+
+Active threads: ${S.threads.slice(0,4).join('; ')}.${endingInstr}${voiceInstr}
+
+You are writing the scene for: ${cluster.label} — ${cluster.fn}.
+Emotional register: ${cluster.emotional}. Pacing: ${cluster.pacing}.
+Mood direction: ${moodMap[S.selectedMood]}.
+Heat: ${heatInstr}.
+Target length: approximately ${S.wordCount} words.
+${S.openDir ? `Writer's direction: ${S.openDir}` : ''}${fragInstr}
+
+${recent ? `Most recent accepted prose (for continuity):\n${recent}` : 'This is the opening of the story.'}
+
+Events that should occur in or near this cluster: ${cluster.extractedEvents?.slice(0,3).join('; ')||'none specified'}.
+
+Write prose only. No headers or meta-commentary. Literary quality. Show don't tell. Do not overwrite or reference anything already written above — continue from where the story is.`;
+
+  return await callClaude(system, `Write the ${cluster.label} scene now.`, Math.round(S.wordCount * 1.4));
+}
+
+function buildFallbackProse(cluster) {
+  return `The scene opened in the way such scenes do — not with announcement but with a quiet shift in the quality of attention.
+
+${S.characters[0]?.name||'The character'} found themselves at a point the story had been approaching without quite naming. The register was ${cluster.emotional.toLowerCase()}. The pacing drew inward. Something was being asked of them that they hadn't known was coming.
+
+Nothing was resolved here. That wasn't the function of this moment. The function was ${cluster.fn.toLowerCase()}, and the moment knew it, even if the character was still catching up.`;
+}
+
+function getVoiceSample() {
+  const accepted = S.clusters.flatMap(c=>c.scenes.filter(s=>s.status==='accepted'));
+  if (!accepted.length) return '';
+  const last = accepted[accepted.length-1].prose;
+  return last.substring(0, 280);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// WORD PALETTE
+// ═══════════════════════════════════════════════════════════════
+let palTimeout = null;
+function showPalette(selection, range) {
+  if (!selection || selection.length < 2) return;
+  S.palSelection = selection;
+  S.palRange = range;
+  const pal = $('palette');
+  const rect = range.getBoundingClientRect();
+  $('pal-options').innerHTML = '<div class="pal-loading">Generating alternatives…</div>';
+  pal.style.left = Math.min(rect.left, window.innerWidth-440) + 'px';
+  pal.style.top = (rect.top - 10) + 'px';
+  pal.style.transform = 'translateY(-100%)';
+  pal.classList.add('show');
+  clearTimeout(palTimeout);
+  palTimeout = setTimeout(()=>fetchPaletteOptions(selection), 120);
+}
+
+async function fetchPaletteOptions(sel) {
+  const container = $('pal-options');
+  const ms = $('manuscript');
+  const surroundingText = ms.innerText.substring(0, 400);
+  const cluster = S.clusters[S.activeIdx];
+  const mode = S.palMode;
+
+  const labels = ['More concrete & sensory','More metaphorical','Character-inflected'];
+
+  if (!S.apiKey) {
+    // Demo options
+    const demoOpts = [
+      {label:'More concrete & sensory', text: sel.length < 20 ? `the rain came in sideways off the street` : `${sel} — rendered in precise physical detail`},
+      {label:'More metaphorical', text: sel.length < 20 ? `the sky had been threatening this for hours` : `${sel} — reaching for the emotional undertone`},
+      {label:'Character-inflected', text: sel.length < 20 ? `of course it was raining` : `${sel} — filtered through the character's state`},
+    ];
+    container.innerHTML = demoOpts.map((o,i)=>`
+      <div class="pal-opt" data-idx="${i}">
+        <div class="pal-opt-label">${o.label}</div>
+        <div class="pal-opt-text">${o.text}</div>
+      </div>`).join('');
+    bindPalOpts(demoOpts.map(o=>o.text));
+    return;
   }
 
-  // Create scene record
-  const scene = {
-    id: 'scene_' + Date.now(),
-    clusterId, prose,
-    title: cluster.fn,
-    status: 'accepted',
-    timestamp: Date.now(),
-    words: prose.split(/\s+/).filter(Boolean).length
+  try {
+    const system = `You are a literary editor specialising in prose enhancement. 
+Given selected text from a manuscript, provide exactly 3 alternative expressions.
+The selection is from a ${cluster?.emotional||'literary'} scene (${cluster?.fn||'general'}).
+Character POV: ${S.project?.pov||'third person'}.
+Surrounding context: "${surroundingText}"
+
+Mode: ${mode === 'sharpen' ? 'SHARPEN — make it more concrete, precise, physical, specific' : 'ELEVATE — make it more literary, resonant, layered, emotionally rich'}
+
+Return ONLY valid JSON array of exactly 3 strings, no labels, no explanation:
+["alternative 1", "alternative 2", "alternative 3"]
+
+Each alternative should be meaningfully different. Not synonyms — different ways of achieving the same expressive purpose.`;
+
+    const raw = await callClaude(system, `Selected text: "${sel}"\n\nProvide 3 ${mode} alternatives.`, 400);
+    const opts = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    container.innerHTML = opts.map((o,i)=>`
+      <div class="pal-opt" data-idx="${i}">
+        <div class="pal-opt-label">${labels[i]||'Alternative '+(i+1)}</div>
+        <div class="pal-opt-text">${o}</div>
+      </div>`).join('');
+    bindPalOpts(opts);
+  } catch(e) {
+    container.innerHTML = '<div class="pal-loading">Add API key to enable alternatives.</div>';
+  }
+}
+
+function bindPalOpts(opts) {
+  $$('.pal-opt').forEach((el,i)=>{
+    el.addEventListener('click', ()=>{
+      applyPaletteOption(opts[i]);
+      $('palette').classList.remove('show');
+    });
+  });
+}
+
+function applyPaletteOption(text) {
+  if (!S.palRange) return;
+  const range = S.palRange;
+  range.deleteContents();
+  const span = document.createElement('span');
+  span.className = 'ai-block';
+  span.textContent = text;
+  range.insertNode(span);
+  setTimeout(()=>{
+    span.classList.add('fading');
+    setTimeout(()=>{ span.replaceWith(document.createTextNode(span.textContent)); }, 2000);
+  }, 4000);
+  toast('Applied — Cmd+Z to undo');
+}
+
+async function applyCustomPalette() {
+  const dir = $('pal-dir').value.trim();
+  if (!dir || !S.palSelection) return;
+  const cluster = S.clusters[S.activeIdx];
+  const system = `You are a literary editor. Rewrite the selected text according to the writer's direction.
+Context: ${cluster?.fn||'narrative scene'}. POV: ${S.project?.pov||'third person'}.
+Return ONLY the rewritten text, nothing else.`;
+  try {
+    const result = await callClaude(system, `Original: "${S.palSelection}"\nDirection: ${dir}`, 200);
+    applyPaletteOption(result);
+    $('palette').classList.remove('show');
+  } catch(e) {
+    toast('Custom rewrite requires API key.');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MANUSCRIPT — AI INSERTION
+// ═══════════════════════════════════════════════════════════════
+function insertAIProse(prose, isVoice=false) {
+  const ms = $('manuscript');
+  ms.contentEditable = 'true';
+  const paras = prose.split('\n').filter(p=>p.trim());
+  const cls = isVoice ? 'voice-block' : 'ai-block';
+
+  // Insert at cursor or end
+  const sel = window.getSelection();
+  let insertAfter = null;
+  if (sel && sel.rangeCount && ms.contains(sel.anchorNode)) {
+    let node = sel.anchorNode;
+    while (node && node.parentElement !== ms) node = node.parentElement;
+    insertAfter = node;
+  }
+
+  const fragment = document.createDocumentFragment();
+  paras.forEach(p => {
+    const el = document.createElement('p');
+    el.className = cls;
+    el.textContent = p;
+    fragment.appendChild(el);
+  });
+
+  if (insertAfter && insertAfter !== ms) {
+    insertAfter.after(fragment);
+  } else {
+    ms.appendChild(fragment);
+  }
+
+  // Stream in effect: briefly show cursor at end
+  const newCur = document.createElement('span');
+  newCur.className = 'stream-cur';
+  ms.appendChild(newCur);
+  setTimeout(()=>newCur.remove(), 2200);
+
+  // Schedule tint fade
+  setTimeout(()=>{
+    ms.querySelectorAll(`.${cls}:not(.fading)`).forEach(el=>{
+      if (!el.classList.contains('fading')) {
+        el.classList.add('fading');
+      }
+    });
+  }, 12000);
+
+  $('empty-state').classList.add('gone');
+  scheduleAutosave();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// VOICE (TBC — scaffolded)
+// ═══════════════════════════════════════════════════════════════
+let mediaRec = null, voiceChunks = [];
+function toggleVoice() {
+  const btn = $('voice-btn');
+  const strip = $('voice-strip');
+  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    toast('Voice input coming soon — requires Chrome.'); return;
+  }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const rec = new SR();
+  rec.continuous = true; rec.interimResults = true; rec.lang = 'en-GB';
+  btn.classList.add('recording');
+  strip.classList.add('show');
+  $('voice-transcript').textContent = 'Listening…';
+  rec.onresult = e => {
+    let transcript = '';
+    for (let i=e.resultIndex;i<e.results.length;i++) transcript += e.results[i][0].transcript;
+    $('voice-transcript').textContent = transcript;
   };
+  rec.start();
+  $('vs-confirm').onclick = async () => {
+    rec.stop(); btn.classList.remove('recording'); strip.classList.remove('show');
+    const spoken = $('voice-transcript').textContent;
+    if (!spoken || spoken === 'Listening…') return;
+    await convertVoiceToProse(spoken);
+  };
+  $('vs-cancel').onclick = () => {
+    rec.stop(); btn.classList.remove('recording'); strip.classList.remove('show');
+  };
+}
+
+async function convertVoiceToProse(spoken) {
+  const cluster = S.clusters[S.activeIdx];
+  if (!S.apiKey) {
+    toast('API key required for voice conversion.');
+    return;
+  }
+  const system = `Convert the writer's spoken narration into literary prose matching the manuscript's voice.
+Story: "${S.project?.title}". Register: ${cluster?.emotional||'literary'}. POV: ${S.project?.pov||'third person'}.
+${S.voiceLock ? `Voice sample: "${getVoiceSample()}"` : ''}
+The writer speaks informally — you convert to the prose register of the manuscript.
+Return only the prose, no explanation.`;
+  try {
+    $('shimmer').classList.add('on');
+    const prose = await callClaude(system, `Spoken: "${spoken}"`, 500);
+    $('shimmer').classList.remove('on');
+    insertAIProse(prose, true);
+    toast('Voice converted to prose');
+  } catch(e) {
+    $('shimmer').classList.remove('on');
+    toast('Voice conversion failed: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ACCEPT SCENE
+// ═══════════════════════════════════════════════════════════════
+function acceptCurrentScene() {
+  const ms = $('manuscript');
+  const prose = ms.innerText.trim();
+  if (!prose) { toast('Nothing to accept yet.'); return; }
+  const cluster = S.clusters[S.activeIdx];
+  const words = prose.split(/\s+/).filter(Boolean).length;
+  const scene = {id:'s'+Date.now(),clusterId:cluster.id,prose,title:cluster.fn,status:'accepted',words,timestamp:Date.now()};
   cluster.scenes.push(scene);
   cluster.status = 'accepted';
-  cluster.wordCount = (cluster.wordCount||0) + scene.words;
+  cluster.wordCount = (cluster.wordCount||0)+words;
 
   // Move to accepted list
-  renderAcceptedScenes();
-  ms.innerHTML = '';
-  delete ms.dataset.pendingProse;
+  const el = document.createElement('div');
+  el.className = 'acc-scene';
+  el.innerHTML = `<div class="acc-lbl">${cluster.label}</div><div class="acc-prose">${prose.split('\n').filter(p=>p.trim()).map(p=>`<p>${p}</p>`).join('')}</div>`;
+  $('accepted-list').appendChild(el);
+  ms.innerHTML = ''; ms.contentEditable = 'true';
 
-  showActionBar(false);
-  updateSidebar();
+  updateIntelModel();
+  persist();
   updateStats();
-  triggerIntelUpdate('scene accepted');
-  saveDot('saved');
-  save();
-  toast('Scene accepted');
+  renderSidebar();
+  toast('Scene accepted', true);
 
-  // Advance to next cluster if available
+  // Advance to next cluster with transition
   const nextIdx = S.activeIdx + 1;
   if (nextIdx < S.clusters.length) {
-    setTimeout(() => {
-      S.activeIdx = nextIdx;
-      updateClusterBar();
-      updateSidebar();
-      showEmptyState();
-      renderIntelPanel();
-      updateTopbarCrumb();
-    }, 600);
+    setTimeout(()=>showTransition(S.activeIdx, nextIdx), 700);
   }
 }
 
 // ═══════════════════════════════════════════════════════════════
-// LIVE NARRATIVE MODEL UPDATE
+// TRANSITION
 // ═══════════════════════════════════════════════════════════════
-let intelTimeout = null;
-async function triggerIntelUpdate(reason) {
-  clearTimeout(intelTimeout);
-  saveDot('saving');
+async function showTransition(fromIdx, toIdx) {
+  const fromCluster = S.clusters[fromIdx];
+  const toCluster = S.clusters[toIdx];
+  const tv = $('transition-view');
+  $('tv-kicker').textContent = `Moving to ${toCluster.label}`;
+  $('tv-title').textContent = `What happened in ${fromCluster.label}`;
 
-  if (S.intelOpen) {
-    document.getElementById('ip-updating').classList.add('active');
+  // Generate summary
+  const accepted = fromCluster.scenes.filter(s=>s.status==='accepted');
+  let summary = accepted.map(s=>s.prose.substring(0,200)).join(' ');
+  if (S.apiKey && accepted.length) {
+    try {
+      summary = await callClaude(
+        'Summarise what happened in this story section in 3-4 concise sentences, written in past tense for the writer\'s reference. Include character states and open threads.',
+        accepted.map(s=>s.prose).join('\n\n'), 300
+      );
+    } catch(e){}
   }
+  $('tv-summary').textContent = summary || 'No scenes accepted yet in this cluster.';
 
-  intelTimeout = setTimeout(async () => {
-    await updateNarrativeModel();
-    document.getElementById('ip-updating').classList.remove('active');
-    saveDot('saved');
-    if (S.intelOpen) renderIntelPanel();
-  }, 800);
+  // Forward signals
+  const signals = [
+    ...S.threads.slice(0,3).map(t=>({text:t})),
+    ...S.fragments.filter(f=>f.clusterId===toCluster.id).slice(0,2).map(f=>({text:`Fragment: "${f.text.substring(0,60)}…"`})),
+  ];
+  $('tv-signals-list').innerHTML = signals.map(s=>`<div class="tv-sig"><div class="tv-sig-dot"></div><div class="tv-sig-text">${s.text}</div></div>`).join('') || '<div class="tv-sig"><div class="tv-sig-dot"></div><div class="tv-sig-text">No specific signals — begin freely.</div></div>';
+
+  tv.classList.add('show');
+
+  $('tv-go').onclick = ()=>{ tv.classList.remove('show'); S.activeIdx=toIdx; activateCluster(); };
+  $('tv-skip').onclick = ()=>{ tv.classList.remove('show'); S.activeIdx=toIdx; activateCluster(); };
 }
 
-async function updateNarrativeModel() {
-  // Build signals from cluster state
-  const signals = [];
-  S.clusters.forEach(c => {
-    const state = c.status === 'accepted' ? 'accepted' :
-                  c.status === 'drafted' ? 'drafted' :
-                  c.status === 'drafting' ? 'drafted' : 'planned';
-    signals.push({
-      type: 'cluster',
-      text: `${c.label}: ${c.fn}`,
-      label: c.emotional,
-      clusterId: c.id,
-      state
-    });
-  });
-
-  // Character signals
-  S.characters.forEach(c => {
-    const appearsIn = S.clusters.filter(cl => cl.scenes.some(s => s.prose?.includes(c.name)));
-    const state = appearsIn.length > 0 ? 'drafted' : 'planned';
-    signals.push({ type:'character', text: c.name, label: c.want, clusterId: null, state });
-  });
-
-  // Thread signals
-  S.threads.forEach(t => {
-    signals.push({ type:'thread', text:t, label:'Open', clusterId:null, state:'planned' });
-  });
-
-  // Emerging signals — patterns found in accepted prose
-  const allProse = S.clusters.flatMap(c=>c.scenes.map(s=>s.prose)).join(' ').toLowerCase();
-  const emerging = [];
-  if (allProse.includes('fire') || allProse.includes('flame') || allProse.includes('smoke')) emerging.push('Fire motif — appearing in drafts');
-  if (allProse.includes('window') || allProse.includes('glass')) emerging.push('Glass / transparency imagery');
-  if (allProse.includes('silence') || allProse.includes('quiet')) emerging.push('Silence as structural device');
-  emerging.forEach(e => signals.push({ type:'emerging', text:e, label:'Emerging', clusterId:null, state:'emerging' }));
-
-  S.model.signals = signals;
-  S.model.lastUpdated = Date.now();
-
-  // Cluster guidance
-  const activeCluster = S.clusters[S.activeIdx];
-  if (activeCluster) {
-    const acceptedBefore = S.clusters.slice(0, S.activeIdx).flatMap(c=>c.scenes.filter(s=>s.status==='accepted'));
-    const guidance = buildGuidance(activeCluster, acceptedBefore);
-    S.model.clusterGuidance[activeCluster.id] = guidance;
-  }
-
-  save();
-}
-
-function buildGuidance(cluster, priorScenes) {
-  const writtenCount = priorScenes.length;
-  const threads = S.threads.slice(0, 3);
-
-  let text = `You are entering ${cluster.label}: ${cluster.fn}. `;
-  if (writtenCount === 0) {
-    text += `This is the opening. Establish ${S.characters[0]?.name || 'your protagonist'} in their world before anything moves.`;
-  } else {
-    text += `${writtenCount} scene${writtenCount>1?'s':''} accepted so far. The emotional register here is ${cluster.emotional} — don't resolve what should not be resolved.`;
-  }
-
-  const openThreads = threads.filter(t => !priorScenes.some(s => s.prose?.toLowerCase().includes(t.toLowerCase().split(' ')[0])));
-
-  return { text, threads: openThreads.slice(0,3) };
+function activateCluster() {
+  const c = S.clusters[S.activeIdx];
+  if (c) c.status = c.status==='planned'?'active-w':c.status;
+  updateClusterBar();
+  renderSidebar();
+  showEmpty();
+  updateCrumb();
+  checkFragReminder();
+  renderPanel();
 }
 
 // ═══════════════════════════════════════════════════════════════
-// INTELLIGENCE PANEL RENDER
+// ARC TEMPERATURE CANVAS
 // ═══════════════════════════════════════════════════════════════
-function renderIntelPanel() {
-  renderListView();
-  if (document.getElementById('vbtn-graph').classList.contains('active')) {
-    renderMiniGraph();
-  }
-}
-
-function renderListView() {
-  const lv = document.getElementById('list-view');
-  const cluster = S.clusters[S.activeIdx];
-  const guidance = cluster ? S.model.clusterGuidance[cluster.id] : null;
-
-  // Cluster guidance card
-  let html = '';
-  if (guidance) {
-    const threads = guidance.threads.map(t => `<div class="gc-thread">${t}</div>`).join('');
-    html += `<div class="ip-section">
-      <div class="guidance-card">
-        <div class="gc-title">Guidance for ${cluster?.label}</div>
-        <div class="gc-body">${guidance.text}</div>
-        ${threads ? `<div class="gc-threads">${threads}</div>` : ''}
-      </div>
-    </div>`;
-  }
-
-  // Signals grouped
-  const planned = S.model.signals.filter(s=>s.state==='planned'&&s.type==='cluster');
-  const drafted = S.model.signals.filter(s=>s.state==='drafted'&&s.type==='cluster');
-  const accepted = S.model.signals.filter(s=>s.state==='accepted'&&s.type==='cluster');
-  const emerging = S.model.signals.filter(s=>s.state==='emerging');
-
-  if (accepted.length || drafted.length || planned.length) {
-    html += `<div class="ip-section">
-      <div class="ip-section-title">Story arc <span class="ip-count">${S.clusters.length} clusters</span></div>
-      ${[...accepted, ...drafted, ...planned].map(sig => `
-        <div class="signal-row" data-cluster="${sig.clusterId}">
-          <div class="sig-dot ${sig.state}"></div>
-          <div style="flex:1">
-            <div class="sig-text">${sig.text}</div>
-            <div class="sig-label">${sig.label}</div>
-          </div>
-          <div class="sig-badge sb-${sig.state}">${sig.state}</div>
-        </div>
-      `).join('')}
-    </div>`;
-  }
-
-  // Characters
-  if (S.characters.length) {
-    html += `<div class="ip-section">
-      <div class="ip-section-title">Characters <span class="ip-count">${S.characters.length}</span></div>
-      ${S.characters.map(c => `
-        <div class="char-item">
-          <div class="ci-name">${c.name}</div>
-          <div class="ci-role">${c.role}</div>
-          <div class="ci-row"><span class="ci-key">Want</span><span class="ci-val">${c.want||'—'}</span></div>
-          <div class="ci-row"><span class="ci-key">Fear</span><span class="ci-val">${c.fear||'—'}</span></div>
-          ${c.arc ? `<div class="ci-arc">${c.arc}</div>` : ''}
-        </div>
-      `).join('')}
-    </div>`;
-  }
-
-  // Threads
-  if (S.threads.length) {
-    html += `<div class="ip-section">
-      <div class="ip-section-title">Open threads <span class="ip-count">${S.threads.length}</span></div>
-      ${S.threads.map(t => `
-        <div class="thread-item">
-          <div class="ti-icon">○</div>
-          <div>
-            <div class="ti-text">${t}</div>
-            <div class="ti-state">Unresolved</div>
-          </div>
-        </div>
-      `).join('')}
-    </div>`;
-  }
-
-  // Emerging patterns
-  if (emerging.length) {
-    html += `<div class="ip-section">
-      <div class="ip-section-title">Emerging patterns</div>
-      ${emerging.map(s => `
-        <div class="signal-row">
-          <div class="sig-dot emerging"></div>
-          <div style="flex:1">
-            <div class="sig-text">${s.text}</div>
-            <div class="sig-label">Detected in drafts</div>
-          </div>
-          <div class="sig-badge sb-emerging">emerging</div>
-        </div>
-      `).join('')}
-    </div>`;
-  }
-
-  // Themes
-  if (S.themes.length) {
-    html += `<div class="ip-section">
-      <div class="ip-section-title">Themes</div>
-      <div style="display:flex;flex-wrap:wrap;gap:4px;padding-top:2px">
-        ${S.themes.map(t=>`<span style="font-size:0.72rem;padding:2px 8px;border-radius:3px;background:var(--paper-2);color:var(--ink-2);border:1px solid var(--border)">${t}</span>`).join('')}
-      </div>
-    </div>`;
-  }
-
-  lv.innerHTML = html || '<div style="padding:16px;font-size:0.8rem;color:var(--ink-4);font-style:italic">Import a story to begin the intelligence layer.</div>';
-
-  // Click signals to navigate
-  lv.querySelectorAll('.signal-row[data-cluster]').forEach(row => {
-    row.addEventListener('click', () => {
-      const cid = row.dataset.cluster;
-      const idx = S.clusters.findIndex(c=>c.id===cid);
-      if (idx >= 0) { S.activeIdx = idx; updateClusterBar(); updateSidebar(); showEmptyState(); }
-    });
-  });
-}
-
-// ═══════════════════════════════════════════════════════════════
-// MINI GRAPH (intelligence panel)
-// ═══════════════════════════════════════════════════════════════
-function renderMiniGraph() {
-  const canvas = document.getElementById('story-graph-canvas');
-  if (!canvas || !S.clusters.length) return;
-  const gv = document.getElementById('graph-view');
-  const W = gv.offsetWidth - 24; const H = 140;
+function drawArc() {
+  const canvas = $('arc-canvas');
+  const strip = $('arc-strip');
+  const W = strip.offsetWidth; const H = 52;
   canvas.width = W * devicePixelRatio; canvas.height = H * devicePixelRatio;
   canvas.style.width = W+'px'; canvas.style.height = H+'px';
   const ctx = canvas.getContext('2d');
   ctx.scale(devicePixelRatio, devicePixelRatio);
-  drawGraph(ctx, W, H, S.clusters, false);
-}
 
-function renderMapModal() {
-  const canvas = document.getElementById('mm-canvas');
-  if (!canvas) return;
-  const W = canvas.parentElement.offsetWidth;
-  const H = canvas.parentElement.offsetHeight;
-  canvas.width = W * devicePixelRatio; canvas.height = H * devicePixelRatio;
-  canvas.style.width = W+'px'; canvas.style.height = H+'px';
-  const ctx = canvas.getContext('2d');
-  ctx.scale(devicePixelRatio, devicePixelRatio);
-  drawGraph(ctx, W, H, S.clusters, true);
+  if (!S.clusters.length) return;
+  const n = S.clusters.length;
+  const pad = 32; const nodeR = 5;
+  const step = (W - pad*2) / Math.max(n-1,1);
+  const midY = H / 2 + 6;
 
-  const accepted = S.clusters.filter(c=>c.status==='accepted').length;
-  const words = S.clusters.reduce((s,c)=>s+(c.wordCount||0),0);
-  document.getElementById('mm-summary').textContent =
-    `${accepted} of ${S.clusters.length} clusters accepted · ${words.toLocaleString()} words`;
-}
-
-const COLORS = { planned:'#a8a29e', drafted:'#c2622b', accepted:'#2d6a4f', drafting:'#c2622b', emerging:'#7c6fcd' };
-
-function drawGraph(ctx, W, H, clusters, large) {
-  const n = clusters.length;
-  const pad = large ? 48 : 24;
-  const nodeR = large ? 12 : 7;
-  const step = (W - pad*2) / Math.max(n-1, 1);
-
-  // Clear
-  ctx.clearRect(0,0,W,H);
-
-  // Character arc lines (horizontal bands)
-  const charColors = ['#c2622b','#2d6a4f','#7c6fcd'];
-  if (large) {
-    S.characters.slice(0,3).forEach((c,ci) => {
-      const y = H - 28 - ci*16;
-      ctx.strokeStyle = charColors[ci]; ctx.globalAlpha = 0.25; ctx.lineWidth = 2;
-      ctx.setLineDash([]);
-      ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W-pad, y); ctx.stroke();
-      ctx.globalAlpha = 1;
-      ctx.font = `10px var(--sans)`; ctx.fillStyle = charColors[ci]; ctx.globalAlpha = 0.6;
-      ctx.fillText(c.name, pad, y-4);
-      ctx.globalAlpha = 1;
-    });
-  }
-
-  // Arc tension curve
-  const midY = H/2;
-  ctx.beginPath(); ctx.setLineDash([3,4]);
-  ctx.strokeStyle = '#d6d3d1'; ctx.lineWidth = 1; ctx.globalAlpha = 0.6;
-  clusters.forEach((c,i) => {
-    const x = pad + i*step;
-    // Tension profile
-    const tension = i < n*0.15 ? 0.2 :
-                    i < n*0.5  ? 0.2 + (i/(n*0.5))*0.6 :
-                    i < n*0.7  ? 0.8 + Math.sin((i-n*0.5)*3)*0.1 :
-                    i < n*0.85 ? 1.0 :
-                    1.0 - ((i-n*0.85)/(n*0.15))*0.7;
-    const y = H/2 - tension*(H*0.35) + (large?8:4);
-    if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  // Tension curve
+  ctx.beginPath(); ctx.setLineDash([2,3]);
+  ctx.strokeStyle = 'rgba(28,25,23,.12)'; ctx.lineWidth = 1;
+  S.clusters.forEach((c,i)=>{
+    const x = pad+i*step;
+    const y = midY - (c.temp||0.3)*(H*.42);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
   });
-  ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+  ctx.stroke(); ctx.setLineDash([]);
 
-  // Thread lines (open threads as dashed arcs between clusters)
-  if (large && S.threads.length > 0) {
-    ctx.strokeStyle = '#7c6fcd'; ctx.globalAlpha = 0.2; ctx.lineWidth = 1;
-    ctx.setLineDash([4,6]);
-    S.threads.slice(0,2).forEach((t,ti) => {
-      const from = ti; const to = Math.min(from+3, n-1);
-      const x1 = pad+from*step; const x2 = pad+to*step; const y = midY;
-      ctx.beginPath();
-      ctx.moveTo(x1, y+nodeR);
-      ctx.bezierCurveTo(x1, y+40+ti*10, x2, y+40+ti*10, x2, y+nodeR);
-      ctx.stroke();
-    });
-    ctx.setLineDash([]); ctx.globalAlpha = 1;
-  }
-
-  // Connector line
-  ctx.strokeStyle = '#d6d3d1'; ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  clusters.forEach((c,i) => {
-    const x = pad + i*step; const y = midY;
-    if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  // Connector
+  ctx.beginPath(); ctx.strokeStyle = 'rgba(28,25,23,.1)'; ctx.lineWidth = 1.5;
+  S.clusters.forEach((c,i)=>{
+    const x=pad+i*step; const y=midY;
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
   });
   ctx.stroke();
 
   // Nodes
-  clusters.forEach((c,i) => {
-    const x = pad + i*step; const y = midY;
-    const col = COLORS[c.status] || COLORS.planned;
-    const isActive = i === S.activeIdx;
-
-    // Active ring
+  S.clusters.forEach((c,i)=>{
+    const x=pad+i*step; const y=midY;
+    const isActive = i===S.activeIdx;
+    const col = c.status==='accepted'?'#2d6a4f':c.status==='drafted'||c.status==='drafting'?'#b85a28':isActive?'#b85a28':'rgba(28,25,23,.2)';
     if (isActive) {
-      ctx.beginPath(); ctx.arc(x,y,nodeR+4,0,Math.PI*2);
-      ctx.strokeStyle = col; ctx.globalAlpha = 0.2; ctx.lineWidth = 2;
-      ctx.stroke(); ctx.globalAlpha = 1;
+      ctx.beginPath(); ctx.arc(x,y,nodeR+3,0,Math.PI*2);
+      ctx.fillStyle='rgba(184,90,40,.12)'; ctx.fill();
     }
-
-    // Node fill
     ctx.beginPath(); ctx.arc(x,y,nodeR,0,Math.PI*2);
-    if (c.status === 'planned') {
-      ctx.fillStyle = 'var(--paper)' || '#f5f2ed';
-      ctx.fill();
-      ctx.strokeStyle = '#d6d3d1'; ctx.lineWidth = 1.5; ctx.stroke();
+    if (c.status==='planned'&&!isActive) {
+      ctx.fillStyle=W>0?'var(--paper)':'#f5f2ed'; ctx.fill();
+      ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.stroke();
     } else {
-      ctx.fillStyle = col; ctx.fill();
+      ctx.fillStyle=col; ctx.fill();
     }
-
-    // Word count bubble (large mode)
-    if (large && c.wordCount > 0) {
-      const r = nodeR + Math.min(c.wordCount/80, 12);
-      ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
-      ctx.fillStyle = col; ctx.globalAlpha = 0.15; ctx.fill(); ctx.globalAlpha = 1;
+    // Temp spike
+    if (c.temp) {
+      ctx.beginPath();
+      ctx.moveTo(x,y-nodeR-1);
+      ctx.lineTo(x,y-nodeR-1-(c.temp*(H*.35)));
+      ctx.strokeStyle=c.status==='accepted'?'rgba(45,106,79,.4)':'rgba(184,90,40,.3)';
+      ctx.lineWidth=1.5; ctx.setLineDash([]);
+      ctx.stroke();
     }
-
     // Label
-    if (large) {
-      ctx.font = `500 10px var(--sans)`;
-      ctx.textAlign = 'center'; ctx.fillStyle = i===S.activeIdx ? col : '#78716c';
-      ctx.fillText(c.label, x, y + nodeR + 14);
-    }
+    ctx.font=`500 9px var(--sans)`; ctx.textAlign='center';
+    ctx.fillStyle=isActive?col:'rgba(28,25,23,.35)';
+    ctx.fillText(c.label, x, H-4);
+  });
+
+  // Click nav
+  canvas.onclick = e=>{
+    const rect = canvas.getBoundingClientRect();
+    const mx = (e.clientX-rect.left);
+    S.clusters.forEach((c,i)=>{
+      const x=pad+i*step;
+      if (Math.abs(mx-x)<14) { S.activeIdx=i; activateCluster(); drawArc(); }
+    });
+  };
+  canvas.style.cursor='pointer';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INTEL MODEL
+// ═══════════════════════════════════════════════════════════════
+let intelTimeout=null;
+function updateIntelModel() {
+  dot('saving');
+  clearTimeout(intelTimeout);
+  intelTimeout = setTimeout(async ()=>{
+    // Update temps from accepted prose
+    S.clusters.forEach(c=>{
+      if (c.scenes.some(s=>s.status==='accepted')) {
+        const prose = c.scenes.filter(s=>s.status==='accepted').map(s=>s.prose).join(' ').toLowerCase();
+        const hotWords = ['rage','fear','terror','crisis','collapse','dark','desperate','broken','shaking','death','betrayal','violence','scream','panic'];
+        const coldWords = ['quiet','still','gentle','tender','peace','calm','soft','light','morning','warm','smile','laugh'];
+        const hot = hotWords.filter(w=>prose.includes(w)).length;
+        const cold = coldWords.filter(w=>prose.includes(w)).length;
+        c.temp = Math.max(.15, Math.min(1.0, (c.tension||.5) + (hot-cold)*.05));
+      }
+    });
+    renderPanel();
+    drawArc();
+    dot('saved');
+    persist();
+  }, 600);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PANEL RENDERING
+// ═══════════════════════════════════════════════════════════════
+function renderPanel() {
+  const tab = S.panelTab;
+  if (tab==='intel') renderIntelTab();
+  else if (tab==='chars') renderCharsTab();
+  else if (tab==='frags') renderFragsTab();
+}
+
+function renderIntelTab() {
+  const pb = $('panel-body');
+  const cluster = S.clusters[S.activeIdx];
+  const accepted = S.clusters.filter(c=>c.status==='accepted');
+  const drafted = S.clusters.filter(c=>c.status==='drafted'||c.status==='drafting');
+  const planned = S.clusters.filter(c=>c.status==='planned'||c.status==='active-w');
+
+  let h = '';
+
+  // Guidance
+  if (cluster) {
+    const fragCount = S.fragments.filter(f=>f.clusterId===cluster.id&&f.state!=='used').length;
+    h += `<div class="ip-section"><div class="guide-card">
+      <div class="guide-title">Now writing — ${cluster.label}</div>
+      <div class="guide-body">${cluster.fn}. Emotional register: ${cluster.emotional}. Pacing: ${cluster.pacing}.</div>
+      ${fragCount?`<div class="guide-frags"><div class="guide-frag">${fragCount} fragment${fragCount>1?'s':''} assigned here — will surface during generation</div></div>`:''}
+    </div></div>`;
+  }
+
+  // Arc signals
+  h += `<div class="ip-section"><div class="ip-sec-title">Story arc <span class="ip-count">${S.clusters.length} clusters</span></div>`;
+  [...accepted,...drafted,...planned].forEach(c=>{
+    const st = c.status==='accepted'?'accepted':c.status==='drafted'||c.status==='drafting'?'drafted':'planned';
+    h += `<div class="sig-row" data-ci="${c.idx}">
+      <div class="sig-d ${st}"></div>
+      <div style="flex:1"><div class="sig-txt">${c.label}: ${c.fn}</div><div class="sig-lbl">${c.emotional}</div></div>
+      <span class="sig-badge sb-${st}">${st}</span>
+    </div>`;
+  });
+  h += '</div>';
+
+  // Threads
+  if (S.threads.length) {
+    h += `<div class="ip-section"><div class="ip-sec-title">Open threads <span class="ip-count">${S.threads.length}</span></div>`;
+    S.threads.forEach(t=>{ h+=`<div class="sig-row"><div class="sig-d planned"></div><div class="sig-txt">${t}</div></div>`; });
+    h += '</div>';
+  }
+
+  // Themes
+  if (S.themes.length) {
+    h += `<div class="ip-section"><div class="ip-sec-title">Themes</div><div style="display:flex;flex-wrap:wrap;gap:4px;padding:2px 0">`;
+    S.themes.forEach(t=>{ h+=`<span style="font-size:.68rem;padding:2px 7px;border-radius:3px;background:var(--paper-2);border:1px solid var(--border);color:var(--ink-2)">${t}</span>`; });
+    h += '</div></div>';
+  }
+
+  // Ending anchor
+  if (S.ending) {
+    h += `<div class="ip-section"><div class="ip-sec-title">Ending (fixed anchor)</div><div style="font-family:var(--serif);font-size:.78rem;color:var(--ink-3);line-height:1.55;font-style:italic;margin-top:2px">${S.ending.substring(0,180)}${S.ending.length>180?'…':''}</div></div>`;
+  }
+
+  pb.innerHTML = h;
+  pb.querySelectorAll('.sig-row[data-ci]').forEach(row=>{
+    row.addEventListener('click',()=>{ S.activeIdx=parseInt(row.dataset.ci); activateCluster(); drawArc(); });
+  });
+}
+
+function renderCharsTab() {
+  const pb = $('panel-body');
+  if (!S.characters.length) { pb.innerHTML='<div style="padding:20px;font-size:.8rem;color:var(--ink-4);font-style:italic">Import a story to see character models.</div>'; return; }
+  pb.innerHTML = S.characters.map(c=>{
+    const temp = Math.random()*.6+.2; // would be inferred from prose in full build
+    return `<div class="char-card">
+      <div class="cc-name">${c.name}</div>
+      <div class="cc-role">${c.role}</div>
+      <div class="cc-row"><span class="cc-key">Want</span><span class="cc-val">${c.want||'—'}</span></div>
+      <div class="cc-row"><span class="cc-key">Fear</span><span class="cc-val">${c.fear||'—'}</span></div>
+      <div class="cc-row"><span class="cc-key">Arc</span><span class="cc-val">${c.arc||'—'}</span></div>
+      ${c.belief?`<div class="cc-belief"><strong>False belief:</strong> ${c.belief}</div>`:''}
+      <div class="temp-mini">
+        <div class="temp-mini-lbl">Emotional temperature</div>
+        <div class="temp-mini-bar"><div class="temp-mini-fill" style="width:${Math.round(temp*100)}%;background:${temp>.7?'#b85a28':temp>.4?'#a07c20':'#2d6a4f'}"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderFragsTab() {
+  const pb = $('panel-body');
+  const filter = S.fragFilter||'all';
+  const filtered = filter==='all' ? S.fragments : S.fragments.filter(f=>f.state===filter||f.clusterId===filter);
+  pb.innerHTML = `<div id="frag-tab">
+    <div class="frag-add">
+      <textarea id="frag-input" rows="2" placeholder="Capture a fragment — a line, an image, an idea…"></textarea>
+      <button class="frag-add-btn" id="frag-save-btn">Add</button>
+    </div>
+    <div class="frag-filters">
+      <button class="frag-filter ${filter==='all'?'on':''}" data-f="all">All</button>
+      <button class="frag-filter ${filter==='raw'?'on':''}" data-f="raw">Uncategorised</button>
+      <button class="frag-filter ${filter==='placed'?'on':''}" data-f="placed">Placed</button>
+      <button class="frag-filter ${filter==='used'?'on':''}" data-f="used">Used</button>
+    </div>
+    <div class="frag-items">${filtered.map(f=>renderFragItem(f)).join('')}</div>
+  </div>`;
+
+  $('frag-save-btn').onclick = ()=>{
+    const txt = $('frag-input').value.trim();
+    if (!txt) return;
+    S.fragments.unshift({id:'f'+Date.now(),text:txt,state:'raw',clusterId:null,theme:null,charName:null,createdAt:Date.now()});
+    $('frag-input').value='';
+    persist();
+    renderFragsTab();
+    toast('Fragment captured');
+  };
+  $$('.frag-filter').forEach(btn=>{ btn.onclick=()=>{ S.fragFilter=btn.dataset.f; renderFragsTab(); }; });
+  $$('.frag-assign').forEach(sel=>{ sel.onchange=()=>{
+    const fid=sel.dataset.id; const f=S.fragments.find(x=>x.id===fid);
+    if (!f) return;
+    const val=sel.value;
+    if (val.startsWith('cluster:')) { f.clusterId=val.replace('cluster:',''); f.state='placed'; }
+    else if (val==='raw') { f.clusterId=null; f.state='raw'; }
+    persist(); toast('Fragment updated');
+  }; });
+}
+
+function renderFragItem(f) {
+  const clusterOptions = S.clusters.map(c=>`<option value="cluster:${c.id}" ${f.clusterId===c.id?'selected':''}>${c.label}</option>`).join('');
+  return `<div class="frag-item ${f.state==='used'?'used':''}">
+    <div class="frag-text">${f.text}</div>
+    <div class="frag-meta">
+      <span class="frag-tag ft-${f.state}">${f.state}</span>
+      ${f.clusterId?`<span class="frag-tag ft-cluster">${S.clusters.find(c=>c.id===f.clusterId)?.label||f.clusterId}</span>`:''}
+      <div class="frag-actions">
+        <select class="frag-assign" data-id="${f.id}" style="font-size:.62rem;padding:1px 4px;border:1px solid var(--border);border-radius:3px;background:var(--paper);cursor:pointer">
+          <option value="raw">Unassigned</option>
+          ${clusterOptions}
+        </select>
+      </div>
+    </div>
+  </div>`;
+}
+
+function showFragReminder(frags) {
+  if (!frags.length) return;
+  const f = frags[0];
+  $('fr-text').textContent = f.text.substring(0,90)+(f.text.length>90?'…':'');
+  $('frag-reminder').classList.add('show');
+  $('fr-close').onclick = ()=>$('frag-reminder').classList.remove('show');
+}
+
+function checkFragReminder() {
+  const cluster = S.clusters[S.activeIdx];
+  if (!cluster) return;
+  const frags = S.fragments.filter(f=>f.clusterId===cluster.id&&f.state!=='used');
+  if (frags.length) showFragReminder(frags);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SIDEBAR
+// ═══════════════════════════════════════════════════════════════
+function renderSidebar() {
+  const list = $('cluster-list');
+  if (!S.clusters.length) { list.innerHTML=''; return; }
+  list.innerHTML = S.clusters.map((c,i)=>{
+    const dotCls = c.status==='accepted'?'accepted':c.status==='drafted'||c.status==='drafting'?'drafted':i===S.activeIdx?'active-w':'planned';
+    const pct = Math.round((c.temp||0)*100);
+    const tempColor = pct>70?'#b85a28':pct>40?'#a07c20':'#2d6a4f';
+    return `<div class="clu-row ${i===S.activeIdx?'active':''}" data-i="${i}">
+      <div class="clu-dot ${dotCls}"></div>
+      <div class="clu-info">
+        <div class="clu-name">${c.label}</div>
+        <div class="clu-fn">${c.fn}</div>
+      </div>
+      <div class="clu-temp" title="Emotional temperature ${pct}%">
+        <div class="temp-bar" style="width:100%;background:rgba(28,25,23,.08)">
+          <div style="height:3px;border-radius:2px;width:${pct}%;background:${tempColor};transition:width .5s"></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('.clu-row').forEach(row=>{
+    row.onclick=()=>{ S.activeIdx=parseInt(row.dataset.i); activateCluster(); drawArc(); };
   });
 }
 
 // ═══════════════════════════════════════════════════════════════
-// UI HELPERS
+// CLUSTER BAR / CRUMB
 // ═══════════════════════════════════════════════════════════════
-function showGenerating(on) {
-  document.getElementById('gen-shimmer').classList.toggle('active', on);
-  if (on) hideEmptyState();
-}
-
-function hideEmptyState() {
-  document.getElementById('empty-state').classList.add('hidden');
-}
-
-function showEmptyState() {
-  const c = S.clusters[S.activeIdx];
-  if (!c) return;
-  document.getElementById('empty-state').classList.remove('hidden');
-  document.getElementById('es-watermark').textContent = c.fn;
-  document.getElementById('es-instruction').textContent = `Emotional register: ${c.emotional} · Pacing: ${c.pacing}`;
-  document.getElementById('manuscript').innerHTML = '';
-  document.getElementById('manuscript').contentEditable = 'false';
-  showGenerating(false);
-  showActionBar(false);
-}
-
-function showActionBar(on) {
-  document.getElementById('action-bar').classList.toggle('visible', on);
-}
-
 function updateClusterBar() {
   const c = S.clusters[S.activeIdx];
   if (!c) return;
-  const bar = document.getElementById('cluster-bar');
-  bar.classList.remove('hidden');
-  document.getElementById('cb-name').textContent = c.label;
-  document.getElementById('cb-fn').textContent = c.fn;
-  const stateMap = {planned:'sp-planned',drafted:'sp-drafted',accepted:'sp-accepted',drafting:'sp-drafted'};
-  document.getElementById('cb-state-pill').innerHTML =
-    `<span class="state-pill ${stateMap[c.status]||'sp-planned'}">${c.status}</span>`;
+  const bar = $('clu-bar');
+  bar.classList.add('visible');
+  $('cb-name').textContent = c.label;
+  $('cb-fn').textContent = c.fn;
+  const st = c.status==='accepted'?'accepted':c.status==='drafted'||c.status==='drafting'?'active':'planned';
+  $('cb-pill').innerHTML = `<span class="status-pill sp-${st}">${c.status}</span>`;
+  updateMoodOptions(c);
 }
 
-function updateTopbarCrumb() {
-  const c = S.clusters[S.activeIdx];
-  document.getElementById('tb-cluster').textContent = c?.label || '—';
-}
-
-function updateSidebar() {
-  const list = document.getElementById('cluster-list');
-  if (!S.clusters.length) { list.innerHTML=''; return; }
-
-  list.innerHTML = S.clusters.map((c,i) => {
-    const dot = c.status==='accepted'?'accepted':c.status==='drafted'||c.status==='drafting'?'drafted':i===S.activeIdx?'active-w':'planned';
-    const accepted = c.scenes.filter(s=>s.status==='accepted').length;
-    return `<div class="cluster-row ${i===S.activeIdx?'active':''}" data-idx="${i}">
-      <div class="c-dot ${dot}"></div>
-      <span class="c-label">${c.label}</span>
-      ${accepted ? `<span class="c-count">${accepted}</span>` : ''}
-    </div>`;
-  }).join('');
-
-  list.querySelectorAll('.cluster-row').forEach(r => {
-    r.addEventListener('click', () => {
-      S.activeIdx = parseInt(r.dataset.idx);
-      updateSidebar(); updateClusterBar(); showEmptyState(); updateTopbarCrumb();
-      if (S.intelOpen) renderIntelPanel();
-    });
-  });
-}
-
-function updateStats() {
-  const words = S.clusters.reduce((s,c)=>s+(c.wordCount||0),0);
-  const scenes = S.clusters.flatMap(c=>c.scenes.filter(s=>s.status==='accepted')).length;
-  const done = S.clusters.filter(c=>c.status==='accepted').length;
-  document.getElementById('sb-words').textContent = words.toLocaleString();
-  document.getElementById('sb-scenes').textContent = scenes;
-  document.getElementById('sb-clusters').textContent = `${done} / ${S.clusters.length}`;
-}
-
-function renderAcceptedScenes() {
-  const container = document.getElementById('accepted-scenes');
-  const all = S.clusters.flatMap(c => c.scenes.filter(s=>s.status==='accepted').map(s=>({...s,clusterLabel:c.label})));
-  container.innerHTML = all.map(s => {
-    const paras = s.prose.split('\n').filter(p=>p.trim()).map(p=>`<p>${p}</p>`).join('');
-    return `<div class="accepted-scene">
-      <div class="as-label">${s.clusterLabel}</div>
-      <div class="as-prose">${paras}</div>
-    </div>`;
-  }).join('');
-}
-
-function saveDot(state) {
-  const dot = document.getElementById('save-dot');
-  dot.className = 'saving saved'.includes(state) ? state : '';
-  if (state==='saved') setTimeout(()=>{ dot.className=''; }, 2000);
-}
-
-function toast(msg, dur=2800) {
-  const t = document.getElementById('toasts');
-  const el = document.createElement('div');
-  el.className = 'toast'; el.textContent = msg;
-  t.appendChild(el);
-  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity 0.3s'; setTimeout(()=>el.remove(),300); }, dur);
-}
-
-function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
-
-// ═══════════════════════════════════════════════════════════════
-// PARSE FLOW UI
-// ═══════════════════════════════════════════════════════════════
-const PARSE_MESSAGES = [
-  ['Reading outline…', null],
-  ['Characters', null],
-  ['Themes', null],
-  ['Turning points', null],
-  ['Open threads', null],
-  ['Building story model', null],
-];
-
-async function startParseFlow(text) {
-  // Show parse overlay
-  const overlay = document.getElementById('parse-overlay');
-  const stream = document.getElementById('parse-stream');
-  const bar = document.getElementById('po-bar');
-  overlay.classList.add('active');
-  stream.innerHTML = '';
-
-  // Parse in background
-  const parsePromise = parseOutline(text);
-
-  // Animated stream
-  const steps = [
-    ['Reading your story', null],
-    ['Finding characters', null],
-    ['Identifying themes', null],
-    ['Mapping turning points', null],
-    ['Extracting open threads', null],
-    ['Constructing story model', null],
-  ];
-
-  for (let i=0; i<steps.length; i++) {
-    bar.style.width = Math.round((i/steps.length)*100)+'%';
-    const row = document.createElement('div');
-    row.className = 'ps-finding';
-    row.style.animationDelay = '0s';
-    row.innerHTML = `<span class="ps-label">${steps[i][0]}</span>`;
-    stream.appendChild(row);
-    await sleep(360);
-  }
-
-  const parsed = await parsePromise;
-  bar.style.width = '100%';
-
-  // Augment with demo data if title matches
-  if (parsed.title?.toLowerCase().includes('ashes') || text.includes('Ashes of Us')) {
-    parsed.characters = DEMO.characters;
-    parsed.themes = DEMO.themes;
-    parsed.openThreads = DEMO.threads;
-  }
-
-  await sleep(400);
-
-  // Stream finding results
-  if (parsed.characters?.length) {
-    const row = document.createElement('div');
-    row.className = 'ps-finding'; row.style.animationDelay = '0s';
-    row.innerHTML = `<span class="ps-label">Characters</span> <span class="ps-value">${parsed.characters.slice(0,3).map(c=>c.name).join(', ')}</span>`;
-    stream.appendChild(row);
-    await sleep(200);
-  }
-  if (parsed.themes?.length) {
-    const row = document.createElement('div');
-    row.className = 'ps-finding'; row.style.animationDelay = '0s';
-    row.innerHTML = `<span class="ps-label">Themes</span> <span class="ps-value">${parsed.themes.slice(0,4).join(', ')}</span>`;
-    stream.appendChild(row);
-    await sleep(200);
-  }
-  if (parsed.openThreads?.length) {
-    const row = document.createElement('div');
-    row.className = 'ps-finding'; row.style.animationDelay = '0s';
-    row.innerHTML = `<span class="ps-label">Threads</span> <span class="ps-value">${parsed.openThreads.length} identified</span>`;
-    stream.appendChild(row);
-    await sleep(200);
-  }
-
-  await sleep(500);
-  overlay.classList.remove('active');
-
-  // Store and show confirm
-  S.parsedData = parsed;
-  showConfirmScreen(parsed);
-}
-
-function showConfirmScreen(parsed) {
-  document.getElementById('welcome-inner').classList.add('hidden');
-  const cs = document.getElementById('confirm-screen');
-  cs.classList.add('active');
-
-  document.getElementById('cs-story-title').textContent = parsed.title || 'Your story';
-  document.getElementById('cs-genre').value = parsed.genre || '';
-  document.getElementById('cs-tone').value = parsed.tone || '';
-  document.getElementById('cs-pov').value = parsed.pov || '';
-  document.getElementById('cs-premise').value = parsed.premise || '';
-
-  // Show extracted tags
-  const ext = document.getElementById('cs-extracted');
-  let html = '';
-  if (parsed.characters?.length) {
-    html += `<div class="ce-row"><span class="ce-key">People</span>${parsed.characters.slice(0,4).map(c=>`<span class="ce-tag ce-conf-${c.confidence||'high'}">${c.name}</span>`).join('')}</div>`;
-  }
-  if (parsed.themes?.length) {
-    html += `<div class="ce-row"><span class="ce-key">Themes</span>${parsed.themes.slice(0,5).map(t=>`<span class="ce-tag">${t}</span>`).join('')}</div>`;
-  }
-  if (parsed.openThreads?.length) {
-    html += `<div class="ce-row"><span class="ce-key">Threads</span><span class="ce-tag">${parsed.openThreads.length} found</span></div>`;
-  }
-  ext.innerHTML = html;
-}
-
-function beginWriting() {
-  const parsed = S.parsedData;
-  S.project = {
-    title: document.getElementById('cs-story-title').textContent || parsed?.title || 'Untitled',
-    genre: document.getElementById('cs-genre').value,
-    tone: document.getElementById('cs-tone').value,
-    pov: document.getElementById('cs-pov').value,
-    premise: document.getElementById('cs-premise').value,
+function updateMoodOptions(cluster) {
+  const opts = $$('.mood-opt[data-mood]');
+  const descriptions = {
+    deepen: `Deepen — more interior, ${cluster.emotional.toLowerCase()}, richer subtext`,
+    escalate: `Escalate — raise tension toward ${cluster.fn.toLowerCase()}`,
+    turn: `Turn — something shifts, a ${cluster.emotional.toLowerCase()} revelation`,
+    surprise: 'Surprise me — AI picks what the story needs here'
   };
-  S.characters = parsed?.characters || [];
-  S.themes = parsed?.themes || [];
-  S.threads = parsed?.openThreads || [];
-  S.rawOutline = document.getElementById('outline-input').value;
-
-  const arcSel = document.querySelector('.arc-pill.selected')?.dataset.arc || '3act';
-  initArc(arcSel);
-
-  // Hide welcome
-  document.getElementById('welcome').classList.add('hidden');
-
-  // Update topbar
-  document.getElementById('tb-title').textContent = S.project.title;
-
-  // Init UI
-  updateSidebar();
-  updateClusterBar();
-  showEmptyState();
-  updateTopbarCrumb();
-
-  // Build initial narrative model
-  updateNarrativeModel().then(() => {
-    if (S.intelOpen) renderIntelPanel();
+  opts.forEach(opt=>{
+    const mood = opt.dataset.mood;
+    if (descriptions[mood]) opt.querySelector('.mood-opt-desc').textContent = descriptions[mood];
   });
+}
 
-  save();
-  toast('Story model ready. Begin writing.');
+function updateCrumb() {
+  const c = S.clusters[S.activeIdx];
+  $('tb-clu').textContent = c?.label||'—';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EMPTY / FULL STATES
+// ═══════════════════════════════════════════════════════════════
+function showEmpty() {
+  const c = S.clusters[S.activeIdx];
+  const es = $('empty-state');
+  es.classList.remove('gone');
+  $('es-bg').textContent = c?.fn||'Begin';
+  $('es-sub').textContent = `${c?.emotional||'—'} · ${c?.pacing||'—'} pacing`;
+  $('manuscript').innerHTML = '';
+}
+
+function hideEmpty() {
+  $('empty-state').classList.add('gone');
 }
 
 // ═══════════════════════════════════════════════════════════════
 // EXPORT
 // ═══════════════════════════════════════════════════════════════
-function exportStory(format) {
-  const all = S.clusters.flatMap(c => c.scenes.filter(s=>s.status==='accepted').map(s=>({...s,cl:c.label})));
-  if (!all.length) { toast('No accepted scenes to export yet.'); return; }
-
-  if (format === 'txt') {
-    let out = `${S.project?.title || 'Narrative'}\n${'—'.repeat(40)}\n\n`;
-    let lastCl = null;
-    all.forEach(s => {
-      if (s.cl !== lastCl) { out += `\n\n${s.cl.toUpperCase()}\n\n`; lastCl=s.cl; }
-      out += s.prose + '\n\n';
-    });
-    download(out, 'text/plain', (S.project?.title||'narrative').toLowerCase().replace(/\s+/g,'-')+'-draft.txt');
-  } else {
-    const paras = all.map(s => {
-      const pp = s.prose.split('\n').filter(p=>p.trim()).map(p=>`<p>${p}</p>`).join('');
-      return `<section><h2>${s.cl}</h2>${pp}</section>`;
-    }).join('');
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${S.project?.title||'Draft'}</title><style>body{font-family:'Georgia',serif;font-size:13pt;line-height:2;max-width:640px;margin:80px auto;color:#1c1917}h2{font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;color:#a8a29e;margin:60px 0 24px}p{margin-bottom:1.2em}</style></head><body>${paras}</body></html>`;
-    download(html, 'text/html', (S.project?.title||'narrative').toLowerCase().replace(/\s+/g,'-')+'-draft.html');
-  }
-  toast('Exported.');
-}
-
-function download(content, type, filename) {
-  const a = Object.assign(document.createElement('a'), {
-    href: URL.createObjectURL(new Blob([content],{type})),
-    download: filename
-  });
+function exportStory() {
+  const all = S.clusters.flatMap(c=>c.scenes.filter(s=>s.status==='accepted').map(s=>({...s,cl:c.label})));
+  if (!all.length) { toast('No accepted scenes to export.'); return; }
+  const title = S.project?.title||'Narrative';
+  let out = `${title}\n${'—'.repeat(50)}\n\n`;
+  let lastCl=null;
+  all.forEach(s=>{ if(s.cl!==lastCl){out+=`\n\n${s.cl.toUpperCase()}\n\n`;lastCl=s.cl;} out+=s.prose+'\n\n'; });
+  const a = Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([out],{type:'text/plain'})),download:title.toLowerCase().replace(/\s+/g,'-')+'-draft.txt'});
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  toast('Exported as text file', true);
 }
 
 // ═══════════════════════════════════════════════════════════════
-// EVENT BINDINGS
+// READING MODE
+// ═══════════════════════════════════════════════════════════════
+function enterReading() {
+  const all = S.clusters.flatMap(c=>c.scenes.filter(s=>s.status==='accepted').map(s=>({...s,cl:c.label})));
+  if (!all.length) { toast('No accepted scenes to read yet.'); return; }
+  $('rm-title').textContent = S.project?.title||'Untitled';
+  let lastCl=null, html='';
+  all.forEach(s=>{
+    if(s.cl!==lastCl){html+=`<div class="rm-cluster"><div class="rm-clbl">${s.cl}</div>`;lastCl=s.cl;}
+    html+=`<div class="rm-prose">${s.prose.split('\n').filter(p=>p.trim()).map(p=>`<p>${p}</p>`).join('')}</div></div>`;
+  });
+  $('rm-content').innerHTML=html;
+  document.body.classList.add('reading');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STATS
+// ═══════════════════════════════════════════════════════════════
+function updateStats() {
+  const words = S.clusters.reduce((s,c)=>s+(c.wordCount||0),0);
+  const scenes = S.clusters.flatMap(c=>c.scenes.filter(s=>s.status==='accepted')).length;
+  const done = S.clusters.filter(c=>c.status==='accepted').length;
+  $('sb-words').textContent = words.toLocaleString();
+  $('sb-scenes').textContent = scenes;
+  $('sb-prog').textContent = `${done} / ${S.clusters.length}`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PARSE FLOW
+// ═══════════════════════════════════════════════════════════════
+async function startParse(text, preloaded=null) {
+  $('parse-ov').classList.add('on');
+  const stream = $('po-stream');
+  const bar = $('po-bar');
+  stream.innerHTML='';
+  const steps = [
+    ['Reading outline','characters, events, structure'],
+    ['Extracting characters','psychology, wants, fears, contradictions'],
+    ['Mapping turning points','tension profile, arc signals'],
+    ['Finding open threads','what is implied but unresolved'],
+    ['Building narrative model','intelligence layer ready'],
+  ];
+  const parsePromise = preloaded ? Promise.resolve(preloaded) : deepParse(text);
+  for (let i=0;i<steps.length;i++) {
+    bar.style.width=Math.round((i/steps.length)*90)+'%';
+    const row=document.createElement('div');
+    row.className='po-finding'; row.style.animationDelay='0s';
+    row.innerHTML=`<span class="po-key">${steps[i][0]}</span> <span class="po-val">${steps[i][1]}</span>`;
+    stream.appendChild(row);
+    await sleep(preloaded?180:420);
+  }
+  const parsed = await parsePromise;
+  bar.style.width='100%';
+  await sleep(300);
+  if (parsed.characters?.length) {
+    addFinding('Found',`${parsed.characters.length} characters — ${parsed.characters.slice(0,2).map(c=>c.name).join(', ')}${parsed.characters.length>2?'…':''}`);
+    await sleep(180);
+  }
+  if (parsed.themes?.length) { addFinding('Themes',parsed.themes.slice(0,4).join(', ')); await sleep(160); }
+  if (parsed.openThreads?.length) { addFinding('Threads',`${parsed.openThreads.length} identified`); await sleep(160); }
+  if (parsed.subtextGaps?.length) { addFinding('Gaps',`${parsed.subtextGaps.length} unresolved narrative gaps`); await sleep(160); }
+  await sleep(400);
+  $('parse-ov').classList.remove('on');
+  showConfirm(parsed);
+}
+
+function addFinding(key,val) {
+  const row=document.createElement('div');
+  row.className='po-finding'; row.style.animationDelay='0s';
+  row.innerHTML=`<span class="po-key">${key}</span> <span class="po-val">${val}</span>`;
+  $('po-stream').appendChild(row);
+}
+
+function showConfirm(parsed) {
+  $('confirm-ov').classList.add('on');
+  $('co-story-title').textContent = parsed.title||'Your story';
+  $('co-genre').value = parsed.genre||'';
+  $('co-tone').value = parsed.tone||'';
+  $('co-pov').value = parsed.pov||'';
+  $('co-premise').value = parsed.premise||'';
+  $('co-ending').value = parsed.ending||'';
+  S.parsedData = parsed;
+
+  let ext='';
+  if (parsed.characters?.length) {
+    ext+=`<div class="co-ext-row"><span class="co-ext-key">People</span>${parsed.characters.slice(0,5).map(c=>`<span class="co-ext-tag ${c.confidence==='high'?'hi':''}">${c.name}</span>`).join('')}</div>`;
+  }
+  if (parsed.themes?.length) {
+    ext+=`<div class="co-ext-row"><span class="co-ext-key">Themes</span>${parsed.themes.slice(0,5).map(t=>`<span class="co-ext-tag">${t}</span>`).join('')}</div>`;
+  }
+  if (parsed.openThreads?.length) {
+    ext+=`<div class="co-ext-row"><span class="co-ext-key">Threads</span>${parsed.openThreads.slice(0,3).map(t=>`<span class="co-ext-tag">${t.substring(0,40)}${t.length>40?'…':''}</span>`).join('')}</div>`;
+  }
+  if (parsed.subtextGaps?.length) {
+    ext+=`<div class="co-ext-row"><span class="co-ext-key">Gaps</span>${parsed.subtextGaps.slice(0,2).map(g=>`<span class="co-ext-tag" style="border-color:rgba(91,79,207,.3)">${g.substring(0,50)}${g.length>50?'…':''}</span>`).join('')}</div>`;
+  }
+  $('co-extracted').innerHTML = ext;
+}
+
+function beginWriting() {
+  const parsed = S.parsedData;
+  S.project = {
+    title: $('co-story-title').textContent||parsed?.title||'Untitled',
+    genre: $('co-genre').value, tone: $('co-tone').value,
+    pov: $('co-pov').value, premise: $('co-premise').value,
+  };
+  S.ending = $('co-ending').value;
+  S.characters = parsed?.characters||[];
+  S.themes = [...(parsed?.themes||[]),...(parsed?.motifs||[])];
+  S.threads = parsed?.openThreads||[];
+
+  const arc = document.querySelector('.arc-pill.on')?.dataset.arc||'3act';
+  initArc(arc, parsed);
+
+  $('confirm-ov').classList.remove('on');
+  $('welcome').classList.add('off');
+  $('tb-title').textContent = S.project.title;
+
+  renderSidebar();
+  updateClusterBar();
+  showEmpty();
+  updateCrumb();
+  updateStats();
+  drawArc();
+  renderPanel();
+  persist();
+  toast('Story model ready — begin writing', true);
+
+  // Show first cluster transition hint
+  setTimeout(()=>checkFragReminder(), 800);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AUTOSAVE
+// ═══════════════════════════════════════════════════════════════
+let saveTimeout=null;
+function scheduleAutosave() {
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(()=>{
+    const ms=$('manuscript');
+    const prose=ms.innerText.trim();
+    if (prose) { dot('saving'); setTimeout(()=>dot('saved'),600); }
+  },30000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════
+const $=id=>document.getElementById(id);
+const $$=sel=>[...document.querySelectorAll(sel)];
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function dot(s){const d=$('save-dot');d.className=s;if(s==='saved')setTimeout(()=>d.className='',2000)}
+function toast(msg,ok=false){const t=$('toasts');const el=document.createElement('div');el.className='toast'+(ok?' ok':'');el.textContent=msg;t.appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300)},2800)}
+
+// ═══════════════════════════════════════════════════════════════
+// BINDINGS
 // ═══════════════════════════════════════════════════════════════
 function bind() {
   // Welcome
-  document.getElementById('btn-analyse').addEventListener('click', () => {
-    const t = document.getElementById('outline-input').value.trim();
-    if (!t) { toast('Paste your story or outline first.'); return; }
-    startParseFlow(t);
-  });
-  document.getElementById('btn-demo').addEventListener('click', () => {
-    document.getElementById('outline-input').value = DEMO.outline;
-    S.parsedData = { title:DEMO.title, genre:DEMO.genre, tone:DEMO.tone, pov:DEMO.pov, premise:DEMO.premise, characters:DEMO.characters, themes:DEMO.themes, openThreads:DEMO.threads };
-    startParseFlow(DEMO.outline);
-  });
-  document.getElementById('btn-begin').addEventListener('click', beginWriting);
-  document.getElementById('btn-back').addEventListener('click', () => {
-    document.getElementById('confirm-screen').classList.remove('active');
-    document.getElementById('welcome-inner').classList.remove('hidden');
-  });
+  $('btn-analyse').onclick=()=>{const t=$('outline-input').value.trim();if(!t){toast('Paste your story first.');return;}startParse(t);};
+  $('btn-demo').onclick=()=>startParse(DEMO.outline,{title:DEMO.title,genre:DEMO.genre,tone:DEMO.tone,pov:DEMO.pov,premise:DEMO.premise,ending:DEMO.ending,characters:DEMO.characters,themes:DEMO.themes,motifs:[],openThreads:DEMO.threads,plotEvents:[],emotionalBeats:[],tensionProfile:[],subtextGaps:['The exact nature of the Whitmore decision is never specified','Daniel\'s current situation is implied but not stated'],voiceNotes:null});
+  $('btn-begin').onclick=beginWriting;
+  $('btn-back-co').onclick=()=>{$('confirm-ov').classList.remove('on');};
+  $$('.arc-pill').forEach(p=>p.onclick=()=>{$$('.arc-pill').forEach(x=>x.classList.remove('on'));p.classList.add('on');});
 
-  // Arc pills
-  document.querySelectorAll('.arc-pill').forEach(p => {
-    p.addEventListener('click', () => {
-      document.querySelectorAll('.arc-pill').forEach(x=>x.classList.remove('selected'));
-      p.classList.add('selected');
-    });
-  });
+  // Rail & topbar toggles
+  const sbToggle=()=>{const s=$('shell');s.classList.toggle('sb-off');$('rail-sb').classList.toggle('on');};
+  const panelToggle=()=>{const s=$('shell');s.classList.toggle('panel-off');['btn-panel-tb','rail-intel'].forEach(id=>{const el=$(id);if(el)el.classList.toggle('on');});};
+  $('rail-sb').onclick=sbToggle;
+  $('rail-intel').onclick=panelToggle;
+  $('btn-panel-tb').onclick=panelToggle;
+  $('rail-frags').onclick=()=>{S.panelTab='frags';$$('.ptab').forEach(t=>{t.classList.toggle('on',t.dataset.tab==='frags');});renderPanel();if($('shell').classList.contains('panel-off'))panelToggle();};
+  $('rail-settings2').onclick=()=>$('settings-ov').classList.add('on');
+  $('btn-settings-tb').onclick=()=>$('settings-ov').classList.add('on');
+  $('btn-map-tb').onclick=()=>toast('Story map — open Intelligence panel and switch to Graph view');
+  $('btn-export-tb').onclick=exportStory;
+  $('btn-read').onclick=enterReading;
+  $('rm-exit').onclick=()=>document.body.classList.remove('reading');
 
-  // Rail
-  document.getElementById('rail-structure').addEventListener('click', () => {
-    const open = document.getElementById('app').classList.toggle('sidebar-open');
-    document.getElementById('rail-structure').classList.toggle('active', open);
-    S.sidebarOpen = open;
-  });
-  document.getElementById('rail-intel-sm').addEventListener('click', () => toggleIntel());
-  document.getElementById('rail-settings').addEventListener('click', () => {
-    const m = document.getElementById('settings-modal');
-    m.style.display = 'flex';
-  });
-
-  // Topbar
-  document.getElementById('btn-intel').addEventListener('click', () => toggleIntel());
-  document.getElementById('btn-focus').addEventListener('click', () => toggleFocus());
-  document.getElementById('btn-map').addEventListener('click', () => {
-    document.getElementById('intel-map').classList.add('open');
-    setTimeout(renderMapModal, 50);
-  });
-  document.getElementById('btn-export-tb').addEventListener('click', () => exportStory('txt'));
-
-  // Intelligence panel view toggle
-  document.getElementById('vbtn-list').addEventListener('click', () => {
-    document.getElementById('vbtn-list').classList.add('active');
-    document.getElementById('vbtn-graph').classList.remove('active');
-    document.getElementById('list-view').classList.add('active');
-    document.getElementById('graph-view').classList.remove('active');
-  });
-  document.getElementById('vbtn-graph').addEventListener('click', () => {
-    document.getElementById('vbtn-graph').classList.add('active');
-    document.getElementById('vbtn-list').classList.remove('active');
-    document.getElementById('graph-view').classList.add('active');
-    document.getElementById('list-view').classList.remove('active');
-    renderMiniGraph();
-  });
-
-  // Map close
-  document.getElementById('btn-map-close').addEventListener('click', () => {
-    document.getElementById('intel-map').classList.remove('open');
-  });
-  document.getElementById('intel-map').addEventListener('click', e => {
-    if (e.target === document.getElementById('intel-map')) document.getElementById('intel-map').classList.remove('open');
-  });
-
-  // Action bar
-  document.getElementById('btn-accept').addEventListener('click', acceptScene);
-  document.getElementById('btn-regen').addEventListener('click', () => {
-    document.getElementById('manuscript').innerHTML = '';
-    showActionBar(false);
-    showGenerating(false);
-    hideEmptyState();
-    generateScene();
-  });
-  document.getElementById('btn-steer').addEventListener('click', () => {
-    document.getElementById('normal-actions').style.display = 'none';
-    document.getElementById('steer-input-row').classList.add('active');
-    document.getElementById('steer-input').focus();
-  });
-  document.getElementById('btn-steer-cancel').addEventListener('click', () => {
-    document.getElementById('steer-input-row').classList.remove('active');
-    document.getElementById('normal-actions').style.display = '';
-  });
-  document.getElementById('steer-submit').addEventListener('click', () => {
-    const dir = document.getElementById('steer-input').value.trim();
-    document.getElementById('steer-input-row').classList.remove('active');
-    document.getElementById('normal-actions').style.display = '';
-    document.getElementById('steer-input').value = '';
-    document.getElementById('manuscript').innerHTML = '';
-    showActionBar(false);
-    generateScene(dir);
-  });
-  document.getElementById('steer-input').addEventListener('keydown', e => {
-    if (e.key==='Enter') document.getElementById('steer-submit').click();
-    if (e.key==='Escape') document.getElementById('btn-steer-cancel').click();
-  });
-
-  // Empty state generate link
-  document.getElementById('es-generate').addEventListener('click', () => generateScene());
+  // Panel tabs
+  $$('.ptab').forEach(tab=>{ tab.onclick=()=>{ $$('.ptab').forEach(t=>t.classList.remove('on')); tab.classList.add('on'); S.panelTab=tab.dataset.tab; renderPanel(); }; });
 
   // Settings
-  document.getElementById('settings-cancel').addEventListener('click', () => {
-    document.getElementById('settings-modal').style.display = 'none';
+  $('set-cancel').onclick=()=>$('settings-ov').classList.remove('on');
+  $('set-save').onclick=()=>{
+    const k=$('api-key-input').value.trim();
+    S.apiKey=k||null;
+    if(k)localStorage.setItem('nv3_k',btoa(k));else localStorage.removeItem('nv3_k');
+    $('settings-ov').classList.remove('on');
+    toast(k?'API key saved — AI generation enabled.':'Running in demo mode.');
+  };
+
+  // Gen bar
+  $$('.mood-opt').forEach(opt=>{ opt.onclick=()=>{ $$('.mood-opt').forEach(o=>o.classList.remove('selected')); opt.classList.add('selected'); S.selectedMood=opt.dataset.mood; }; });
+  $('wc-slider').oninput=e=>{ S.wordCount=parseInt(e.target.value); $('wc-val').textContent=e.target.value; };
+  $('heat-slider').oninput=e=>S.heat=parseInt(e.target.value);
+  $('vlock-btn').onclick=()=>{ S.voiceLock=!S.voiceLock; $('vlock-btn').classList.toggle('on',S.voiceLock); toast(S.voiceLock?'Voice lock on — AI will match your prose style.':'Voice lock off.'); };
+  $('open-dir').oninput=e=>S.openDir=e.target.value;
+  $('gen-btn').onclick=generateScene;
+  $('voice-btn').onclick=toggleVoice;
+  $('es-gen-link').onclick=generateScene;
+
+  // Accept — Cmd+Shift+A
+  // (available via keyboard shortcut)
+
+  // Palette
+  $('manuscript').addEventListener('mouseup',()=>{
+    const sel=window.getSelection();
+    if (!sel||sel.isCollapsed||sel.toString().trim().length<2){$('palette').classList.remove('show');return;}
+    const range=sel.getRangeAt(0);
+    showPalette(sel.toString().trim(),range);
   });
-  document.getElementById('settings-save').addEventListener('click', () => {
-    const key = document.getElementById('api-key-input').value.trim();
-    S.apiKey = key || null;
-    if (key) localStorage.setItem('nv2_api_key','enc:'+btoa(key));
-    else localStorage.removeItem('nv2_api_key');
-    document.getElementById('settings-modal').style.display = 'none';
-    toast(key ? 'API key saved — AI generation enabled.' : 'Running in demo mode.');
+  $('manuscript').addEventListener('dblclick',()=>{
+    setTimeout(()=>{
+      const sel=window.getSelection();
+      if(sel&&!sel.isCollapsed&&sel.toString().trim().length>1){
+        const range=sel.getRangeAt(0);
+        showPalette(sel.toString().trim(),range);
+      }
+    },10);
+  });
+  document.addEventListener('mousedown',e=>{ if(!$('palette').contains(e.target)&&e.target!==$('manuscript'))$('palette').classList.remove('show'); });
+  $$('.pal-mode').forEach(btn=>{ btn.onclick=()=>{ $$('.pal-mode').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); S.palMode=btn.dataset.mode; if(S.palSelection)fetchPaletteOptions(S.palSelection); }; });
+  $('pal-custom-go').onclick=applyCustomPalette;
+  $('pal-dir').addEventListener('keydown',e=>{ if(e.key==='Enter')applyCustomPalette(); });
+
+  // Manuscript typing — clear empty state
+  $('manuscript').addEventListener('input',()=>{
+    if($('manuscript').innerText.trim())hideEmpty();
+    scheduleAutosave();
+    dot('saving');
+    clearTimeout(dot._t);
+    dot._t=setTimeout(()=>dot('saved'),3000);
   });
 
-  // Keyboard shortcuts
-  document.addEventListener('keydown', e => {
-    const mod = e.metaKey || e.ctrlKey;
-    if (mod && e.key==='\\') { e.preventDefault(); document.getElementById('rail-structure').click(); }
-    if (mod && e.key==='i')  { e.preventDefault(); toggleIntel(); }
-    if (mod && e.shiftKey && e.key==='F') { e.preventDefault(); toggleFocus(); }
-    if (mod && e.key==='Enter') { e.preventDefault(); generateScene(); }
-    if (e.key==='Escape') {
-      document.getElementById('intel-map').classList.remove('open');
-      if (S.focusMode) toggleFocus();
-    }
+  // Keyboard
+  document.addEventListener('keydown',e=>{
+    const mod=e.metaKey||e.ctrlKey;
+    if(mod&&e.key==='\\'){e.preventDefault();sbToggle();}
+    if(mod&&e.key==='i'){e.preventDefault();panelToggle();}
+    if(mod&&e.key==='Enter'){e.preventDefault();if($('welcome').classList.contains('off'))generateScene();else $('btn-analyse').click();}
+    if(mod&&e.shiftKey&&e.key==='A'){e.preventDefault();acceptCurrentScene();}
+    if(mod&&e.shiftKey&&e.key==='R'){e.preventDefault();enterReading();}
+    if(e.key==='Escape'){$('palette').classList.remove('show');$('settings-ov').classList.remove('on');if(document.body.classList.contains('reading'))document.body.classList.remove('reading');}
   });
 
   // Title edit
-  const title = document.getElementById('tb-title');
-  title.addEventListener('blur', () => {
-    if (S.project) { S.project.title = title.textContent.trim(); save(); }
-  });
-  title.addEventListener('keydown', e => { if (e.key==='Enter') { e.preventDefault(); title.blur(); }});
-}
+  $('tb-title').addEventListener('blur',()=>{ if(S.project){S.project.title=$('tb-title').textContent.trim();persist();} });
+  $('tb-title').addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();$('tb-title').blur();} });
 
-function toggleIntel() {
-  S.intelOpen = !S.intelOpen;
-  document.getElementById('intel-panel').classList.toggle('open', S.intelOpen);
-  document.getElementById('btn-intel').classList.toggle('active', S.intelOpen);
-  document.getElementById('rail-intel-sm').classList.toggle('active', S.intelOpen);
-  if (S.intelOpen) { updateNarrativeModel().then(renderIntelPanel); }
-}
+  // Arc strip click is handled inside drawArc()
 
-function toggleFocus() {
-  S.focusMode = !S.focusMode;
-  document.body.classList.toggle('focus-mode', S.focusMode);
-  document.getElementById('btn-focus').classList.toggle('active', S.focusMode);
+  // Window resize
+  window.addEventListener('resize',()=>{ drawArc(); });
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2251,23 +1958,23 @@ function init() {
   bind();
 
   // Restore API key
-  const stored = localStorage.getItem('nv2_api_key');
-  if (stored?.startsWith('enc:')) {
-    try { S.apiKey = atob(stored.slice(4)); document.getElementById('api-key-input').value = S.apiKey; } catch(e){}
-  }
+  const stored=localStorage.getItem('nv3_k');
+  if(stored){try{S.apiKey=atob(stored);$('api-key-input').value=S.apiKey;}catch(e){}}
 
   // Restore session
-  if (loadSaved() && S.project) {
-    document.getElementById('welcome').classList.add('hidden');
-    document.getElementById('tb-title').textContent = S.project.title || 'Untitled';
-    updateSidebar();
+  if(restore()&&S.project){
+    $('welcome').classList.add('off');
+    $('tb-title').textContent=S.project.title||'Untitled';
+    renderSidebar();
     updateClusterBar();
-    renderAcceptedScenes();
-    showEmptyState();
+    // Rebuild accepted scenes display
+    S.clusters.forEach(c=>{ c.scenes.filter(s=>s.status==='accepted').forEach(sc=>{ const el=document.createElement('div'); el.className='acc-scene'; el.innerHTML=`<div class="acc-lbl">${c.label}</div><div class="acc-prose">${sc.prose.split('\n').filter(p=>p.trim()).map(p=>`<p>${p}</p>`).join('')}</div>`; $('accepted-list').appendChild(el); }); });
+    showEmpty();
     updateStats();
-    updateTopbarCrumb();
-    updateNarrativeModel().then(() => { if (S.intelOpen) renderIntelPanel(); });
-    toast('Session restored.');
+    updateCrumb();
+    drawArc();
+    renderPanel();
+    toast('Session restored');
   }
 }
 
