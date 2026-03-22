@@ -5621,63 +5621,157 @@ $('po-cancel')?.addEventListener('click', () => {
 // DEEP PARSE — EXECUTION MODE
 // ─────────────────────────────────────────────
 async function deepParseOutline(text) {
-  const system = `You are a narrative analysis engine performing deep literary extraction.
+  const system = `You are a literary intelligence performing deep story extraction.
 
-The input may be in any format: free-form prose, structured outline with ALL-CAPS headings, bulleted lists, Act/chapter breakdowns, or a mix. Handle all formats.
+Your task is to read this document — whatever format it takes — and extract a complete psychological and structural model of the story.
 
-CRITICAL: Characters are often written as ALL-CAPS NAME blocks (e.g. ROBERT, GRAHAM, CLAUDE) with description lines beneath them. Extract ALL named characters you find, including those written this way.
+The document may be any of these or a mix:
+- Free-form prose synopsis or treatment
+- Structured outline with headers and bullets  
+- Character bibles or notes
+- Scene breakdowns
+- Stream-of-consciousness ideas
+- A mix of all of the above
 
-Return ONLY valid JSON (no markdown, no backticks, no explanation):
+FORMAT DOES NOT MATTER. Read it as a writer would. Extract what is implied as much as what is stated.
+
+═══ CHARACTER EXTRACTION RULES ═══
+
+Characters may appear in any of these ways:
+- ALL-CAPS headers followed by bullet points (ROBERT, GRAHAM)
+- Named and described in prose ("Robert is a corporate lawyer who...")
+- Implied through action and relationship ("where he filters, Graham expands")
+- Referenced obliquely ("the whistleblower he betrayed")
+
+For EVERY named character, extract the following. Where not explicitly stated, INFER from context and flag as inferred:
+
+1. want — what they consciously desire or are reaching for
+2. fear — what they are protecting themselves from (often the OPPOSITE of their stated want)
+3. belief — the false or limiting belief that governs their behaviour (the lie they live by)
+4. contradiction — the gap between who they perform and who they are
+5. wound — the specific past event that created the belief
+6. arc — how they change (or fail to change) across the story
+7. represents — what this character embodies thematically in the story
+8. storyFunction — their structural role (protagonist, mirror, witness, catalyst, absent presence)
+
+HOW TO READ PROSE FOR PSYCHOLOGY:
+- "He does not know how to survive that" = fear of being seen / vulnerability
+- "love must be negotiated" = false belief: love is transactional
+- "carefully managed detachment" = defense mechanism = contradiction with desire for connection
+- "He receives selectively" = fear of intimacy / wound around trust
+- "speaks with clarity that disarms" = this character represents authenticity/presence
+- "Claude watches. He sees the imbalance" = role: structural witness
+- "exposed a whistleblower to protect his father" = wound, source of belief system
+- Narrator describing HOW someone moves through the world = their psychology
+
+Characters introduced only in prose (no header block) are STILL full characters. Extract them.
+Characters mentioned briefly (Kiran, the father) are IMPLIED characters — extract what you can and flag confidence as low.
+
+═══ STRUCTURE EXTRACTION RULES ═══
+
+Use Acts/chapters/sections exactly as written. Do not impose a different structure.
+If the document is pure prose with no headers, infer the structural movements from the narrative logic.
+Each movement needs: name, dramatic function, emotional register, summary, key events.
+
+═══ CONFIDENCE RULES ═══
+- high: directly stated with specificity
+- medium: clearly implied, inferred with confidence  
+- low: briefly mentioned, inferred with low certainty, needs writer review
+
+═══ OUTPUT FORMAT ═══
+Return ONLY valid JSON. No markdown. No backticks. No preamble. No explanation.
+
 {
-  "title": "string — extract from first line or heading, or null",
-  "genre": "string — detect or infer",
-  "tone": "string — detect or infer",
+  "title": "string — from first line, heading, or null if unclear",
+  "genre": "string — detect or infer from tone and content",
+  "tone": "string — the specific emotional register (e.g. 'restrained, melancholic' not just 'literary')",
   "pov": "string — detect or infer",
-  "premise": "string — 1-2 sentences, the essential story. Extract from CORE PREMISE section if present.",
-  "ending": "string or null — the story destination. Look for FINAL REALIZATION, ending tone sections, or infer.",
-  "centralConflict": "string",
-  "themes": ["array of 4-8 specific themes — extract from THEMATIC CORE section if present, supplement with inference"],
-  "motifs": ["array — look for RECURRING MOTIF sections and imagery patterns"],
+  "premise": "string — 2-3 sentences maximum. The essential story: who, what happens, what it costs",
+  "ending": "string — the story's destination, as specifically as possible. Quote if stated.",
+  "centralConflict": "string — the core dramatic tension in one precise sentence",
+  "themes": ["4-8 specific themes as they exist in THIS story — not generic categories"],
+  "motifs": ["recurring images, objects, phrases, or ideas — fire, glass, silence, etc."],
   "characters": [
     {
-      "name": "string — use proper case (Robert not ROBERT)",
-      "role": "Protagonist|Antagonist|Ally|Foil|Supporting",
-      "want": "string — conscious desire, extract from character block",
-      "fear": "string — core wound or fear, extract from character block",
-      "belief": "string — false belief or worldview, look for Core belief/worldview lines",
-      "contradiction": "string — the gap between public and private self",
-      "arc": "string — extract from Arc: lines in character blocks",
-      "confidence": "high|medium|low"
+      "name": "string — proper case always",
+      "role": "Protagonist | Antagonist | Ally | Foil | Witness | Catalyst | Absent presence | Supporting",
+      "want": "string — conscious desire",
+      "fear": "string — what they are protecting themselves from",
+      "belief": "string — the false or limiting belief governing their behaviour",
+      "contradiction": "string — the gap between performance and reality",
+      "wound": "string — the specific past event that created the belief",
+      "arc": "string — how they change or fail to change",
+      "represents": "string — what they embody thematically",
+      "storyFunction": "string — their structural role in precise terms",
+      "confidence": "high | medium | low",
+      "isImplied": false
     }
   ],
-  "openThreads": ["array — unresolved questions, tensions from End of Act summaries"],
+  "relationships": [
+    {
+      "pair": ["name1", "name2"],
+      "dynamic": "string — the specific nature of this relationship",
+      "tensionType": "string — what kind of tension (power, grief, erotic, protective, etc.)",
+      "unsaid": "string — what neither character will name directly",
+      "powerBalance": "string — who holds power and how"
+    }
+  ],
+  "openThreads": ["unresolved questions the story must answer"],
+  "storyGaps": [
+    {
+      "type": "character | structure | theme | ending",
+      "severity": "missing | weak | unclear",
+      "message": "string — specific description of what needs attention"
+    }
+  ],
   "plotEvents": [
     {
-      "event": "string — extract bullet points from Act sections",
-      "position": "early|mid|late",
-      "weight": "pivotal|major|supporting"
+      "event": "string — what happens",
+      "position": "early | mid | late",
+      "weight": "pivotal | major | supporting",
+      "characters": ["names involved"]
     }
   ],
   "movementSuggestions": [
     {
-      "name": "string — use Act names directly (FORMATION, EXPANSION, etc.)",
-      "fn": "string — from Focus: lines in each Act",
-      "emotional": "string — emotional register of this act",
-      "summary": "string — 2-3 sentences from act content",
-      "keyEvents": ["2-4 key bullet points from this act"]
+      "name": "string — use the document's own naming",
+      "fn": "string — dramatic function in one precise phrase",
+      "emotional": "string — the emotional register",
+      "summary": "string — 2-3 sentences from the document's content",
+      "keyEvents": ["2-4 key events from this movement"],
+      "endState": "string — where the story stands at the end of this movement"
     }
   ],
-  "voiceNotes": "string or null"
+  "voiceNotes": "string or null — observations about the writer's voice, style, or approach"
 }
 
-IMPORTANT: If the document has ACT sections (ACT 1 — FORMATION, etc.) use those directly as movementSuggestions — do not invent a new structure.
-Extract psychology from character blocks, not just surface facts.
-confidence: high = fully described with want/fear/arc, medium = partially described, low = name only.`;
+Do not omit fields. Use null or empty array rather than omitting.
+Infer confidently. Flag uncertainty with confidence level. Do not leave psychology blank when the prose implies it.`;
 
   const raw = await callClaude(system,
-    `Extract everything from this story document:\n\n${text}`,
-    3200);
-  return JSON.parse(raw.replace(/```json|```/g, '').trim());
+    `Read this story document and extract everything:
+
+${text}`,
+    4000);
+
+  // Parse and post-process
+  const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+
+  // Ensure isImplied is set correctly
+  if(parsed.characters) {
+    parsed.characters = parsed.characters.map(c => ({
+      ...c,
+      isImplied: c.isImplied || c.confidence === 'low',
+      gaps: [],
+    }));
+  }
+
+  // Merge relationships into state if not already there
+  if(parsed.relationships && !S._extractedRelationships) {
+    S._extractedRelationships = parsed.relationships;
+  }
+
+  return parsed;
 }
 
 // ─────────────────────────────────────────────
@@ -5794,6 +5888,18 @@ function populateConfirmScreen(parsed) {
 
   $('co-title').textContent = parsed.title || 'Your story';
   $('co-genre').textContent = [parsed.genre, parsed.tone, parsed.pov].filter(Boolean).join(' · ');
+
+  // Show voice notes if AI detected them
+  if(parsed.voiceNotes) {
+    let vn = $('co-voice-notes');
+    if(!vn) {
+      vn = make('div');
+      vn.id = 'co-voice-notes';
+      vn.style.cssText = 'margin-bottom:14px;padding:9px 12px;background:var(--paper-2);border-radius:6px;font-size:.76rem;color:var(--ink-3);line-height:1.55;font-style:italic;border-left:3px solid var(--border-2);';
+      $('co-title')?.after(vn);
+    }
+    vn.innerHTML = `<strong style="font-style:normal;color:var(--ink-2)">Voice note:</strong> ${parsed.voiceNotes}`;
+  }
 
   const premiseEl = $('co-premise');
   const endingEl  = $('co-ending');
@@ -5962,12 +6068,27 @@ function applyParsedStory(parsed, arcType) {
     arcStates:     {},
   }));
 
-  // Relationships from extraction engine
-  S.relationships = (parsed.relationships || []).map(r => ({
-    ...r,
-    // Remap movement state keys to match our arc ids
-    movementStates: remapRelMovements(r.movementStates, parsed.movementSuggestions),
-  }));
+  // Relationships — merge from extraction engine + AI parse
+  const aiRels = parsed.relationships || S._extractedRelationships || [];
+  S.relationships = aiRels.map((r, i) => {
+    // Handle both old format (movementStates) and new format (dynamic/tensionType/etc)
+    const isNewFormat = r.dynamic !== undefined;
+    if(isNewFormat) {
+      return {
+        id: `rel_${i}`,
+        pair: r.pair || [],
+        tensionLevel: r.tensionType?.match(/power|betray|grief|loss/) ? 'high' :
+                      r.tensionType?.match(/erotic|sexual|ambiguous/) ? 'high' :
+                      r.tensionType?.match(/protective|loyal|warm/) ? 'latent' : 'mid',
+        state: r.dynamic || '',
+        unsaid: r.unsaid || '',
+        power: r.powerBalance || '',
+        movementStates: {},
+      };
+    }
+    return { ...r, movementStates: remapRelMovements(r.movementStates, parsed.movementSuggestions) };
+  });
+  S._extractedRelationships = null; // clear temp storage
 
   // Threads
   S.threads = (parsed.openThreads || []).map(t => ({
@@ -6055,52 +6176,65 @@ async function runImport(text) {
 
     let parsed;
     if(S.apiKey) {
-      // Stream findings as they would logically arrive
-      await streamFinding('Analysing', 'Story logic, characters, themes…', 300);
-      setParseProgress(30, 'Identifying characters and psychology…');
+      await streamFinding('Reading', `${text.split(/\s+/).length.toLocaleString()} words — any format`, 200);
+      setParseProgress(15, 'Reading your story…');
+      await streamFinding('Mode', 'AI literary extraction — reading as a writer would', 300);
+      setParseProgress(30, 'Extracting character psychology…');
 
       parsed = await deepParseOutline(text);
 
-      // Stream results progressively
-      if(parsed.title)   await streamFinding('Title',    parsed.title,   0);
-      if(parsed.genre)   await streamFinding('Genre',    parsed.genre,   120);
-      if(parsed.premise) await streamFinding('Premise',  parsed.premise.substring(0,80)+'…', 200);
-      setParseProgress(55, 'Mapping story arc…');
+      // Stream the good stuff — what the AI actually found
+      if(parseAborted) return;
+      if(parsed.title)   await streamFinding('Title',    parsed.title, 0);
+      if(parsed.genre)   await streamFinding('Genre',    [parsed.genre, parsed.tone].filter(Boolean).join(' · '), 120);
+      if(parsed.premise) await streamFinding('Premise',  parsed.premise.substring(0,90)+'…', 200);
+      setParseProgress(50, 'Characters and psychology…');
 
-      for(const c of (parsed.characters||[]).slice(0,3)) {
-        await streamFinding(c.role, c.name + (c.want ? ` — "${c.want}"` : ''), 180);
+      for(const c of (parsed.characters||[])) {
+        const label = c.isImplied ? `${c.name} (inferred)` : c.name;
+        const detail = c.want ? `${c.role} — ${c.want.substring(0,50)}` : c.role;
+        await streamFinding(label, detail, 160);
       }
-      setParseProgress(70, 'Building movement structure…');
+      setParseProgress(68, 'Relationships and dynamics…');
 
-      for(const t of (parsed.themes||[]).slice(0,3)) {
-        await streamFinding('Theme', t, 150);
+      for(const r of (parsed.relationships||[]).slice(0,3)) {
+        await streamFinding(r.pair.join(' ↔ '), r.dynamic?.substring(0,60)||'', 140);
       }
-      setParseProgress(85, 'Distributing story across movements…');
+      setParseProgress(80, 'Story structure…');
 
-      for(const sugg of (parsed.movementSuggestions||[]).slice(0,4)) {
-        await streamFinding('Movement', sugg.name + ' — ' + (sugg.fn||''), 200);
+      for(const sugg of (parsed.movementSuggestions||[])) {
+        await streamFinding(sugg.name, sugg.fn||'', 160);
       }
-      setParseProgress(100, 'Structure complete.');
-      await sleep(600);
+
+      if(parsed.storyGaps?.length) {
+        setParseProgress(92, `${parsed.storyGaps.length} gap${parsed.storyGaps.length!==1?'s':''} flagged for review…`);
+        await sleep(400);
+      }
+
+      setParseProgress(100, `Found ${(parsed.characters||[]).length} characters, ${(parsed.themes||[]).length} themes, ${(parsed.movementSuggestions||[]).length} movements.`);
+      await sleep(700);
 
     } else {
-      // Demo mode — stream fake findings
-      await streamFinding('Mode', 'Demo — add API key for live parsing', 200);
-      setParseProgress(20, 'Loading demo structure…');
+      // No API key — use the structural parser with honest messaging
+      await streamFinding('Mode', 'Structural extraction — add API key for full AI reading', 200);
+      setParseProgress(20, 'Parsing document structure…');
       await sleep(400);
       parsed = buildFallbackParse(text);
-      await streamFinding('Title',    parsed.title||'Story detected', 200);
-      await streamFinding('Genre',    parsed.genre, 200);
-      await streamFinding('Premise',  (parsed.premise||'').substring(0,80), 200);
-      setParseProgress(60, 'Building characters…');
-      await sleep(400);
-      for(const c of (parsed.characters||[]).slice(0,2)) {
-        await streamFinding('Character', c.name, 200);
+      if(parsed.title)  await streamFinding('Title',    parsed.title, 200);
+      if(parsed.genre)  await streamFinding('Genre',    parsed.genre, 200);
+      if(parsed.premise) await streamFinding('Premise', parsed.premise.substring(0,80), 200);
+      setParseProgress(55, 'Characters…');
+      await sleep(300);
+      for(const c of (parsed.characters||[])) {
+        await streamFinding(c.name, `${c.role}${c.isImplied?' (inferred)':''}`, 180);
       }
-      setParseProgress(90, 'Structuring movements…');
-      await sleep(400);
-      setParseProgress(100, 'Done.');
-      await sleep(400);
+      setParseProgress(80, 'Movements…');
+      await sleep(300);
+      for(const m of (parsed.movementSuggestions||[]).slice(0,3)) {
+        await streamFinding(m.name, m.fn||'', 160);
+      }
+      setParseProgress(100, 'Done — add API key for full psychological extraction.');
+      await sleep(500);
     }
 
     if(parseAborted) return;
