@@ -2101,6 +2101,131 @@ body.screenplay .eb-prose { font-family:var(--sans);font-size:14px;line-height:1
 .tb-btn.active { background:var(--paper-2); color:var(--ink); }
 
 /* ═══════════════════════════════════════════════════════════════
+   PATCH A — AI IMPORT PARSER
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Welcome screen — richer ── */
+.ws-inner { max-width:560px; text-align:center; }
+.ws-mode-choice {
+  display:grid; grid-template-columns:1fr 1fr; gap:10px;
+  margin-bottom:16px; text-align:left;
+}
+.ws-mode-card {
+  border:1.5px solid var(--border-2); border-radius:10px;
+  padding:16px 18px; cursor:pointer; transition:all 200ms var(--ease);
+  background:var(--paper-card);
+}
+.ws-mode-card:hover { border-color:var(--accent); background:var(--accent-3); transform:translateY(-1px); box-shadow:0 4px 16px rgba(28,25,23,.08); }
+.ws-mode-card.selected { border-color:var(--accent); background:var(--accent-3); }
+.ws-mode-icon { font-size:1.4rem; margin-bottom:7px; }
+.ws-mode-name { font-size:.88rem; font-weight:600; color:var(--ink); margin-bottom:3px; }
+.ws-mode-desc { font-size:.72rem; color:var(--ink-3); line-height:1.5; }
+
+/* Execution mode — import area */
+#import-area { display:none; text-align:left; }
+#import-area.show { display:block; }
+.import-label { font-size:.62rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-4); margin-bottom:8px; }
+#outline-input {
+  width:100%; resize:none;
+  font-family:var(--serif); font-size:.95rem; line-height:1.75;
+  color:var(--ink); min-height:130px;
+}
+.import-hint { font-size:.7rem; color:var(--ink-5); margin-top:7px; line-height:1.5; }
+
+/* Discovery mode */
+#discovery-area { display:none; text-align:left; }
+#discovery-area.show { display:block; }
+.disc-step { margin-bottom:14px; }
+.disc-step-label { font-size:.72rem; font-weight:600; color:var(--ink-2); margin-bottom:5px; display:flex; align-items:center; gap:6px; }
+.disc-step-num { width:18px; height:18px; border-radius:50%; background:var(--accent); color:#fff; font-size:.6rem; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.disc-input { width:100%; border:1.5px solid var(--border-2); border-radius:6px; padding:8px 11px; font-family:var(--serif); font-size:.9rem; line-height:1.6; color:var(--ink); background:var(--paper-card); resize:none; min-height:44px; transition:border-color 150ms; }
+.disc-input:focus { border-color:var(--accent); outline:none; }
+.disc-input::placeholder { color:var(--ink-5); font-style:italic; }
+
+/* Parse overlay — full screen streaming findings */
+#parse-overlay {
+  position:fixed; inset:0; z-index:400;
+  background:var(--paper); display:flex;
+  align-items:center; justify-content:center;
+  opacity:0; pointer-events:none;
+  transition:opacity 300ms;
+}
+#parse-overlay.on { opacity:1; pointer-events:all; }
+.po-inner { max-width:520px; width:100%; padding:0 24px; }
+.po-kicker {
+  font-size:.62rem; font-weight:700; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--accent); margin-bottom:10px;
+}
+.po-title {
+  font-family:var(--serif); font-size:2rem; font-weight:400;
+  color:var(--ink); margin-bottom:22px; line-height:1.2;
+  letter-spacing:-.02em;
+}
+.po-stream { min-height:140px; margin-bottom:24px; }
+.po-finding {
+  display:flex; gap:10px; align-items:baseline;
+  margin-bottom:6px; opacity:0; transform:translateY(4px);
+  animation:po-fade .35s var(--ease) forwards;
+}
+@keyframes po-fade { to { opacity:1; transform:none; } }
+.po-finding-key { font-size:.62rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-4); min-width:100px; flex-shrink:0; padding-top:2px; }
+.po-finding-val { font-family:var(--serif); font-size:.95rem; color:var(--ink); line-height:1.5; flex:1; }
+.po-bar-wrap { height:2px; background:var(--paper-3); border-radius:1px; overflow:hidden; margin-bottom:18px; }
+.po-bar-fill { height:100%; background:var(--accent); border-radius:1px; width:0; transition:width .5s var(--ease); }
+.po-status { font-size:.78rem; color:var(--ink-4); font-style:italic; }
+.po-cancel { font-size:.72rem; color:var(--ink-5); cursor:pointer; border-bottom:1px solid var(--border-2); display:inline; }
+.po-cancel:hover { color:var(--ink); }
+
+/* Confirm screen — story review before starting */
+#confirm-overlay {
+  position:fixed; inset:0; z-index:390;
+  background:var(--paper); overflow-y:auto;
+  opacity:0; pointer-events:none; transition:opacity 300ms;
+}
+#confirm-overlay.on { opacity:1; pointer-events:all; }
+.co-inner { max-width:600px; margin:0 auto; padding:60px 32px 100px; }
+.co-badge { font-size:.62rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); margin-bottom:12px; }
+.co-title { font-family:var(--serif); font-size:2rem; font-weight:400; color:var(--ink); margin-bottom:6px; letter-spacing:-.02em; line-height:1.15; }
+.co-genre { font-size:.82rem; color:var(--ink-4); margin-bottom:28px; }
+
+.co-section { margin-bottom:28px; }
+.co-section-title { font-size:.62rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-4); margin-bottom:10px; padding-bottom:5px; border-bottom:1px solid var(--border); }
+
+/* Arc structure picker */
+.co-arc-pills { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
+.co-arc-pill { height:28px; padding:0 13px; border-radius:20px; font-size:.72rem; font-weight:500; border:1.5px solid var(--border-2); color:var(--ink-3); cursor:pointer; transition:all 180ms; }
+.co-arc-pill.on { border-color:var(--accent); color:var(--accent); background:var(--accent-3); }
+
+/* Extracted items */
+.co-tags { display:flex; flex-wrap:wrap; gap:5px; }
+.co-tag { font-size:.72rem; padding:3px 9px; border-radius:4px; background:var(--paper-2); border:1px solid var(--border); color:var(--ink-2); }
+.co-tag.hi { border-color:rgba(45,106,79,.3); background:#dceee6; color:#2d6a4f; }
+.co-tag.accent { border-color:var(--accent-2); background:var(--accent-3); color:var(--accent); }
+
+/* Character preview cards on confirm */
+.co-char-cards { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.co-char-card { border:1px solid var(--border); border-radius:7px; padding:11px 13px; background:var(--paper-card); }
+.co-char-name { font-size:.85rem; font-weight:600; color:var(--ink); margin-bottom:3px; }
+.co-char-role { font-size:.62rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--accent); margin-bottom:6px; }
+.co-char-row { font-size:.72rem; color:var(--ink-3); line-height:1.45; margin-bottom:2px; }
+.co-char-row strong { color:var(--ink-2); font-weight:500; }
+
+/* Premise and ending fields on confirm */
+.co-field { margin-bottom:12px; }
+.co-field label { font-size:.62rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-4); display:block; margin-bottom:5px; }
+.co-textarea { width:100%; border:1.5px solid var(--border-2); border-radius:6px; padding:9px 12px; font-family:var(--serif); font-size:.9rem; line-height:1.6; color:var(--ink); background:var(--paper-card); resize:none; min-height:60px; transition:border-color 150ms; }
+.co-textarea:focus { border-color:var(--accent); outline:none; }
+
+/* Confidence badge on confirm */
+.co-conf { display:inline-flex; align-items:center; gap:4px; font-size:.62rem; padding:1px 6px; border-radius:3px; margin-left:6px; }
+.co-conf-ai   { background:#e0f2fe; color:#0369a1; }
+.co-conf-user { background:#dceee6; color:#2d6a4f; }
+.co-conf-low  { background:#fef3c7; color:#92400e; }
+
+.co-actions { display:flex; gap:8px; padding-top:16px; border-top:1px solid var(--border); }
+.co-actions .ws-btn-p { flex:1; height:40px; font-size:.88rem; }
+
+/* ═══════════════════════════════════════════════════════════════
    KEYBOARD HINT
 ═══════════════════════════════════════════════════════════════ */
 #kb-hint {
@@ -2279,20 +2404,142 @@ kbd {
     <div id="main-scroll">
 
       <!-- Welcome / import state -->
+      <!-- ── PARSE OVERLAY ── -->
+      <div id="parse-overlay">
+        <div class="po-inner">
+          <div class="po-kicker">Structuring your story</div>
+          <div class="po-title" id="po-title">Reading…</div>
+          <div class="po-stream" id="po-stream"></div>
+          <div class="po-bar-wrap"><div class="po-bar-fill" id="po-bar"></div></div>
+          <div class="po-status" id="po-status">Extracting story logic…</div>
+          <div style="margin-top:12px"><span class="po-cancel" id="po-cancel">Cancel</span></div>
+        </div>
+      </div>
+
+      <!-- ── CONFIRM OVERLAY ── -->
+      <div id="confirm-overlay">
+        <div class="co-inner">
+          <div class="co-badge">Story extracted — confirm before you begin</div>
+          <div class="co-title" id="co-title">Untitled</div>
+          <div class="co-genre" id="co-genre">—</div>
+
+          <!-- Arc structure -->
+          <div class="co-section">
+            <div class="co-section-title">Arc structure</div>
+            <div class="co-arc-pills" id="co-arc-pills">
+              <div class="co-arc-pill on" data-arc="3act">3-act novel</div>
+              <div class="co-arc-pill" data-arc="screenplay">Screenplay</div>
+              <div class="co-arc-pill" data-arc="5part">5-part arc</div>
+            </div>
+          </div>
+
+          <!-- Story core -->
+          <div class="co-section">
+            <div class="co-section-title">Story core</div>
+            <div class="co-field">
+              <label>Premise <span class="co-conf co-conf-ai">inferred</span></label>
+              <textarea class="co-textarea" id="co-premise" rows="2" placeholder="What the story is about in one or two sentences…"></textarea>
+            </div>
+            <div class="co-field">
+              <label>Ending — fixed anchor <span class="co-conf co-conf-user">you control this</span></label>
+              <textarea class="co-textarea" id="co-ending" rows="2" placeholder="Where the story ends up. Lock this before you draft."></textarea>
+            </div>
+          </div>
+
+          <!-- Characters -->
+          <div class="co-section">
+            <div class="co-section-title">Characters <span class="co-conf co-conf-ai">extracted</span></div>
+            <div class="co-char-cards" id="co-char-cards"></div>
+          </div>
+
+          <!-- Themes & threads -->
+          <div class="co-section">
+            <div class="co-section-title">Themes <span class="co-conf co-conf-ai">inferred</span></div>
+            <div class="co-tags" id="co-themes"></div>
+          </div>
+          <div class="co-section">
+            <div class="co-section-title">Open threads <span class="co-conf co-conf-ai">extracted</span></div>
+            <div class="co-tags" id="co-threads"></div>
+          </div>
+          <div class="co-section">
+            <div class="co-section-title">Motifs <span class="co-conf co-conf-ai">detected</span></div>
+            <div class="co-tags" id="co-motifs"></div>
+          </div>
+
+          <!-- Movement summaries -->
+          <div class="co-section">
+            <div class="co-section-title">Story structure <span class="co-conf co-conf-ai">calibrated</span></div>
+            <div id="co-movements"></div>
+          </div>
+
+          <div class="co-actions">
+            <button class="ws-btn-s" id="co-back">← Back</button>
+            <button class="ws-btn-p" id="co-begin">Begin writing →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── WELCOME STATE ── -->
       <div id="welcome-state">
         <div class="ws-inner">
-          <div class="ws-kicker">Progressive narrative architecture</div>
+          <div class="ws-kicker">Narrative — progressive story architecture</div>
           <h1 class="ws-title">You decide the story.<br>We help you build it.</h1>
-          <p class="ws-sub">Paste your story idea, outline, or rough notes. The system structures it into acts, movements, and scenes — then helps you break each one into beats and draft at speed.</p>
-          <div class="ws-import">
-            <textarea id="outline-input" rows="4"
-              placeholder="Paste your story, outline, or rough notes…&#10;&#10;Or just describe what you're thinking. Even a paragraph is enough."></textarea>
+          <p class="ws-sub">Bring your story — fully developed or just an idea. The system structures it into movements, scenes, and beats, then helps you draft at speed while you steer.</p>
+
+          <!-- Mode choice -->
+          <div class="ws-mode-choice">
+            <div class="ws-mode-card" id="mode-card-execution">
+              <div class="ws-mode-icon">📖</div>
+              <div class="ws-mode-name">I have a story</div>
+              <div class="ws-mode-desc">Paste your outline, notes, or synopsis. AI structures it and helps you draft scene by scene.</div>
+            </div>
+            <div class="ws-mode-card" id="mode-card-discovery">
+              <div class="ws-mode-icon">✦</div>
+              <div class="ws-mode-name">I have an idea</div>
+              <div class="ws-mode-desc">Describe what you're thinking. The system helps you find the structure before you draft.</div>
+            </div>
           </div>
-          <div class="ws-actions">
-            <button class="ws-btn-p" id="btn-analyse">Structure my story →</button>
-            <button class="ws-btn-s" id="btn-demo">Load demo</button>
-            <button class="ws-btn-s" id="btn-new-blank">Start blank</button>
+
+          <!-- Execution: paste outline -->
+          <div id="import-area">
+            <div class="import-label">Paste your story, outline, or notes</div>
+            <div class="ws-import" style="margin-bottom:8px;">
+              <textarea id="outline-input" rows="5"
+                placeholder="Paste anything — a full outline, chapter summaries, character descriptions, rough notes, or a paragraph describing the story. The more you give, the more precisely the system can structure it.&#10;&#10;Even a few sentences is enough to begin."></textarea>
+            </div>
+            <div class="import-hint">The system will extract characters, themes, structure, and movement summaries. You review and confirm before drafting begins.</div>
+            <div class="ws-actions" style="margin-top:12px;">
+              <button class="ws-btn-p" id="btn-analyse">Structure my story →</button>
+              <button class="ws-btn-s" id="btn-demo">Load demo</button>
+              <button class="ws-btn-s" id="btn-new-blank">Start blank</button>
+            </div>
           </div>
+
+          <!-- Discovery: guided prompts -->
+          <div id="discovery-area">
+            <div class="disc-step">
+              <div class="disc-step-label"><div class="disc-step-num">1</div>What is this story about?</div>
+              <textarea class="disc-input" id="disc-premise" rows="2" placeholder="The core of it — what happens, to whom, and why it matters. One or two sentences."></textarea>
+            </div>
+            <div class="disc-step">
+              <div class="disc-step-label"><div class="disc-step-num">2</div>Who is the protagonist?</div>
+              <textarea class="disc-input" id="disc-protagonist" rows="2" placeholder="Name, role, what they want, what they're afraid of."></textarea>
+            </div>
+            <div class="disc-step">
+              <div class="disc-step-label"><div class="disc-step-num">3</div>How does it end?</div>
+              <textarea class="disc-input" id="disc-ending" rows="2" placeholder="Where does the story land? Even roughly — what has changed? You can adjust this later."></textarea>
+            </div>
+            <div class="disc-step">
+              <div class="disc-step-label"><div class="disc-step-num">4</div>What genre and tone?</div>
+              <textarea class="disc-input" id="disc-tone" rows="1" placeholder="e.g. Literary fiction, restrained and melancholic. Or: Thriller, propulsive."></textarea>
+            </div>
+            <div class="ws-actions" style="margin-top:14px;">
+              <button class="ws-btn-p" id="btn-discover">Build my story structure →</button>
+              <button class="ws-btn-s" id="btn-demo">Load demo</button>
+              <button class="ws-btn-s" id="btn-back-mode">← Back</button>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -4487,6 +4734,740 @@ document.addEventListener('DOMContentLoaded', ()=>{
   setTimeout(initSession, 200);
   setTimeout(updateSessionStats, 500);
   setInterval(updateSessionStats, 10000);
+});
+
+// ═══════════════════════════════════════════════════════════════
+// PATCH A — AI IMPORT PARSER
+// ═══════════════════════════════════════════════════════════════
+
+// ── State additions ──
+S.importMode = 'execution'; // 'execution' | 'discovery'
+S.parsedStory = null;       // raw AI extraction, held until confirmed
+S.selectedArc = '3act';     // arc chosen on confirm screen
+
+// ─────────────────────────────────────────────
+// WELCOME SCREEN — MODE SELECTION
+// ─────────────────────────────────────────────
+function initWelcomeScreen() {
+  const execCard = $('mode-card-execution');
+  const discCard = $('mode-card-discovery');
+
+  // Default to showing execution import
+  showImportMode('execution');
+
+  execCard.addEventListener('click', () => {
+    S.importMode = 'execution';
+    execCard.classList.add('selected');
+    discCard.classList.remove('selected');
+    showImportMode('execution');
+  });
+
+  discCard.addEventListener('click', () => {
+    S.importMode = 'discovery';
+    discCard.classList.add('selected');
+    execCard.classList.remove('selected');
+    showImportMode('discovery');
+  });
+
+  // Back from discovery
+  $('btn-back-mode')?.addEventListener('click', () => {
+    S.importMode = 'execution';
+    execCard.classList.add('selected');
+    discCard.classList.remove('selected');
+    showImportMode('execution');
+  });
+
+  // Arc pills on confirm screen
+  document.querySelectorAll('.co-arc-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.co-arc-pill').forEach(p => p.classList.remove('on'));
+      pill.classList.add('on');
+      S.selectedArc = pill.dataset.arc;
+    });
+  });
+
+  // Confirm back
+  $('co-back')?.addEventListener('click', () => {
+    $('confirm-overlay').classList.remove('on');
+    $('welcome-state').style.display = '';
+  });
+
+  // Confirm begin
+  $('co-begin')?.addEventListener('click', () => beginFromConfirm());
+}
+
+function showImportMode(mode) {
+  const ia = $('import-area');
+  const da = $('discovery-area');
+  if(ia) ia.classList.toggle('show', mode === 'execution');
+  if(da) da.classList.toggle('show', mode === 'discovery');
+}
+
+// ─────────────────────────────────────────────
+// PARSE OVERLAY HELPERS
+// ─────────────────────────────────────────────
+let parseAborted = false;
+
+function showParseOverlay(title) {
+  parseAborted = false;
+  $('po-title').textContent = title || 'Reading your story…';
+  $('po-stream').innerHTML = '';
+  $('po-bar').style.width = '0%';
+  $('po-status').textContent = 'Extracting story logic…';
+  $('parse-overlay').classList.add('on');
+}
+
+function hideParseOverlay() {
+  $('parse-overlay').classList.remove('on');
+}
+
+function streamFinding(key, value, delay = 0) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      if(parseAborted) { resolve(); return; }
+      const el = make('div');
+      el.className = 'po-finding';
+      el.innerHTML = `<span class="po-finding-key">${key}</span><span class="po-finding-val">${value}</span>`;
+      $('po-stream').appendChild(el);
+      // Keep only last 6 findings visible
+      const all = $('po-stream').querySelectorAll('.po-finding');
+      if(all.length > 6) all[0].remove();
+      resolve();
+    }, delay);
+  });
+}
+
+function setParseProgress(pct, status) {
+  $('po-bar').style.width = pct + '%';
+  if(status) $('po-status').textContent = status;
+}
+
+$('po-cancel')?.addEventListener('click', () => {
+  parseAborted = true;
+  hideParseOverlay();
+});
+
+// ─────────────────────────────────────────────
+// DEEP PARSE — EXECUTION MODE
+// ─────────────────────────────────────────────
+async function deepParseOutline(text) {
+  const system = `You are a narrative analysis engine performing deep literary extraction.
+Analyse the story text and return ONLY valid JSON (no markdown, no backticks) with exactly this structure:
+{
+  "title": "string or null",
+  "genre": "string",
+  "tone": "string",
+  "pov": "string",
+  "premise": "string — one or two sentences capturing the essential story",
+  "ending": "string or null — the story's destination, even roughly stated",
+  "centralConflict": "string",
+  "themes": ["array of strings — 3-6 specific themes"],
+  "motifs": ["array of strings — recurring images, objects, or phrases detected or implied"],
+  "characters": [
+    {
+      "name": "string",
+      "role": "Protagonist|Antagonist|Ally|Foil|Absent presence|Supporting",
+      "want": "string — conscious desire",
+      "fear": "string — what they are protecting themselves from",
+      "belief": "string — the false belief or misunderstanding they carry",
+      "contradiction": "string — the gap between what they show and what they are",
+      "arc": "string — the arc trajectory in one phrase",
+      "confidence": "high|medium|low"
+    }
+  ],
+  "openThreads": ["array of strings — unresolved questions or tensions the story will need to address"],
+  "plotEvents": [
+    {
+      "event": "string — what happens",
+      "position": "early|mid|late",
+      "weight": "pivotal|major|supporting"
+    }
+  ],
+  "movementSuggestions": [
+    {
+      "name": "string — movement name",
+      "fn": "string — dramatic function in one phrase",
+      "emotional": "string — emotional register",
+      "summary": "string — 2-3 sentences describing what happens in this movement",
+      "keyEvents": ["array of 2-4 key events for this movement"]
+    }
+  ],
+  "voiceNotes": "string or null — observations about the writer's prose style if detectable"
+}
+
+Be specific. Extract psychology, not just plot facts. Infer what is implied but not stated.
+For movementSuggestions: propose 5-7 movements that naturally fit this story's arc.
+Do not force a rigid formula — let the story's own logic determine the movements.`;
+
+  const raw = await callClaude(system,
+    `Analyse this story deeply and extract everything:\n\n${text}`,
+    3000);
+  return JSON.parse(raw.replace(/```json|```/g, '').trim());
+}
+
+// ─────────────────────────────────────────────
+// DISCOVERY MODE PARSE
+// ─────────────────────────────────────────────
+async function parseDiscovery(premise, protagonist, ending, tone) {
+  const system = `You are a narrative structure expert helping a writer find their story's structure.
+Given a rough story idea, generate a complete structural proposal.
+Return ONLY valid JSON (no backticks):
+{
+  "title": "string — a suggested working title, or null",
+  "genre": "string",
+  "tone": "string",
+  "pov": "string — suggested POV",
+  "premise": "string — refined premise based on what the writer described",
+  "ending": "string — refined ending based on what the writer described",
+  "centralConflict": "string",
+  "themes": ["3-5 themes this story seems to want to explore"],
+  "motifs": ["2-4 suggested motifs that would serve this story"],
+  "characters": [
+    {
+      "name": "string",
+      "role": "Protagonist|Supporting|Antagonist",
+      "want": "string",
+      "fear": "string",
+      "belief": "string — suggested false belief that would drive dramatic tension",
+      "contradiction": "string",
+      "arc": "string",
+      "confidence": "medium"
+    }
+  ],
+  "openThreads": ["3-5 dramatic questions this story will need to answer"],
+  "plotEvents": [
+    {"event": "string", "position": "early|mid|late", "weight": "pivotal|major|supporting"}
+  ],
+  "movementSuggestions": [
+    {
+      "name": "string",
+      "fn": "string",
+      "emotional": "string",
+      "summary": "string — 2-3 sentences",
+      "keyEvents": ["2-3 key events"]
+    }
+  ],
+  "voiceNotes": null
+}
+Propose a structurally sound story from the raw materials provided.
+Be specific and generative — the writer needs something concrete to react to.`;
+
+  const input = [
+    premise && `Premise: ${premise}`,
+    protagonist && `Protagonist: ${protagonist}`,
+    ending && `Ending: ${ending}`,
+    tone && `Genre/tone: ${tone}`,
+  ].filter(Boolean).join('\n');
+
+  const raw = await callClaude(system, `Build a story structure from these materials:\n\n${input}`, 2500);
+  return JSON.parse(raw.replace(/```json|```/g, '').trim());
+}
+
+// ─────────────────────────────────────────────
+// DISTRIBUTE EVENTS ACROSS ARC
+// ─────────────────────────────────────────────
+function distributeEventsToMovements(parsed, arcMovements) {
+  const events = parsed.plotEvents || [];
+  const movements = JSON.parse(JSON.stringify(arcMovements));
+
+  // Map story movements to arc movements by position
+  const movSuggestions = parsed.movementSuggestions || [];
+
+  movements.forEach((arcMov, i) => {
+    const tension = arcMov.tension || 0.5;
+
+    // Find matching suggested movement by position
+    const suggIdx = Math.round((i / Math.max(movements.length - 1, 1)) * Math.max(movSuggestions.length - 1, 0));
+    const sugg = movSuggestions[suggIdx];
+
+    if(sugg) {
+      arcMov.summary = sugg.summary || '';
+      arcMov.fn = sugg.fn || arcMov.fn;
+      // Pre-populate scenes from key events
+      arcMov.scenes = (sugg.keyEvents || []).map((ev, si) => ({
+        id: uid(),
+        name: ev.length > 50 ? ev.substring(0, 50) + '…' : ev,
+        intention: ev,
+        fn: si === 0 ? 'Opening' : si === (sugg.keyEvents.length - 1) ? 'Closing' : 'Development',
+        beats: [],
+        status: 'open',
+      }));
+    }
+
+    // Distribute matching events
+    const eventsByPos = {
+      early: events.filter(e => e.position === 'early'),
+      mid:   events.filter(e => e.position === 'mid'),
+      late:  events.filter(e => e.position === 'late'),
+    };
+
+    const posMap = tension < 0.4 ? 'early' : tension < 0.7 ? 'mid' : 'late';
+    const relevantEvents = eventsByPos[posMap] || [];
+    arcMov.extractedEvents = relevantEvents.slice(0, 3).map(e => e.event);
+
+    arcMov.status = arcMov.summary ? 'approved' : 'open';
+  });
+
+  return movements;
+}
+
+// ─────────────────────────────────────────────
+// POPULATE CONFIRM SCREEN
+// ─────────────────────────────────────────────
+function populateConfirmScreen(parsed) {
+  S.parsedStory = parsed;
+
+  $('co-title').textContent = parsed.title || 'Your story';
+  $('co-genre').textContent = [parsed.genre, parsed.tone, parsed.pov].filter(Boolean).join(' · ');
+
+  // Premise and ending
+  const premiseEl = $('co-premise');
+  const endingEl = $('co-ending');
+  if(premiseEl) premiseEl.value = parsed.premise || '';
+  if(endingEl)  endingEl.value  = parsed.ending  || '';
+
+  // Characters
+  const charCards = $('co-char-cards');
+  if(charCards) {
+    charCards.innerHTML = '';
+    (parsed.characters || []).slice(0, 4).forEach(c => {
+      const card = make('div'); card.className = 'co-char-card';
+      const confCls = c.confidence === 'high' ? 'co-conf-user' : c.confidence === 'low' ? 'co-conf-low' : 'co-conf-ai';
+      card.innerHTML = `
+        <div class="co-char-name">${c.name} <span class="co-conf ${confCls}">${c.confidence||'inferred'}</span></div>
+        <div class="co-char-role">${c.role}</div>
+        ${c.want?`<div class="co-char-row"><strong>Want:</strong> ${c.want}</div>`:''}
+        ${c.fear?`<div class="co-char-row"><strong>Fear:</strong> ${c.fear}</div>`:''}
+        ${c.belief?`<div class="co-char-row"><strong>Belief:</strong> ${c.belief}</div>`:''}
+        ${c.arc?`<div class="co-char-row"><strong>Arc:</strong> ${c.arc}</div>`:''}`;
+      charCards.appendChild(card);
+    });
+  }
+
+  // Themes
+  const themesEl = $('co-themes');
+  if(themesEl) {
+    themesEl.innerHTML = (parsed.themes||[]).map(t =>
+      `<div class="co-tag accent">${t}</div>`).join('');
+  }
+
+  // Threads
+  const threadsEl = $('co-threads');
+  if(threadsEl) {
+    threadsEl.innerHTML = (parsed.openThreads||[]).map(t =>
+      `<div class="co-tag">${t}</div>`).join('');
+  }
+
+  // Motifs
+  const motifsEl = $('co-motifs');
+  if(motifsEl) {
+    motifsEl.innerHTML = (parsed.motifs||[]).map(m =>
+      `<div class="co-tag hi">${m}</div>`).join('');
+  }
+
+  // Movement summaries
+  const movEl = $('co-movements');
+  if(movEl) {
+    movEl.innerHTML = '';
+    const arcMovements = getArcTemplate(S.selectedArc || '3act').flatMap(a => a.movements);
+    const movSuggestions = parsed.movementSuggestions || [];
+    const showCount = Math.max(arcMovements.length, movSuggestions.length);
+
+    for(let i = 0; i < Math.min(showCount, movSuggestions.length); i++) {
+      const sugg = movSuggestions[i];
+      const arcMov = arcMovements[i];
+      const el = make('div');
+      el.style.cssText = 'border-left:2px solid var(--border-2);padding:8px 12px;margin-bottom:8px;border-radius:0 5px 5px 0;background:var(--paper-card);';
+      el.innerHTML = `
+        <div style="font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-4);margin-bottom:3px;">${arcMov?.label||''} — ${sugg.name}</div>
+        <div style="font-size:.78rem;color:var(--ink-3);font-style:italic;margin-bottom:4px;">${sugg.fn||''}</div>
+        <div style="font-size:.8rem;color:var(--ink-2);line-height:1.55;">${sugg.summary||''}</div>`;
+      movEl.appendChild(el);
+    }
+  }
+}
+
+// ─────────────────────────────────────────────
+// APPLY PARSED DATA TO STATE
+// ─────────────────────────────────────────────
+function applyParsedStory(parsed, arcType) {
+  const arcTemplate = getArcTemplate(arcType);
+
+  // Set project
+  S.project = {
+    title:           parsed.title || 'Untitled story',
+    genre:           parsed.genre || '',
+    tone:            parsed.tone  || '',
+    pov:             parsed.pov   || '',
+    premise:         $('co-premise')?.value || parsed.premise || '',
+    ending:          $('co-ending')?.value  || parsed.ending  || '',
+    centralConflict: parsed.centralConflict || '',
+    themes:          parsed.themes || [],
+    voiceNotes:      parsed.voiceNotes || null,
+  };
+
+  // Build acts with distributed events
+  S.acts = arcTemplate.map(act => ({
+    ...act,
+    movements: distributeEventsToMovements(parsed, act.movements).map((mov, i) => {
+      const actualMov = act.movements[i];
+      return { ...actualMov, ...mov };
+    }),
+  }));
+
+  // Characters with arc states pre-built
+  S.characters = (parsed.characters || []).map(c => ({
+    name: c.name,
+    role: c.role,
+    want: c.want || '',
+    fear: c.fear || '',
+    belief: c.belief || '',
+    contradiction: c.contradiction || '',
+    arc: c.arc || '',
+    arcProgress: 5,
+    arcStates: {},
+  }));
+
+  // Threads
+  S.threads = (parsed.openThreads || []).map(t => ({
+    id: uid(),
+    text: t,
+    status: 'open',
+    openedAt: S.acts[0]?.movements[0]?.id || 'm1',
+    resolvedAt: null,
+  }));
+
+  // Motifs
+  S.motifs = (parsed.motifs || []).map(m => ({
+    id: uid(),
+    name: m,
+    occurrences: [],
+    status: 'tracked',
+  }));
+
+  // Fragments (empty for now)
+  S.fragments = [];
+
+  // Update title in UI
+  if($('tb-title')) $('tb-title').textContent = S.project.title;
+  if($('sb-project-name')) $('sb-project-name').textContent = S.project.title;
+
+  persist();
+}
+
+function getArcTemplate(arcType) {
+  if(arcType === 'screenplay') return JSON.parse(JSON.stringify(ARC_SCREENPLAY));
+  return JSON.parse(JSON.stringify(ARC_3ACT));
+}
+
+// ─────────────────────────────────────────────
+// BEGIN FROM CONFIRM SCREEN
+// ─────────────────────────────────────────────
+function beginFromConfirm() {
+  if(!S.parsedStory) return;
+
+  applyParsedStory(S.parsedStory, S.selectedArc);
+
+  // Set mode based on arc selection
+  if(S.selectedArc === 'screenplay') {
+    setMode('screenplay');
+  } else {
+    setMode('novel');
+  }
+
+  $('confirm-overlay').classList.remove('on');
+  $('welcome-state').style.display = 'none';
+
+  renderTree();
+  selectMovement(S.acts[0].movements[0].id);
+  scheduleIntelUpdate('import complete');
+
+  const wordCount = Object.values(S.project).filter(v=>typeof v==='string').join(' ').split(/\s+/).length;
+  toast(`Story structured — ${S.characters.length} characters, ${S.threads.length} threads, ${S.acts.flatMap(a=>a.movements.flatMap(m=>m.scenes)).length} scenes`, 'success');
+}
+
+// ─────────────────────────────────────────────
+// MAIN IMPORT FLOW — EXECUTION MODE
+// ─────────────────────────────────────────────
+async function runImport(text) {
+  showParseOverlay('Reading your story…');
+  setParseProgress(5, 'Parsing narrative structure…');
+
+  try {
+    await streamFinding('Source', `${text.split(/\s+/).length.toLocaleString()} words`, 0);
+    setParseProgress(15, 'Extracting characters…');
+
+    let parsed;
+    if(S.apiKey) {
+      // Stream findings as they would logically arrive
+      await streamFinding('Analysing', 'Story logic, characters, themes…', 300);
+      setParseProgress(30, 'Identifying characters and psychology…');
+
+      parsed = await deepParseOutline(text);
+
+      // Stream results progressively
+      if(parsed.title)   await streamFinding('Title',    parsed.title,   0);
+      if(parsed.genre)   await streamFinding('Genre',    parsed.genre,   120);
+      if(parsed.premise) await streamFinding('Premise',  parsed.premise.substring(0,80)+'…', 200);
+      setParseProgress(55, 'Mapping story arc…');
+
+      for(const c of (parsed.characters||[]).slice(0,3)) {
+        await streamFinding(c.role, c.name + (c.want ? ` — "${c.want}"` : ''), 180);
+      }
+      setParseProgress(70, 'Building movement structure…');
+
+      for(const t of (parsed.themes||[]).slice(0,3)) {
+        await streamFinding('Theme', t, 150);
+      }
+      setParseProgress(85, 'Distributing story across movements…');
+
+      for(const sugg of (parsed.movementSuggestions||[]).slice(0,4)) {
+        await streamFinding('Movement', sugg.name + ' — ' + (sugg.fn||''), 200);
+      }
+      setParseProgress(100, 'Structure complete.');
+      await sleep(600);
+
+    } else {
+      // Demo mode — stream fake findings
+      await streamFinding('Mode', 'Demo — add API key for live parsing', 200);
+      setParseProgress(20, 'Loading demo structure…');
+      await sleep(400);
+      parsed = buildFallbackParse(text);
+      await streamFinding('Title',    parsed.title||'Story detected', 200);
+      await streamFinding('Genre',    parsed.genre, 200);
+      await streamFinding('Premise',  (parsed.premise||'').substring(0,80), 200);
+      setParseProgress(60, 'Building characters…');
+      await sleep(400);
+      for(const c of (parsed.characters||[]).slice(0,2)) {
+        await streamFinding('Character', c.name, 200);
+      }
+      setParseProgress(90, 'Structuring movements…');
+      await sleep(400);
+      setParseProgress(100, 'Done.');
+      await sleep(400);
+    }
+
+    if(parseAborted) return;
+
+    hideParseOverlay();
+
+    // Show confirm screen
+    populateConfirmScreen(parsed);
+    $('welcome-state').style.display = 'none';
+    $('confirm-overlay').classList.add('on');
+
+  } catch(e) {
+    hideParseOverlay();
+    $('welcome-state').style.display = '';
+    console.error('Import failed:', e);
+    if(e.message === 'no-key') {
+      toast('No API key — running with demo parsing. Add key in Settings for full AI import.');
+      const parsed = buildFallbackParse(text);
+      populateConfirmScreen(parsed);
+      $('confirm-overlay').classList.add('on');
+    } else {
+      toast('Import failed: ' + e.message);
+    }
+  }
+}
+
+// ─────────────────────────────────────────────
+// FALLBACK PARSE (no API key)
+// ─────────────────────────────────────────────
+function buildFallbackParse(text) {
+  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
+  const lower = text.toLowerCase();
+
+  // Title guess
+  const title = lines[0]?.length < 80 ? lines[0].replace(/^[#*\-]+\s*/,'') : null;
+
+  // Characters (simple heuristic)
+  const charNames = [];
+  const charSection = text.match(/[Cc]haracters?:?([\s\S]*?)(?:\n\n|\n[A-Z][^\n]{5,}:|$)/);
+  if(charSection) {
+    charSection[1].split('\n').forEach(l => {
+      const m = l.match(/^[-*]?\s*([A-Z][a-z]+(?:\s[A-Z][a-z]+)?)/);
+      if(m && m[1].length > 2) charNames.push(m[1]);
+    });
+  }
+  // Also look for capitalised names in text
+  const nameMatches = text.match(/\b[A-Z][a-z]{2,}(?:\s[A-Z][a-z]+)?\b/g)||[];
+  nameMatches.forEach(n => { if(!charNames.includes(n)&&n!=='The'&&n!=='This'&&n!=='That') charNames.push(n); });
+
+  const uniqueNames = [...new Set(charNames)].slice(0,5);
+  const characters = uniqueNames.map((n,i) => ({
+    name:n, role:i===0?'Protagonist':'Supporting',
+    want:'To be determined', fear:'To be determined',
+    belief:'', contradiction:'', arc:'', confidence:'low',
+  }));
+
+  // Themes
+  const themeWords = ['friendship','love','power','betrayal','identity','memory','loss','redemption','truth','family','ambition','loyalty','grief','desire','mortality','class','justice','violence','freedom'];
+  const themes = themeWords.filter(t=>lower.includes(t)).map(t=>t[0].toUpperCase()+t.slice(1)).slice(0,5);
+  const themeMatch = text.match(/[Tt]hemes?:([^\n]+)/)?.[1];
+  if(themeMatch) themeMatch.split(/[,;]/).map(s=>s.trim()).forEach(t=>{ if(t&&!themes.includes(t))themes.push(t); });
+
+  // Threads — look for questions or unresolved elements
+  const threads = (text.match(/[A-Z][^.!?]*\?/g)||[]).slice(0,4).map(s=>s.trim());
+
+  // Motifs
+  const motifWords = ['fire','water','light','darkness','rain','mirror','door','window','road','clock'];
+  const motifs = motifWords.filter(m=>lower.includes(m)).map(m=>m[0].toUpperCase()+m.slice(1)).slice(0,4);
+
+  // Ending
+  const endingMatch = text.match(/[Ee]nding:([^\n]+)/)?.[1]?.trim() || text.match(/[Rr]esolution:([^\n]+)/)?.[1]?.trim() || null;
+
+  // Premise
+  const premise = lines.find(l=>l.length>60)?.substring(0,200) || text.substring(0,200);
+
+  return {
+    title, genre:'Fiction', tone:'Literary', pov:'Third person',
+    premise, ending:endingMatch,
+    centralConflict:'', themes, motifs,
+    characters, openThreads:threads,
+    plotEvents: [],
+    movementSuggestions: [
+      {name:'Opening movement',fn:'Setup & establishment',emotional:'Grounding',summary:'The world and characters are established.',keyEvents:['Introduction of protagonist','Establishment of the ordinary world']},
+      {name:'Inciting movement',fn:'Disruption',emotional:'Unease',summary:'Something disrupts the equilibrium.',keyEvents:['The inciting event','First response to disruption']},
+      {name:'Rising movement',fn:'Escalation',emotional:'Tension',summary:'Complications mount.',keyEvents:['First major obstacle','Stakes raised']},
+      {name:'Crisis movement',fn:'Crisis point',emotional:'Collapse',summary:'The darkest moment.',keyEvents:['All seems lost','The protagonist must choose']},
+      {name:'Resolution movement',fn:'New equilibrium',emotional:'Release',summary:'The aftermath.',keyEvents:['Resolution of central conflict','New world established']},
+    ],
+    voiceNotes:null,
+  };
+}
+
+// ─────────────────────────────────────────────
+// DISCOVERY FLOW
+// ─────────────────────────────────────────────
+async function runDiscovery() {
+  const premise     = $('disc-premise')?.value.trim()     || '';
+  const protagonist = $('disc-protagonist')?.value.trim() || '';
+  const ending      = $('disc-ending')?.value.trim()      || '';
+  const tone        = $('disc-tone')?.value.trim()        || '';
+
+  if(!premise) {
+    toast('Describe what the story is about first.');
+    $('disc-premise')?.focus();
+    return;
+  }
+
+  showParseOverlay('Building your story structure…');
+  setParseProgress(10, 'Finding the shape of your story…');
+
+  try {
+    await streamFinding('Premise', premise.substring(0,70)+'…', 200);
+    if(protagonist) await streamFinding('Protagonist', protagonist.substring(0,60), 300);
+    if(ending)      await streamFinding('Ending',      ending.substring(0,60), 300);
+    if(tone)        await streamFinding('Tone',        tone, 300);
+    setParseProgress(30, 'Proposing story structure…');
+
+    let parsed;
+    if(S.apiKey) {
+      parsed = await parseDiscovery(premise, protagonist, ending, tone);
+    } else {
+      await sleep(1400);
+      parsed = buildFallbackParse([premise,protagonist,ending,tone].join('. '));
+      if(!parsed.title) parsed.title = 'Untitled story';
+    }
+
+    if(parseAborted) return;
+
+    await streamFinding('Title',    parsed.title || 'Working title TBD', 200);
+    await streamFinding('Genre',    parsed.genre, 200);
+    setParseProgress(60, 'Building characters…');
+    for(const c of (parsed.characters||[]).slice(0,2)) {
+      await streamFinding('Character', `${c.name} — ${c.want||''}`, 200);
+    }
+    setParseProgress(85, 'Structuring movements…');
+    for(const m of (parsed.movementSuggestions||[]).slice(0,3)) {
+      await streamFinding('Movement', m.name, 180);
+    }
+    setParseProgress(100, 'Structure ready.');
+    await sleep(500);
+
+    hideParseOverlay();
+    populateConfirmScreen(parsed);
+    $('welcome-state').style.display = 'none';
+    $('confirm-overlay').classList.add('on');
+
+  } catch(e) {
+    hideParseOverlay();
+    $('welcome-state').style.display = '';
+    toast('Structure generation failed: ' + e.message);
+  }
+}
+
+// ─────────────────────────────────────────────
+// WIRE IMPORT BUTTONS (override existing stubs)
+// ─────────────────────────────────────────────
+
+// Execution: Structure my story
+const btnAnalyse = $('btn-analyse');
+if(btnAnalyse) {
+  // Remove old listener by cloning
+  const newBtn = btnAnalyse.cloneNode(true);
+  btnAnalyse.parentNode.replaceChild(newBtn, btnAnalyse);
+  newBtn.addEventListener('click', () => {
+    const text = $('outline-input')?.value.trim();
+    if(!text) { toast('Paste your story first.'); $('outline-input')?.focus(); return; }
+    runImport(text);
+  });
+}
+
+// Discovery: Build my story structure
+const btnDiscover = $('btn-discover');
+if(btnDiscover) {
+  btnDiscover.addEventListener('click', runDiscovery);
+}
+
+// ─────────────────────────────────────────────
+// KEYBOARD: Enter in outline input triggers parse
+// ─────────────────────────────────────────────
+$('outline-input')?.addEventListener('keydown', e => {
+  if((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+    e.preventDefault();
+    $('btn-analyse')?.click() || newBtn?.click();
+  }
+});
+
+// ─────────────────────────────────────────────
+// CONFIRM SCREEN: arc selection updates movement preview
+// ─────────────────────────────────────────────
+document.querySelectorAll('.co-arc-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('.co-arc-pill').forEach(p => p.classList.remove('on'));
+    pill.classList.add('on');
+    S.selectedArc = pill.dataset.arc;
+    // Refresh movement preview with new arc
+    if(S.parsedStory) {
+      const movEl = $('co-movements');
+      if(movEl) {
+        const arcMovements = getArcTemplate(S.selectedArc).flatMap(a => a.movements);
+        const movSuggestions = S.parsedStory.movementSuggestions || [];
+        movEl.innerHTML = '';
+        for(let i = 0; i < Math.min(arcMovements.length, movSuggestions.length); i++) {
+          const sugg = movSuggestions[i];
+          const arcMov = arcMovements[i];
+          const el = make('div');
+          el.style.cssText = 'border-left:2px solid var(--border-2);padding:8px 12px;margin-bottom:8px;border-radius:0 5px 5px 0;background:var(--paper-card);';
+          el.innerHTML = `<div style="font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-4);margin-bottom:3px;">${arcMov?.label||''} — ${sugg.name}</div><div style="font-size:.78rem;color:var(--ink-3);font-style:italic;margin-bottom:4px;">${sugg.fn||''}</div><div style="font-size:.8rem;color:var(--ink-2);line-height:1.55;">${sugg.summary||''}</div>`;
+          movEl.appendChild(el);
+        }
+      }
+    }
+  });
+});
+
+// ─────────────────────────────────────────────
+// INIT on load
+// ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  initWelcomeScreen();
+  // Show execution import by default
+  showImportMode('execution');
+  // Pre-select execution card
+  $('mode-card-execution')?.classList.add('selected');
 });
 </script>
 </body>
